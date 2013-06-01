@@ -1,0 +1,10 @@
+2007-01-26  David Huggins-Daines  <dhuggins@cs.cmu.edu>
+
+	* all: SphinxBase 0.2
+	* all: New feature extraction API needed for PS/S3 merge
+
+2005-11-19  David Huggins-Daines  <dhd@pobox.com>
+
+	* all: Initial refactoring of SphinxTrain, Sphinx2, Sphinx3,
+	PocketSphinx into sphinx-common
+

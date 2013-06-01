@@ -24,6 +24,8 @@ set(util_folder "${sphinx_root}/sphinxbase/src/libsphinxbase/util")
 
 include_directories(${fe_folder} ${feat_folder} ${lm_folder} ${util_folder})
 include_directories("${sphinx_root}/sphinxbase/include")
+# Platform-specific config
+include_directories("${sphinx_root}/platform/include")
 
 # Sphinxbase source files
 set(fe_src_files fe_interface.c fe_sigproc.c fe_warp_affine.c fe_warp.c fe_warp_inverse_linear.c fe_warp_piecewise_linear.c fixlog.c) 
@@ -63,7 +65,20 @@ foreach(cfile ${pocketsphinx_src_files})
     set(pocketsphinx_srcs ${pocketsphinx_srcs} "${pocketsphinx_folder}/${cfile}")
 endforeach(cfile)
 
-add_executable(test "tests/main.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
+set(test_bc "test.bc")
+set(test_html "test.html")
+set(HTML_COMPILATION_FLAGS "-s ALLOW_MEMORY_GROWTH=1")
+set(AM_RESOURCES "am")
 
-install(DIRECTORY ${sphinx_root}/am/ DESTINATION ${CMAKE_INSTALL_PREFIX}/)
+# This is the bytecode file, created as an executable
+add_executable(${test_bc} "tests/main.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
+
+# Copying resources into the build tree
+file(COPY ${sphinx_root}/${AM_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
+
+# Adding custom target for the HTML
+add_custom_target(${test_html}
+  COMMAND ${CMAKE_C_COMPILER} ${test_bc} ${HTML_COMPILATION_FLAGS} -o ${test_html} --preload-file ${AM_RESOURCES}
+  DEPENDS ${test_bc}
+  )
 

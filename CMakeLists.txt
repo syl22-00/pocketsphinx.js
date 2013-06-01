@@ -77,7 +77,7 @@ add_executable(${test_bc} "tests/main.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${fe
 file(COPY ${sphinx_root}/${AM_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
 
 # Adding custom target for the HTML
-add_custom_target(${test_html}
+add_custom_target(${test_html} ALL
   COMMAND ${CMAKE_C_COMPILER} ${test_bc} ${HTML_COMPILATION_FLAGS} -o ${test_html} --preload-file ${AM_RESOURCES}
   DEPENDS ${test_bc}
   )

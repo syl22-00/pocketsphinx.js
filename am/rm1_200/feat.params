@@ -1,0 +1,7 @@
+-nfilt 40
+-lowerf 133.3334
+-upperf 6855.4976
+-feat s2_4x
+-agc none
+-cmn current
+-varnorm no

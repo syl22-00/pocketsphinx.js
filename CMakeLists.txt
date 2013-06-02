@@ -93,4 +93,3 @@ add_custom_target(${test_html} ALL
   COMMAND ${CMAKE_C_COMPILER} ${test_bc} ${HTML_COMPILATION_FLAGS_TEST} -o ${test_html} --preload-file ${AM_RESOURCES}
   DEPENDS ${test_bc}
   )
-

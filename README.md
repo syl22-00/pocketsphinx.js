@@ -25,6 +25,19 @@ You should see a simple HTML page which loads the generated JavaScript. After a 
 
 On Google Chrome, launch it with `--disable-web-security`.
 
+### 3. Test library
+
+A test library is also generated, `test_lib.html`. Open it in your browser, start a JavaScript console and interact with it with:
+
+    $ x=Module.cwrap('initialize')
+    $ y=x()
+
+It should return 0 if successful.
+
 ### 2. Acoustic model
 
 The `am` folder contains an acoustic model trained with [SphinxTrain](http://cmusphinx.sourceforge.net/wiki/tutorialam). It is built using the [RM1](http://www.speech.cs.cmu.edu/databases/rm1/index.html) corpus, semi-continuous, with 200 senones.
+
+### 3. PocketSphinx
+
+pocketsphinx.js ships with PocketSphinx and Sphinxbase version 0.8 without modification except that the `model` folder of PocketSphinx (which contains large acoustic and language models) was not included.

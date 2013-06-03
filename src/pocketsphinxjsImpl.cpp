@@ -1,8 +1,19 @@
 #include <iostream>
 #include "pocketsphinx.h"
 
-int ps_initialize() {
-  std::cout << "Starting...\n";
+enum PsState {UNINITIALIZED = 0,
+	      INITIALIZED = 1,
+	      INITIALIZING = 2,
+	      ENTERING_GRAMMAR = 3,
+	      RECORDING = 4};
+static PsState psState = UNINITIALIZED;
+
+static ps_decoder_t * recognizer = NULL;
+
+int psInitializeImpl() {
+  if (psState != UNINITIALIZED)
+    return 1;
+  psState = INITIALIZING;
   const arg_t cont_args_def[] = {
     POCKETSPHINX_OPTIONS,
     { "-argfile",
@@ -30,15 +41,26 @@ int ps_initialize() {
   cmd_ln_t * config = cmd_ln_parse_r(NULL, cont_args_def, argc, argv, FALSE);
   if (config == NULL) {
     std::cout << "Config is NULL\n";
+    psState = UNINITIALIZED;
     return 1;
   }
   // Now it is time to initialize the decoder
-  ps_decoder_t * recognizer = ps_init(config);
+  recognizer = ps_init(config);
   if (recognizer == NULL) {
     std::cout << "recognizer is NULL\n";
+    psState = UNINITIALIZED;
     return 1;
   }
   // If we're there, it means we're successful
   std::cout << "Done\n";
   return 0;
 }
+
+int psGetStateImpl() {return psState;}
+int psNewGrammarImpl(int firstState, int lastState) {return 0;}
+int psStartGrammarImpl() {return 0;}
+int psAddWordImpl(char *word, char *pronunciation) {return 0;}
+int psAddTransitionImpl(int fromState, int toState) {return 0;}
+int psStartImpl() {return 0;}
+int psStopImpl() {return 0;}
+int psProcessImpl(void* data, int length) {return 0;}

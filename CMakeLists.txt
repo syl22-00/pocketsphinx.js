@@ -69,7 +69,8 @@ set(test_lib "test")
 set(test_bc "test.bc")
 set(test_lib_html "test_lib.html")
 set(test_html "test.html")
-set(HTML_COMPILATION_FLAGS "-s" "\ ALLOW_MEMORY_GROWTH=1" "-s" "\ EXPORTED_FUNCTIONS=\"['_initialize']\"")
+set(HTML_COMPILATION_FLAGS "-s" "\ ALLOW_MEMORY_GROWTH=1" "-s" "\ EXPORTED_FUNCTIONS=\"['_psInitialize','_psGetState','_psStartGrammar','_psEndGrammar','_psAddWord','_psAddTransition','_psStart','_psStop','_psProcess']\"")
+#set(HTML_COMPILATION_FLAGS_TITI "-s" "\ ALLOW_MEMORY_GROWTH=1" "--bind")
 set(HTML_COMPILATION_FLAGS_TEST "-s ALLOW_MEMORY_GROWTH=1")
 set(AM_RESOURCES "am")
 
@@ -79,9 +80,17 @@ add_executable(${test_bc} "tests/main.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${fe
 # Building a library to be used from JavaScript
 add_library(${test_lib} SHARED "src/pocketsphinxjs.cpp" "src/pocketsphinxjsImpl.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
 
+# add_library(titi SHARED "src/pocketsphinxInterface.cpp")
+
 # Copying resources into the build tree
 file(COPY ${sphinx_root}/${AM_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
-message("${CMAKE_C_COMPILER} ${CMAKE_SHARED_LIBRARY_PREFIX}${test_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} ${HTML_COMPILATION_FLAGS} -o ${test_lib_html} --preload-file ${AM_RESOURCES}")
+
+# Un-successful attempt with embind
+#add_custom_target(titi.html ALL
+#  COMMAND ${CMAKE_C_COMPILER} libtiti.so -o titi.js --embed-file ${AM_RESOURCES} ${HTML_COMPILATION_FLAGS_TITI}
+#  DEPENDS titi
+#  )
+
 # Adding custom target for the HTML for the library
 add_custom_target(${test_lib_html} ALL
   COMMAND ${CMAKE_C_COMPILER} ${CMAKE_SHARED_LIBRARY_PREFIX}${test_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${test_lib_html} --embed-file ${AM_RESOURCES} ${HTML_COMPILATION_FLAGS}

@@ -1,5 +1,7 @@
-PocketSphinx.js - Speech recognition in JavaScript
-==================================================
+PocketSphinx.js
+===============
+
+## Speech Recognition in JavaScript
 
 PocketSphinx.js is an attempt to perform speech recognition entirely in the web browser. The idea is to:
 
@@ -29,7 +31,7 @@ On Google Chrome, launch it with `--disable-web-security`.
 
 A test library is also generated, `test_lib.html`. Open it in your browser, start a JavaScript console and interact with it with:
 
-    $ x=Module.cwrap('initialize')
+    $ x=Module.cwrap('psInitialize')
     $ y=x()
 
 It should return 0 if successful.

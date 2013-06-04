@@ -733,6 +733,8 @@ jsgf_import_rule(jsgf_t *jsgf, char *name)
 jsgf_t *
 jsgf_parse_file(const char *filename, jsgf_t *parent)
 {
+    /* Since we modified this, we need to make sure we do not use it */
+    assert(0);
     yyscan_t yyscanner;
     jsgf_t *jsgf;
     int yyrv;
@@ -752,7 +754,9 @@ jsgf_parse_file(const char *filename, jsgf_t *parent)
     }
 
     jsgf = jsgf_grammar_new(parent);
+    /* This creates problem with emscript, we take it out for now:
     yyrv = yyparse(yyscanner, jsgf);
+    */
     if (yyrv != 0) {
         E_ERROR("Failed to parse JSGF grammar from '%s'\n", filename ? filename : "(stdin)");
         jsgf_grammar_free(jsgf);

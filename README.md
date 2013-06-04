@@ -34,7 +34,27 @@ A test library is also generated, `test_lib.html`. Open it in your browser, star
     $ z()           # Should be 0
     $ x=Module.cwrap('psInitialize')
     $ y=x()         # Should be 0 if successful
-    $ z()           # Should be 2
+    $ z()           # Should be 1
+
+To pass strings:
+
+    $ var word = "HELLO"
+    $ var pron = "AH OW T"
+    $ worp_ptr = Module.allocate(intArrayFromString(word), 'i8', ALLOC_STACK)
+    $ pron_ptr = Module.allocate(intArrayFromString(pron), 'i8', ALLOC_STACK)
+    $ var add_word = Module.cwrap('psAddWord', 'number', ['number','number'])
+    $ add_word(word_ptr, pron_ptr)           # Should return 0
+
+
+To pass binary data:
+
+    $ var buffer = Module.allocate(10, 'i16', ALLOC_NORMAL) # Buffer for 10 short ints
+    $ setValue(buffer, 0, 'i16')
+    $ setValue(buffer+2, 1, 'i16')
+    $ setValue(buffer+4, 2, 'i16')     # and so on...
+    $ var process_data = Module.cwrap('psProcessData', 'number', ['number','number'])
+    $ process_data(buffer, 10)        # should display the content of the buffer
+
 
 ### 3. Acoustic model
 

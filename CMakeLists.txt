@@ -98,7 +98,7 @@ add_custom_target(${test_lib_html} ALL
   )
 
 # Adding custom target for the HTML for the test
-add_custom_target(${test_html} ALL
+add_custom_target(${test_html}
   COMMAND ${CMAKE_C_COMPILER} ${test_bc} ${HTML_COMPILATION_FLAGS_TEST} -o ${test_html} --preload-file ${AM_RESOURCES}
   DEPENDS ${test_bc}
   )

@@ -1,7 +1,6 @@
 PocketSphinx.js
-===============
-
-## Speech Recognition in JavaScript
+---------------
+### Speech Recognition in JavaScript
 
 PocketSphinx.js is an attempt to perform speech recognition entirely in the web browser. The idea is to:
 
@@ -16,7 +15,7 @@ For now, we have a small test that initializes a PocketSphinx decoder. The build
     $ cd .../pocketsphinx.js # This folder
     $ mkdir build
     $ cd build
-    $ cmake -DEMSCRIPTEN=1 -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Platform/Emscripten.cmake -DCMAKE_MODULE_PATH=path_to_emscripten/cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=path_to_emscripten/emcc -DCMAKE_CXX_COMPILER=path_to_emscripten/em++  -DCMAKE_AR=path_to_emscripten/emar -DCMAKE_RANLIB=path_to_emscripten/emranlib ..
+    $ cmake -DEMSCRIPTEN=1 -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Platform/Emscripten_unix.cmake ..
     $ make
 
 This should generate `test.html` that you can open in your web browser:
@@ -31,10 +30,11 @@ On Google Chrome, launch it with `--disable-web-security`.
 
 A test library is also generated, `test_lib.html`. Open it in your browser, start a JavaScript console and interact with it with:
 
+    $ z=Module.cwrap('psGetState') 
+    $ z()           # Should be 0
     $ x=Module.cwrap('psInitialize')
-    $ y=x()
-
-It should return 0 if successful.
+    $ y=x()         # Should be 0 if successful
+    $ z()           # Should be 2
 
 ### 3. Acoustic model
 

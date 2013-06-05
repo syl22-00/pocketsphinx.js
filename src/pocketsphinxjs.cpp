@@ -17,8 +17,8 @@ extern "C" {
   int psInitialize() {
     return psInitializeImpl();
   }
-  int psStartGrammar(int firstState, int lastState) {
-    return psStartGrammarImpl(firstState, lastState);
+  int psStartGrammar(int numStates) {
+    return psStartGrammarImpl(numStates);
   }
   int psEndGrammar() {
     return psEndGrammarImpl();
@@ -26,8 +26,8 @@ extern "C" {
   int psAddWord(char *word, char *pronunciation) {
     return psAddWordImpl(word, pronunciation);
   }
-  int psAddTransition(int fromState, int toState) {
-    return psAddTransitionImpl(fromState, toState);
+  int psAddTransition(int fromState, int toState, char *word) {
+    return psAddTransitionImpl(fromState, toState, word);
   }
   int psStart() {
     return psStartImpl();

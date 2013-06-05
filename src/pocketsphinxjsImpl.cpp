@@ -1,9 +1,13 @@
 #include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
 #include "pocketsphinx.h"
 
 enum PsReturnType {SUCCESS = 0,
 		   BAD_STATE = 1,
-		   RUNTIME_ERROR = 2};
+		   BAD_ARGUMENT = 2,
+		   RUNTIME_ERROR = 3};
 
 enum PsState {UNINITIALIZED = 0,
 	      INITIALIZED = 1,
@@ -13,6 +17,11 @@ enum PsState {UNINITIALIZED = 0,
 static PsState psState = UNINITIALIZED;
 
 static ps_decoder_t * recognizer = NULL;
+static fsg_set_t * grammar_set = NULL;
+static logmath_t * logmath = NULL;
+static int grammar_index = 0;
+static fsg_model_t * current_grammar = NULL;
+static std::vector<std::string> grammar_names;
 
 int psInitializeImpl() {
   if (psState != UNINITIALIZED)
@@ -55,6 +64,18 @@ int psInitializeImpl() {
     psState = UNINITIALIZED;
     return RUNTIME_ERROR;
   }
+  logmath = logmath_init(1.0001, 0, 0);
+  if (logmath == NULL) {
+    std::cout << "logmath is NULL\n";
+    psState = UNINITIALIZED;
+    return RUNTIME_ERROR;
+  }
+  grammar_set = ps_get_fsgset(recognizer);
+  if (grammar_set == NULL) {
+    std::cout << "grammar_set is NULL\n";
+    psState = UNINITIALIZED;
+    return RUNTIME_ERROR;
+  }
   // If we're there, it means we're successful
   std::cout << "Done\n";
   psState = INITIALIZED;
@@ -62,8 +83,31 @@ int psInitializeImpl() {
 }
 
 int psGetStateImpl() {return psState;}
-int psNewGrammarImpl(int firstState, int lastState) {return 0;}
-int psStartGrammarImpl() {return 0;}
+int psStartGrammarImpl(int numStates) {
+  if (psState != INITIALIZED)
+    return BAD_STATE;
+  std::ostringstream grammar_name;
+  grammar_name << "grammar-" << grammar_index;
+  grammar_names.push_back(grammar_name.str());
+  current_grammar = fsg_model_init(grammar_names.back().c_str(), logmath, 1.0, numStates);
+  if (current_grammar == NULL)
+    return RUNTIME_ERROR;
+  current_grammar->start_state = 0;
+  current_grammar->final_state = numStates - 1;
+  psState = ENTERING_GRAMMAR;
+  return SUCCESS;
+}
+int psEndGrammarImpl() {
+  if (psState != ENTERING_GRAMMAR)
+    return BAD_STATE;
+  fsg_model_add_silence(current_grammar, "<sil>", -1, 1.0);
+  if (current_grammar != fsg_set_add(grammar_set, grammar_names.back().c_str(), current_grammar)) {
+    return RUNTIME_ERROR;
+  }
+  ps_update_fsgset(recognizer);
+  psState = INITIALIZED;
+  return SUCCESS;
+}
 int psAddWordImpl(char *word, char *pronunciation) {
   if (psState != INITIALIZED)
     return BAD_STATE;
@@ -75,7 +119,14 @@ int psAddWordImpl(char *word, char *pronunciation) {
     return RUNTIME_ERROR;
   return SUCCESS;
 }
-int psAddTransitionImpl(int fromState, int toState) {return 0;}
+int psAddTransitionImpl(int fromState, int toState, char* word) {
+  if (psState != ENTERING_GRAMMAR)
+    return BAD_STATE;
+  if ((fromState > current_grammar-> final_state) || (toState > current_grammar-> final_state))
+    return BAD_ARGUMENT;
+  fsg_model_trans_add(current_grammar, fromState, toState, 0, fsg_model_word_add(current_grammar, word));
+  return SUCCESS;
+}
 int psStartImpl() {return 0;}
 int psStopImpl() {return 0;}
 int psProcessImpl(void* data, int length) {

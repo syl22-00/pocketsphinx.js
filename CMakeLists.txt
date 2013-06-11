@@ -69,13 +69,14 @@ set(test_lib "test")
 set(test_bc "test.bc")
 set(test_lib_html "test_lib.html")
 set(test_html "test.html")
-set(HTML_COMPILATION_FLAGS "-s" "\ ALLOW_MEMORY_GROWTH=1" "-s" "\ EXPORTED_FUNCTIONS=\"['_psInitialize','_psGetState','_psStartGrammar','_psEndGrammar','_psAddWord','_psAddTransition','_psStart','_psStop','_psProcess']\"")
+set(HTML_COMPILATION_FLAGS "-s" "\ ALLOW_MEMORY_GROWTH=1" "-s" "\ EXPORTED_FUNCTIONS=\"['_psInitialize','_psGetState','_psGetHyp','_psStartGrammar','_psEndGrammar','_psAddWord','_psAddTransition','_psStart','_psStop','_psProcess']\"")
+#set(HTML_COMPILATION_FLAGS "\ EXPORTED_FUNCTIONS=\"['_psInitialize','_psGetState','_psGetHyp','_psStartGrammar','_psEndGrammar','_psAddWord','_psAddTransition','_psStart','_psStop','_psProcess']\"")
 #set(HTML_COMPILATION_FLAGS_TITI "-s" "\ ALLOW_MEMORY_GROWTH=1" "--bind")
 set(HTML_COMPILATION_FLAGS_TEST "-s ALLOW_MEMORY_GROWTH=1")
 set(AM_RESOURCES "am")
 
 # This is the bytecode file, created as an executable
-add_executable(${test_bc} "tests/main.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
+#add_executable(${test_bc} "tests/main.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
 
 # Building a library to be used from JavaScript
 add_library(${test_lib} SHARED "src/pocketsphinxjs.cpp" "src/pocketsphinxjsImpl.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})

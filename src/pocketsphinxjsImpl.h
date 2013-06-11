@@ -1,6 +1,7 @@
 
 
 int psGetStateImpl();
+const char* psGetHypImpl();
 int psInitializeImpl();
 int psStartGrammarImpl(int numStates);
 int psEndGrammarImpl();

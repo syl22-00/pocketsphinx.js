@@ -4,6 +4,8 @@
 #include <sstream>
 #include "pocketsphinx.h"
 
+#define MAX_HYP_LENGTH = 1024;
+
 enum PsReturnType {SUCCESS = 0,
 		   BAD_STATE = 1,
 		   BAD_ARGUMENT = 2,
@@ -14,6 +16,7 @@ enum PsState {UNINITIALIZED = 0,
 	      INITIALIZING = 2,
 	      ENTERING_GRAMMAR = 3,
 	      RECORDING = 4};
+
 static PsState psState = UNINITIALIZED;
 
 static ps_decoder_t * recognizer = NULL;
@@ -22,6 +25,9 @@ static logmath_t * logmath = NULL;
 static int grammar_index = 0;
 static fsg_model_t * current_grammar = NULL;
 static std::vector<std::string> grammar_names;
+static std::string current_hyp;
+static int32 score;
+static char const * sentence_id;
 
 int psInitializeImpl() {
   if (psState != UNINITIALIZED)
@@ -79,10 +85,16 @@ int psInitializeImpl() {
   // If we're there, it means we're successful
   std::cout << "Done\n";
   psState = INITIALIZED;
+  current_hyp = "";
   return SUCCESS;
 }
 
 int psGetStateImpl() {return psState;}
+
+const char* psGetHypImpl() {
+  return current_hyp.c_str();
+}
+
 int psStartGrammarImpl(int numStates) {
   if (psState != INITIALIZED)
     return BAD_STATE;
@@ -97,6 +109,7 @@ int psStartGrammarImpl(int numStates) {
   psState = ENTERING_GRAMMAR;
   return SUCCESS;
 }
+
 int psEndGrammarImpl() {
   if (psState != ENTERING_GRAMMAR)
     return BAD_STATE;
@@ -104,10 +117,13 @@ int psEndGrammarImpl() {
   if (current_grammar != fsg_set_add(grammar_set, grammar_names.back().c_str(), current_grammar)) {
     return RUNTIME_ERROR;
   }
+  grammar_index++;
   ps_update_fsgset(recognizer);
+  fsg_set_select(grammar_set, grammar_names.back().c_str());
   psState = INITIALIZED;
   return SUCCESS;
 }
+
 int psAddWordImpl(char *word, char *pronunciation) {
   if (psState != INITIALIZED)
     return BAD_STATE;
@@ -119,19 +135,51 @@ int psAddWordImpl(char *word, char *pronunciation) {
     return RUNTIME_ERROR;
   return SUCCESS;
 }
+
 int psAddTransitionImpl(int fromState, int toState, char* word) {
   if (psState != ENTERING_GRAMMAR)
     return BAD_STATE;
-  if ((fromState > current_grammar-> final_state) || (toState > current_grammar-> final_state))
+  if ((fromState > current_grammar->final_state) || (toState > current_grammar->final_state))
     return BAD_ARGUMENT;
   fsg_model_trans_add(current_grammar, fromState, toState, 0, fsg_model_word_add(current_grammar, word));
   return SUCCESS;
 }
-int psStartImpl() {return 0;}
-int psStopImpl() {return 0;}
+
+int psStartImpl() {
+  if (psState != INITIALIZED)
+    return BAD_STATE;
+  if (ps_start_utt(recognizer, NULL) < 0) {
+    return RUNTIME_ERROR;
+  }
+  current_hyp = "";
+  psState = RECORDING;
+  return SUCCESS;
+}
+
+int psStopImpl() {
+  if (psState != RECORDING)
+    return BAD_STATE;
+  if (ps_end_utt(recognizer) < 0) {
+    return RUNTIME_ERROR;
+  }
+  const char* h = ps_get_hyp(recognizer, &score, &sentence_id);
+  current_hyp = (h == NULL) ? "" : h;
+  psState = INITIALIZED;
+  return SUCCESS;
+}
+
 int psProcessImpl(void* data, int length) {
+  if (psState != RECORDING)
+    return BAD_STATE;
+  if ((data == NULL) || (length == 0))
+    return RUNTIME_ERROR;
+  ps_process_raw(recognizer, (short int *) data, length, 0, 0);
+  /*
   short int * dataShort = (short int *) data;
   for (int i = 0; i< length ; ++i)
     std::cout << dataShort[i] << "\n";
-  return 0;
+  */
+  const char* h = ps_get_hyp(recognizer, &score, &sentence_id);
+  current_hyp = (h == NULL) ? "" : h;
+  return SUCCESS;
 }

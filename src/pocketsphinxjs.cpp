@@ -14,6 +14,9 @@ extern "C" {
   int psGetState() {
     return psGetStateImpl();
   }
+  const char* psGetHyp() {
+    return psGetHypImpl();
+  }
   int psInitialize() {
     return psInitializeImpl();
   }

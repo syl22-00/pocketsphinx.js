@@ -120,7 +120,11 @@ int psEndGrammarImpl() {
   }
   grammar_index++;
   ps_update_fsgset(recognizer);
-  fsg_set_select(grammar_set, grammar_names.back().c_str());
+  fsg_model_t * fsg = fsg_set_select(grammar_set, grammar_names.back().c_str());
+  if (fsg == NULL)
+    return RUNTIME_ERROR;
+  if (ps_update_fsgset(recognizer) == NULL)
+    return RUNTIME_ERROR;
   psState = INITIALIZED;
   return SUCCESS;
 }

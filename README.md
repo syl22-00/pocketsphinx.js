@@ -57,17 +57,25 @@ To pass binary data:
     $ process_data(buffer, 10)
 
 
-### 3. Acoustic model
+### 3. Live demo
+
+The file `webapp/live.html` is an example of live recognition using the web audio API. For now it seems like recognition is slower than real time on my machine so it crashes after a few iterations.
+
+### 4. Acoustic model
 
 The `am` folder contains an acoustic model trained with [SphinxTrain](http://cmusphinx.sourceforge.net/wiki/tutorialam). It is built using the [RM1](http://www.speech.cs.cmu.edu/databases/rm1/index.html) corpus, semi-continuous, with 200 senones.
 
-### 4. PocketSphinx
+### 5. PocketSphinx
 
 pocketsphinx.js ships with PocketSphinx and Sphinxbase version 0.8 without modification except that the `model` folder of PocketSphinx (which contains large acoustic and language models) was not included.
 
-### 5. License
+### 6. License
 
-PocketSphinx licensing terms are included in the `pocketsphinx` and `sphinxbase` folders. The remaining of this software is licensed under the MIT license:
+PocketSphinx licensing terms are included in the `pocketsphinx` and `sphinxbase` folders. 
+
+The files `webapp/js/audioRecorder.js` and `webapp/js/audioRecorderWorker.js` are based on [Recorder.js](https://github.com/mattdiamond/Recorderjs), which is under the MIT license (Copyright © 2013 Matt Diamond).
+
+The remaining of this software is licensed under the MIT license:
 
 Copyright © 2013 Sylvain Chevalier
 

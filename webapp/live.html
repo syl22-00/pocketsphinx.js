@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>PocketSphinx.js</title>
+  </head>
+  <body>
+    <button onclick="startRecording(this);">Start</button>
+    <button onclick="stopRecording(this);">Stop</button>
+    <h2>Output</h2>
+    <pre id="output"></pre>
+    <h2>Log</h2>
+    <pre id="log"></pre>
+
+    <script>
+      function __log(e, data) {
+      log.innerHTML += "\n" + e + " " + (data || '');
+      }
+
+      var audio_context;
+      var recorder;
+      var recognizer;
+
+      function startUserMedia(stream) {
+      var input = audio_context.createMediaStreamSource(stream);
+      input.connect(audio_context.destination);
+      recorder = new AudioRecorder(input, recognizer);
+      }
+
+      function startRecording(button) {
+      recorder && recorder.start();
+      }
+
+      function stopRecording(button) {
+      recorder && recorder.stop();
+      }
+
+      window.onload = function init() {
+      recognizer = new PS();
+      recognizer.initialize();
+      recognizer.addWord("ONE", "W AH N");
+      recognizer.addWord("TWO", "T UW");
+      recognizer.addWord("THREE", "TH R IY");
+      recognizer.addWord("FOUR", "F AO R");
+      recognizer.addWord("FIVE", "FIVE F AY V");
+      recognizer.addWord("SIX", "S IH K S");
+      recognizer.addWord("SEVEN", "S EH V AH N");
+      recognizer.addWord("EIGHT", "EY T");
+      recognizer.addWord("NINE", "N AY N");
+      recognizer.addWord("ZERO", "Z IH R OW");
+      recognizer.startGrammar(1);
+      recognizer.addTransition(0, 1, "ONE");
+      recognizer.addTransition(0, 1, "TWO");
+      recognizer.addTransition(0, 1, "THREE");
+      recognizer.addTransition(0, 1, "FOUR");
+      recognizer.addTransition(0, 1, "FIVE");
+      recognizer.addTransition(0, 1, "SIX");
+      recognizer.addTransition(0, 1, "SEVEN");
+      recognizer.addTransition(0, 1, "EIGHT");
+      recognizer.addTransition(0, 1, "NINE");
+      recognizer.addTransition(0, 1, "ZERO");
+      var output = recognizer.endGrammar();
+      __log("output is "+output);
+
+
+      try {
+      // webkit shim
+      window.AudioContext = window.AudioContext || window.webkitAudioContext;
+      navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+      window.URL = window.URL || window.webkitURL;
+      
+      audio_context = new AudioContext;
+      } catch (e) {
+      alert('No web audio support in this browser!');
+      }
+    
+      navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
+      __log('No live audio input: ' + e);
+      });
+
+      };
+    </script>
+    <script src="js/audioRecorder.js"></script>
+    <script src="js/webapp.js"></script>
+    <script src="js/pocketsphinx.js"></script>
+  </body>
+</html>

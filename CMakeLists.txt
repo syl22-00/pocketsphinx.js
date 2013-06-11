@@ -65,23 +65,14 @@ foreach(cfile ${pocketsphinx_src_files})
     set(pocketsphinx_srcs ${pocketsphinx_srcs} "${pocketsphinx_folder}/${cfile}")
 endforeach(cfile)
 
-set(test_lib "test")
-set(test_bc "test.bc")
-set(test_lib_html "test_lib.html")
-set(test_html "test.html")
-set(HTML_COMPILATION_FLAGS "-s" "\ ALLOW_MEMORY_GROWTH=1" "-s" "\ EXPORTED_FUNCTIONS=\"['_psInitialize','_psGetState','_psGetHyp','_psStartGrammar','_psEndGrammar','_psAddWord','_psAddTransition','_psStart','_psStop','_psProcess']\"")
-#set(HTML_COMPILATION_FLAGS "\ EXPORTED_FUNCTIONS=\"['_psInitialize','_psGetState','_psGetHyp','_psStartGrammar','_psEndGrammar','_psAddWord','_psAddTransition','_psStart','_psStop','_psProcess']\"")
-#set(HTML_COMPILATION_FLAGS_TITI "-s" "\ ALLOW_MEMORY_GROWTH=1" "--bind")
-set(HTML_COMPILATION_FLAGS_TEST "-s ALLOW_MEMORY_GROWTH=1")
+set(ps_lib_js "pocketsphinx.js")
+set(ps_lib "pocketsphinx")
+
+set(JS_COMPILATION_FLAGS "-s" "\ EXPORTED_FUNCTIONS=\"['_psInitialize','_psGetState','_psGetHyp','_psStartGrammar','_psEndGrammar','_psAddWord','_psAddTransition','_psStart','_psStop','_psProcess']\"")
 set(AM_RESOURCES "am")
 
-# This is the bytecode file, created as an executable
-#add_executable(${test_bc} "tests/main.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
-
 # Building a library to be used from JavaScript
-add_library(${test_lib} SHARED "src/pocketsphinxjs.cpp" "src/pocketsphinxjsImpl.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
-
-# add_library(titi SHARED "src/pocketsphinxInterface.cpp")
+add_library(${ps_lib} SHARED "src/pocketsphinxjs.cpp" "src/pocketsphinxjsImpl.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
 
 # Copying resources into the build tree
 file(COPY ${sphinx_root}/${AM_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
@@ -93,13 +84,7 @@ file(COPY ${sphinx_root}/${AM_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
 #  )
 
 # Adding custom target for the HTML for the library
-add_custom_target(${test_lib_html} ALL
-  COMMAND ${CMAKE_C_COMPILER} ${CMAKE_SHARED_LIBRARY_PREFIX}${test_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${test_lib_html} --embed-file ${AM_RESOURCES} ${HTML_COMPILATION_FLAGS}
-  DEPENDS ${test_lib}
-  )
-
-# Adding custom target for the HTML for the test
-add_custom_target(${test_html}
-  COMMAND ${CMAKE_C_COMPILER} ${test_bc} ${HTML_COMPILATION_FLAGS_TEST} -o ${test_html} --preload-file ${AM_RESOURCES}
-  DEPENDS ${test_bc}
+add_custom_target(${ps_lib_js} ALL
+  COMMAND ${CMAKE_C_COMPILER} ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -O2 -o ${ps_lib_js} --embed-file ${AM_RESOURCES} ${JS_COMPILATION_FLAGS}
+  DEPENDS ${ps_lib}
   )

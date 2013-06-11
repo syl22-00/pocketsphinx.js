@@ -76,7 +76,8 @@ int psInitializeImpl() {
     psState = UNINITIALIZED;
     return RUNTIME_ERROR;
   }
-  grammar_set = ps_get_fsgset(recognizer);
+  grammar_set = ps_update_fsgset(recognizer);
+  //grammar_set = ps_get_fsgset(recognizer);
   if (grammar_set == NULL) {
     std::cout << "grammar_set is NULL\n";
     psState = UNINITIALIZED;

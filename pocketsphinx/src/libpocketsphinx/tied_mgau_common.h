@@ -69,7 +69,8 @@
 
 
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ == 199901L)
-#define LOGMATH_INLINE inline
+//#define LOGMATH_INLINE inline
+#define LOGMATH_INLINE static inline
 #elif defined(__GNUC__)
 #define LOGMATH_INLINE static inline
 #elif defined(_MSC_VER)

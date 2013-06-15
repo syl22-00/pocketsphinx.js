@@ -7,6 +7,8 @@ PocketSphinx.js is an attempt to perform speech recognition entirely in the web 
 * convert a speech recognizer written in C ([PocketSphinx](http://cmusphinx.sourceforge.net/)) into JavaScript using [Emscripten](https://github.com/kripken/emscripten),
 * record audio using the Web audio API and send it to the recognizer.
 
+Try it on the project page: <http://syl22-00.github.io/pocketsphinx.js>
+
 ### 1. Compilation
 
 The build is generated with CMake and makes use of LLVM. It should work, for now, on Linux and Mac OSX:

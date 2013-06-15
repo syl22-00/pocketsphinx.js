@@ -10,6 +10,8 @@
 	psStart = Module.cwrap('psStart');
 	psStop = Module.cwrap('psStop');
 	psProcess = Module.cwrap('psProcess', 'number', ['number','number']);
+	c_malloc = Module.cwrap('malloc', 'number', ['number']);
+	c_free = Module.cwrap('free', 'number', ['number']);
 
 	this.getState = function() {
 	    return psGetState();
@@ -45,11 +47,12 @@
 	    return psStop();
 	}
 	this.process = function(array) {
-	    var buffer = Module.allocate(array.length,
-					 'i16', ALLOC_NORMAL);
+	    var buffer = c_malloc(2 * array.length);
 	    for (var i = 0 ; i < array.length ; i++)
 		setValue(buffer + i*2, array[i], 'i16');
-	    return psProcess(buffer, array.length);
+	    var out = psProcess(buffer, array.length);
+	    c_free(buffer);
+	    return out;
 	}
     }
 

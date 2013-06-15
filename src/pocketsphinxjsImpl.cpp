@@ -56,7 +56,7 @@ int psInitializeImpl() {
   // We will initialize the decoder with the provided acoustic model
   char * argv[] = {(char *)"-hmm", (char *)"am/rm1_200", (char *)"-bestpath", (char *)"no"};
   int argc = 4;
-  // First, create a config with the provided arguments
+  // First, create a config with the provided arguments  
   cmd_ln_t * config = cmd_ln_parse_r(NULL, cont_args_def, argc, argv, FALSE);
   if (config == NULL) {
     std::cout << "Config is NULL\n";
@@ -77,7 +77,6 @@ int psInitializeImpl() {
     return RUNTIME_ERROR;
   }
   grammar_set = ps_update_fsgset(recognizer);
-  //grammar_set = ps_get_fsgset(recognizer);
   if (grammar_set == NULL) {
     std::cout << "grammar_set is NULL\n";
     psState = UNINITIALIZED;

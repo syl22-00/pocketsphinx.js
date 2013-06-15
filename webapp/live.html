@@ -5,16 +5,25 @@
     <title>PocketSphinx.js</title>
   </head>
   <body>
-    <button onclick="startRecording(this);">Start</button>
-    <button onclick="stopRecording(this);">Stop</button>
+    <h2>PocketSphinx.js live demo</h2>
+    <ul>
+      <li>This demo works on Chrome with the Web Audio API, make sure it works for you and actually records audio (audio recording on Chrome does not work well on all configs).</li>
+      <li>Press "Start" and speak digits</li>
+    </ul>
+
+    <button id="startBtn">Start</button>
+    <button  id="stopBtn">Stop</button>
     <h2>Output</h2>
     <pre id="output"></pre>
-    <h2>Log</h2>
-    <pre id="log"></pre>
+    <h2>Error logs</h2>
+    <pre id="errors"></pre>
 
     <script>
-      function __log(e, data) {
-      log.innerHTML += "\n" + e + " " + (data || '');
+      function updateHyp(hyp) {
+      output.innerHTML = hyp;
+      }
+      function addLogs(logs) {
+      errors.innerHTML += "\n" + logs;
       }
 
       var audio_context;
@@ -27,11 +36,11 @@
       recorder = new AudioRecorder(input, recognizer);
       }
 
-      function startRecording(button) {
+      var startRecording = function() {
       recorder && recorder.start();
       }
 
-      function stopRecording(button) {
+      var stopRecording = function() {
       recorder && recorder.stop();
       }
 
@@ -42,29 +51,26 @@
       recognizer.addWord("TWO", "T UW");
       recognizer.addWord("THREE", "TH R IY");
       recognizer.addWord("FOUR", "F AO R");
-      recognizer.addWord("FIVE", "FIVE F AY V");
+      recognizer.addWord("FIVE", "F AY V");
       recognizer.addWord("SIX", "S IH K S");
       recognizer.addWord("SEVEN", "S EH V AH N");
       recognizer.addWord("EIGHT", "EY T");
       recognizer.addWord("NINE", "N AY N");
       recognizer.addWord("ZERO", "Z IH R OW");
       recognizer.startGrammar(1);
-      recognizer.addTransition(0, 1, "ONE");
-      recognizer.addTransition(0, 1, "TWO");
-      recognizer.addTransition(0, 1, "THREE");
-      recognizer.addTransition(0, 1, "FOUR");
-      recognizer.addTransition(0, 1, "FIVE");
-      recognizer.addTransition(0, 1, "SIX");
-      recognizer.addTransition(0, 1, "SEVEN");
-      recognizer.addTransition(0, 1, "EIGHT");
-      recognizer.addTransition(0, 1, "NINE");
-      recognizer.addTransition(0, 1, "ZERO");
-      var output = recognizer.endGrammar();
-      __log("output is "+output);
-
+      recognizer.addTransition(0, 0, "ONE");
+      recognizer.addTransition(0, 0, "TWO");
+      recognizer.addTransition(0, 0, "THREE");
+      recognizer.addTransition(0, 0, "FOUR");
+      recognizer.addTransition(0, 0, "FIVE");
+      recognizer.addTransition(0, 0, "SIX");
+      recognizer.addTransition(0, 0, "SEVEN");
+      recognizer.addTransition(0, 0, "EIGHT");
+      recognizer.addTransition(0, 0, "NINE");
+      recognizer.addTransition(0, 0, "ZERO");
+      recognizer.endGrammar();
 
       try {
-      // webkit shim
       window.AudioContext = window.AudioContext || window.webkitAudioContext;
       navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
       window.URL = window.URL || window.webkitURL;
@@ -75,8 +81,11 @@
       }
     
       navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
-      __log('No live audio input: ' + e);
+      addLogs('No live audio input: ' + e);
       });
+
+      document.getElementById('startBtn').onclick = startRecording;
+      document.getElementById('stopBtn').onclick = stopRecording;
 
       };
     </script>

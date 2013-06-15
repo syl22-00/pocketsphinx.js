@@ -68,7 +68,7 @@ endforeach(cfile)
 set(ps_lib_js "pocketsphinx.js")
 set(ps_lib "pocketsphinx")
 
-set(JS_COMPILATION_FLAGS "-s" "\ EXPORTED_FUNCTIONS=\"['_psInitialize','_psGetState','_psGetHyp','_psStartGrammar','_psEndGrammar','_psAddWord','_psAddTransition','_psStart','_psStop','_psProcess']\"")
+set(JS_COMPILATION_FLAGS "-s" "\ EXPORTED_FUNCTIONS=\"['_psInitialize','_psGetState','_psGetHyp','_psStartGrammar','_psEndGrammar','_psAddWord','_psAddTransition','_psStart','_psStop','_psProcess','_malloc','_free']\"")
 set(AM_RESOURCES "am")
 
 # Building a library to be used from JavaScript
@@ -76,12 +76,6 @@ add_library(${ps_lib} SHARED "src/pocketsphinxjs.cpp" "src/pocketsphinxjsImpl.cp
 
 # Copying resources into the build tree
 file(COPY ${sphinx_root}/${AM_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
-
-# Un-successful attempt with embind
-#add_custom_target(titi.html ALL
-#  COMMAND ${CMAKE_C_COMPILER} libtiti.so -o titi.js --embed-file ${AM_RESOURCES} ${HTML_COMPILATION_FLAGS_TITI}
-#  DEPENDS titi
-#  )
 
 # Adding custom target for the HTML for the library
 add_custom_target(${ps_lib_js} ALL

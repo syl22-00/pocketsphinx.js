@@ -7,10 +7,9 @@ PocketSphinx.js is an attempt to perform speech recognition entirely in the web 
 * convert a speech recognizer written in C ([PocketSphinx](http://cmusphinx.sourceforge.net/)) into JavaScript using [Emscripten](https://github.com/kripken/emscripten),
 * record audio using the Web audio API and send it to the recognizer.
 
+### 1. Compilation
 
-### 1. Compiling and executing the test application
-
-For now, we have a small test that initializes a PocketSphinx decoder. The build is generated with CMake and makes use of LLVM. It should work, for now, on Linux and Mac OSX:
+The build is generated with CMake and makes use of LLVM. It should work, for now, on Linux and Mac OSX:
 
     $ cd .../pocketsphinx.js # This folder
     $ mkdir build
@@ -49,7 +48,10 @@ To pass strings:
 
 To pass binary data:
 
-    $ var buffer = Module.allocate(10, 'i16', ALLOC_NORMAL) # Buffer for 10 short ints
+
+    $ var c_malloc = Module.cwrap('malloc', 'number', ['number']);
+    $ var c_free = Module.cwrap('free', 'number', ['number']);
+    $ var buffer = c_malloc(2 * 10); # Buffer for 10 short ints
     $ setValue(buffer, 0, 'i16')
     $ setValue(buffer+2, 1, 'i16')
     $ setValue(buffer+4, 2, 'i16')     # and so on...
@@ -59,7 +61,7 @@ To pass binary data:
 
 ### 3. Live demo
 
-The file `webapp/live.html` is an example of live recognition using the web audio API. For now it seems like recognition is slower than real time on my machine so it crashes after a few iterations.
+The file `webapp/live.html` is an example of live recognition using the web audio API. It works on Chrome, if the Web audio API actually works. Note that we observed the recorded audio to be silent on most (but not all) configuration we have tried.
 
 ### 4. Acoustic model
 

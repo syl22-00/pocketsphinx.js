@@ -4,7 +4,7 @@
 	recognizer = destination;
 	var config = cfg || {};
 	var bufferLen = config.bufferLen || 4096;
-	var outputBufferLength = config.outputBufferLength || 16000;
+	var outputBufferLength = config.outputBufferLength || 4000;
 	this.context = source.context;
 	// Todo, see if we can change input or output channel numbers
 	this.node = this.context.createJavaScriptNode(bufferLen, 2, 2);
@@ -50,7 +50,7 @@
 	worker.onmessage = function(e){
 	    if ((e.data.command == 'newBuffer') && recording) {
 		recognizer.process(e.data.data);
-		__log("New hyp: " + recognizer.getHyp());
+		updateHyp(recognizer.getHyp());
 	    }
 	};
 	source.connect(this.node);

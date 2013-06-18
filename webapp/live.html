@@ -55,7 +55,7 @@
 
       window.onload = function init() {
         updateStatus("Initializing Web Audio and speech recognizer, waiting for approval to access your microphone");
-        loadPS();
+        RecognizerLoader.load(recognizerLoaderCallback, updateStatus);
         try {
           window.AudioContext = window.AudioContext || window.webkitAudioContext;
           navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
@@ -79,51 +79,37 @@
       };
     </script>
     <script src="js/audioRecorder.js"></script>
-    <script src="js/webapp.js"></script>
+    <script src="js/recognizer.js"></script>
     <script>
       var recognizer;
       var recorder;
-      var loadPS = function() {
-          var psScript = document.createElement('script');
-          psScript.src = "js/pocketsphinx.js";
-          psScript.onload = psScript.onreadystatechange = function() {
-              var rs = this.readyState;
-              if (rs) if (rs != 'complete') if (rs != 'loaded') {
-                  updateStatus("Error while loading recognizer: " + e);
-                  return;
-              }
-              try {
-                  recognizer = new PS();
-                  recognizer.initialize();
-                  recognizer.addWord("ONE", "W AH N");
-                  recognizer.addWord("TWO", "T UW");
-                  recognizer.addWord("THREE", "TH R IY");
-                  recognizer.addWord("FOUR", "F AO R");
-                  recognizer.addWord("FIVE", "F AY V");
-                  recognizer.addWord("SIX", "S IH K S");
-                  recognizer.addWord("SEVEN", "S EH V AH N");
-                  recognizer.addWord("EIGHT", "EY T");
-                  recognizer.addWord("NINE", "N AY N");
-                  recognizer.addWord("ZERO", "Z IH R OW");
-                  recognizer.startGrammar(1);
-                  recognizer.addTransition(0, 0, "ONE");
-                  recognizer.addTransition(0, 0, "TWO");
-                  recognizer.addTransition(0, 0, "THREE");
-                  recognizer.addTransition(0, 0, "FOUR");
-                  recognizer.addTransition(0, 0, "FIVE");
-                  recognizer.addTransition(0, 0, "SIX");
-                  recognizer.addTransition(0, 0, "SEVEN");
-                  recognizer.addTransition(0, 0, "EIGHT");
-                  recognizer.addTransition(0, 0, "NINE");
-                  recognizer.addTransition(0, 0, "ZERO");
-                  recognizer.endGrammar();
-                  if (recorder) recorder.recognizer = recognizer;
-              } catch (e) {
-                  updateStatus("Error while initializing recognizer: " + e);
-              }
-              updateStatus("Speech recognizer ready");
-          };
-          var scr = document.getElementsByTagName('script')[0], par = scr.parentNode; par.insertBefore(psScript, scr);
+      var recognizerLoader = new RecognizerLoader();
+      var recognizerLoaderCallback = function() {
+            recognizer = new Recognizer();
+            recognizer.initialize();
+            recognizer.addWord("ONE", "W AH N");
+            recognizer.addWord("TWO", "T UW");
+            recognizer.addWord("THREE", "TH R IY");
+            recognizer.addWord("FOUR", "F AO R");
+            recognizer.addWord("FIVE", "F AY V");
+            recognizer.addWord("SIX", "S IH K S");
+            recognizer.addWord("SEVEN", "S EH V AH N");
+            recognizer.addWord("EIGHT", "EY T");
+            recognizer.addWord("NINE", "N AY N");
+            recognizer.addWord("ZERO", "Z IH R OW");
+            recognizer.startGrammar(1);
+            recognizer.addTransition(0, 0, "ONE");
+            recognizer.addTransition(0, 0, "TWO");
+            recognizer.addTransition(0, 0, "THREE");
+            recognizer.addTransition(0, 0, "FOUR");
+            recognizer.addTransition(0, 0, "FIVE");
+            recognizer.addTransition(0, 0, "SIX");
+            recognizer.addTransition(0, 0, "SEVEN");
+            recognizer.addTransition(0, 0, "EIGHT");
+            recognizer.addTransition(0, 0, "NINE");
+            recognizer.addTransition(0, 0, "ZERO");
+            recognizer.endGrammar();
+            if (recorder) recorder.recognizer = recognizer;
       };
     </script>
   </body>

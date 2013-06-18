@@ -1,5 +1,30 @@
 (function(window){
-    var PS = function() {
+
+    var RecognizerLoader = function() {
+	var this.load = function(callback, output) {
+	    var psScript = document.createElement('script');
+	    psScript.src = "js/pocketsphinx.js";
+	    psScript.onload = psScript.onreadystatechange = function(callback, output) {
+		var rs = this.readyState;
+		if (rs) if (rs != 'complete') if (rs != 'loaded') {
+			    if(output) output("ERROR");
+			    return;
+			}
+		try {
+		    if(callback) callback();
+		} catch(e) {
+		    if(output) output("ERROR-CALLBACK");
+		    return;
+		}
+		if(output) output("DONE");
+	    };
+	};
+	var scr = document.getElementsByTagName('script')[0], par = scr.parentNode; par.insertBefore(psScript, scr);
+    };
+
+    window.RecognizerLoader = RecognizerLoader;
+
+    var Recognizer = function() {
 	psGetState = Module.cwrap('psGetState');
 	psGetHyp = Module.cwrap('psGetHyp', 'string');
 	psInitialize = Module.cwrap('psInitialize');
@@ -56,5 +81,5 @@
 	}
     }
 
-    window.PS = PS;
+    window.Recognizer = Recognizer;
 })(window);

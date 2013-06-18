@@ -12,85 +12,119 @@
     </ul>
 
     <button id="startBtn">Start</button>
-    <button  id="stopBtn">Stop</button>
-    <h2>Output</h2>
-    <pre id="output"></pre>
-    <h2>Error logs</h2>
-    <pre id="errors"></pre>
+    <button id="stopBtn">Stop</button>
+    <span id="recording-indicator" style="border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; width: 20px; height: 20px; background: red;"></span>
+    <h2>Recognition Output</h2>
+    <div id="output" style="height:150px;overflow:auto;" >
+    </div>
+    <h2>Status</h2>
+    <div id="current-status">Loading page</div>
 
     <script>
       function updateHyp(hyp) {
-      output.innerHTML = hyp;
+        output.innerHTML = hyp;
       }
-      function addLogs(logs) {
-      errors.innerHTML += "\n" + logs;
+      function updateStatus(newStatus) {
+        document.getElementById('current-status').innerHTML += "<br/>" + newStatus;
+      }
+      function displayRecording(display) {
+        if (display) document.getElementById('recording-indicator').innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        else document.getElementById('recording-indicator').innerHTML = "";
       }
 
       var audio_context;
-      var recorder;
-      var recognizer;
 
       function startUserMedia(stream) {
-      var input = audio_context.createMediaStreamSource(stream);
-      input.connect(audio_context.destination);
-      recorder = new AudioRecorder(input, recognizer);
+        var input = audio_context.createMediaStreamSource(stream);
+        input.connect(audio_context.destination);
+        recorder = new AudioRecorder(input);
+        if (recognizer) recorder.recognizer = recognizer;
+        startBtn.disabled = false;
+        stopBtn.disabled = false;
+        updateStatus("Audio recorder ready");
       }
 
       var startRecording = function() {
-      recorder && recorder.start();
-      }
+        if (recorder && recorder.start()) displayRecording(true);
 
+      }
       var stopRecording = function() {
-      recorder && recorder.stop();
+        recorder && recorder.stop();
+        displayRecording(false);
       }
 
       window.onload = function init() {
-      recognizer = new PS();
-      recognizer.initialize();
-      recognizer.addWord("ONE", "W AH N");
-      recognizer.addWord("TWO", "T UW");
-      recognizer.addWord("THREE", "TH R IY");
-      recognizer.addWord("FOUR", "F AO R");
-      recognizer.addWord("FIVE", "F AY V");
-      recognizer.addWord("SIX", "S IH K S");
-      recognizer.addWord("SEVEN", "S EH V AH N");
-      recognizer.addWord("EIGHT", "EY T");
-      recognizer.addWord("NINE", "N AY N");
-      recognizer.addWord("ZERO", "Z IH R OW");
-      recognizer.startGrammar(1);
-      recognizer.addTransition(0, 0, "ONE");
-      recognizer.addTransition(0, 0, "TWO");
-      recognizer.addTransition(0, 0, "THREE");
-      recognizer.addTransition(0, 0, "FOUR");
-      recognizer.addTransition(0, 0, "FIVE");
-      recognizer.addTransition(0, 0, "SIX");
-      recognizer.addTransition(0, 0, "SEVEN");
-      recognizer.addTransition(0, 0, "EIGHT");
-      recognizer.addTransition(0, 0, "NINE");
-      recognizer.addTransition(0, 0, "ZERO");
-      recognizer.endGrammar();
-
-      try {
-      window.AudioContext = window.AudioContext || window.webkitAudioContext;
-      navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
-      window.URL = window.URL || window.webkitURL;
-      
-      audio_context = new AudioContext;
-      } catch (e) {
-      alert('No web audio support in this browser!');
-      }
-    
-      navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
-      addLogs('No live audio input: ' + e);
+        updateStatus("Initializing Web Audio and speech recognizer, waiting for approval to access your microphone");
+        loadPS();
+        try {
+          window.AudioContext = window.AudioContext || window.webkitAudioContext;
+          navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+          window.URL = window.URL || window.webkitURL;
+          audio_context = new AudioContext;
+        } catch (e) {
+          updateStatus("No web audio support in this browser");
+          return;
+        }
+        navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
+          updateStatus("No live audio input in this browser");
       });
 
-      document.getElementById('startBtn').onclick = startRecording;
-      document.getElementById('stopBtn').onclick = stopRecording;
+      var startBtn = document.getElementById('startBtn');
+      var stopBtn = document.getElementById('stopBtn');
+      startBtn.disabled = true;
+      stopBtn.disabled = true;
+      startBtn.onclick = startRecording;
+      stopBtn.onclick = stopRecording;
 
       };
     </script>
     <script src="js/audioRecorder.js"></script>
     <script src="js/webapp.js"></script>
-    <script src="js/pocketsphinx.js"></script>
+    <script>
+      var recognizer;
+      var recorder;
+      var loadPS = function() {
+          var psScript = document.createElement('script');
+          psScript.src = "js/pocketsphinx.js";
+          psScript.onload = psScript.onreadystatechange = function() {
+              var rs = this.readyState;
+              if (rs) if (rs != 'complete') if (rs != 'loaded') {
+                  updateStatus("Error while loading recognizer: " + e);
+                  return;
+              }
+              try {
+                  recognizer = new PS();
+                  recognizer.initialize();
+                  recognizer.addWord("ONE", "W AH N");
+                  recognizer.addWord("TWO", "T UW");
+                  recognizer.addWord("THREE", "TH R IY");
+                  recognizer.addWord("FOUR", "F AO R");
+                  recognizer.addWord("FIVE", "F AY V");
+                  recognizer.addWord("SIX", "S IH K S");
+                  recognizer.addWord("SEVEN", "S EH V AH N");
+                  recognizer.addWord("EIGHT", "EY T");
+                  recognizer.addWord("NINE", "N AY N");
+                  recognizer.addWord("ZERO", "Z IH R OW");
+                  recognizer.startGrammar(1);
+                  recognizer.addTransition(0, 0, "ONE");
+                  recognizer.addTransition(0, 0, "TWO");
+                  recognizer.addTransition(0, 0, "THREE");
+                  recognizer.addTransition(0, 0, "FOUR");
+                  recognizer.addTransition(0, 0, "FIVE");
+                  recognizer.addTransition(0, 0, "SIX");
+                  recognizer.addTransition(0, 0, "SEVEN");
+                  recognizer.addTransition(0, 0, "EIGHT");
+                  recognizer.addTransition(0, 0, "NINE");
+                  recognizer.addTransition(0, 0, "ZERO");
+                  recognizer.endGrammar();
+                  if (recorder) recorder.recognizer = recognizer;
+              } catch (e) {
+                  updateStatus("Error while initializing recognizer: " + e);
+              }
+              updateStatus("Speech recognizer ready");
+          };
+          var scr = document.getElementsByTagName('script')[0], par = scr.parentNode; par.insertBefore(psScript, scr);
+      };
+    </script>
   </body>
 </html>

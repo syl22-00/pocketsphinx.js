@@ -1,7 +1,7 @@
 (function(window){
     var AUDIO_RECORDER_WORKER = 'js/audioRecorderWorker.js';
-    var AudioRecorder = function(source, destination, cfg) {
-	recognizer = destination;
+    var AudioRecorder = function(source, cfg) {
+	this.recognizer = null;
 	var config = cfg || {};
 	var bufferLen = config.bufferLen || 4096;
 	var outputBufferLength = config.outputBufferLength || 4000;
@@ -18,7 +18,6 @@
 	});
 
 	var recording = false;
-	var recognizer;
 	this.node.onaudioprocess = function(e){
 	    if (!recording) return;
 	    worker.postMessage({
@@ -30,32 +29,35 @@
 	    });
 	};
 
-	this.start = function(){
-	    recognizer.start();
-	    recording = true;
+	this.start = function() {
+	    if (this.recognizer) {
+		this.recognizer.start();
+		recording = true;
+		return true;
+	    }
+	    return false;
 	};
 	
-	this.stop = function(){
-	    recording = false;
-	    recognizer.stop();
+	this.stop = function() {
+	    if (recording && this.recognizer) {
+		this.recognizer.stop();
+		recording = false;
+	    }
 	    worker.postMessage({ command: 'clear' });
 	};
 
-	this.cancel = function(){
-	    recording = false;
-	    recognizer.stop();
-	    worker.postMessage({ command: 'clear' });
+	this.cancel = function() {
+	    this.stop();
 	};
-
+	myClosure = this;
 	worker.onmessage = function(e){
 	    if ((e.data.command == 'newBuffer') && recording) {
-		recognizer.process(e.data.data);
-		updateHyp(recognizer.getHyp());
+		myClosure.recognizer.process(e.data.data);
+		updateHyp(myClosure.recognizer.getHyp());
 	    }
 	};
 	source.connect(this.node);
 	this.node.connect(this.context.destination);
     };
     window.AudioRecorder = AudioRecorder;
-
 })(window);

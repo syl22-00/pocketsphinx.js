@@ -23,17 +23,17 @@
     <script>
       function updateHyp(hyp) {
         output.innerHTML = hyp;
-      }
+      };
       function updateStatus(newStatus) {
         document.getElementById('current-status').innerHTML += "<br/>" + newStatus;
-      }
+      };
       function displayRecording(display) {
         if (display) document.getElementById('recording-indicator').innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
         else document.getElementById('recording-indicator').innerHTML = "";
-      }
-
+      };
+      var recognizerLoaderCallback;
+      var recognizerLoader;
       var audio_context;
-
       function startUserMedia(stream) {
         var input = audio_context.createMediaStreamSource(stream);
         input.connect(audio_context.destination);
@@ -55,7 +55,7 @@
 
       window.onload = function init() {
         updateStatus("Initializing Web Audio and speech recognizer, waiting for approval to access your microphone");
-        RecognizerLoader.load(recognizerLoaderCallback, updateStatus);
+        recognizerLoader.load(recognizerLoaderCallback, updateStatus);
         try {
           window.AudioContext = window.AudioContext || window.webkitAudioContext;
           navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
@@ -83,8 +83,8 @@
     <script>
       var recognizer;
       var recorder;
-      var recognizerLoader = new RecognizerLoader();
-      var recognizerLoaderCallback = function() {
+      recognizerLoader = new RecognizerLoader();
+      recognizerLoaderCallback = function() {
             recognizer = new Recognizer();
             recognizer.initialize();
             recognizer.addWord("ONE", "W AH N");

@@ -1,10 +1,12 @@
 (function(window){
 
     var RecognizerLoader = function() {
-	var this.load = function(callback, output) {
+	this.load = function(clb, opt) {
 	    var psScript = document.createElement('script');
 	    psScript.src = "js/pocketsphinx.js";
-	    psScript.onload = psScript.onreadystatechange = function(callback, output) {
+	    var callback = clb;
+	    var output = opt;
+	    psScript.onload = psScript.onreadystatechange = function() {
 		var rs = this.readyState;
 		if (rs) if (rs != 'complete') if (rs != 'loaded') {
 			    if(output) output("ERROR");
@@ -18,8 +20,8 @@
 		}
 		if(output) output("DONE");
 	    };
+	    var scr = document.getElementsByTagName('script')[0], par = scr.parentNode; par.insertBefore(psScript, scr);
 	};
-	var scr = document.getElementsByTagName('script')[0], par = scr.parentNode; par.insertBefore(psScript, scr);
     };
 
     window.RecognizerLoader = RecognizerLoader;

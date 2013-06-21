@@ -21,18 +21,29 @@
     <div id="current-status">Loading page</div>
 
     <script>
+      var recognizer = null;
+      var recorder = null;
+      function spawnWorker(workerurl, onReady) {
+          var recognizerWorker = new Worker(workerurl);
+          recognizerWorker.onmessage = function(event) {
+            onReady(recognizerWorker);
+          };
+          recognizerWorker.postMessage();
+      };
+
       function updateHyp(hyp) {
         output.innerHTML = hyp;
       };
+
       function updateStatus(newStatus) {
         document.getElementById('current-status').innerHTML += "<br/>" + newStatus;
       };
+
       function displayRecording(display) {
         if (display) document.getElementById('recording-indicator').innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
         else document.getElementById('recording-indicator').innerHTML = "";
       };
-      var recognizerLoaderCallback;
-      var recognizerLoader;
+
       var audio_context;
       function startUserMedia(stream) {
         var input = audio_context.createMediaStreamSource(stream);
@@ -46,6 +57,7 @@
 
       var startRecording = function() {
         if (recorder && recorder.start()) displayRecording(true);
+      else console.log("Not starting");
 
       }
       var stopRecording = function() {
@@ -53,9 +65,34 @@
         displayRecording(false);
       }
 
+      var initRecognizer = function(worker) {
+         worker.postMessage({ command: 'initialize' });
+      };
+
+      var feedRecognizer = function(worker) {
+         worker.postMessage({ command: 'addWords', data: [["ONE", "W AH N"], ["TWO", "T UW"], ["THREE", "TH R IY"], ["FOUR", "F AO R"], ["FIVE", "F AY V"], ["SIX", "S IH K S"], ["SEVEN", "S EH V AH N"], ["EIGHT", "EY T"], ["NINE", "N AY N"], ["ZERO", "Z IH R OW"]]});
+         var grammar = {numStates: 1, transitions: [{from: 0, to: 0, word: "ONE"},{from: 0, to: 0, word: "TWO"},{from: 0, to: 0, word: "THREE"},{from: 0, to: 0, word: "FOUR"},{from: 0, to: 0, word: "FIVE"},{from: 0, to: 0, word: "SIX"},{from: 0, to: 0, word: "SEVEN"},{from: 0, to: 0, word: "EIGHT"},{from: 0, to: 0, word: "NINE"},{from: 0, to: 0, word: "ZERO"}]};
+         worker.postMessage({command: 'addGrammar', data: grammar});
+      };
+
       window.onload = function init() {
         updateStatus("Initializing Web Audio and speech recognizer, waiting for approval to access your microphone");
-        recognizerLoader.load(recognizerLoaderCallback, updateStatus);
+        spawnWorker("js/recognizer.js", function(worker) {
+            worker.onmessage = function(e) {
+                if (e.data.hasOwnProperty('status') && e.data.hasOwnProperty('command')) {
+                      if ((e.data.command == "initialize") && (e.data.status == "done")) {
+                        updateStatus("Recognizer is ready");
+                        recognizer = worker;
+                        if (recorder) recorder.recognizer = recognizer;
+                        feedRecognizer(worker);
+                      }
+                }
+                if (e.data.hasOwnProperty('hyp')) {
+                       updateHyp(e.data.hyp);
+                }
+            };
+            initRecognizer(worker);
+        });
         try {
           window.AudioContext = window.AudioContext || window.webkitAudioContext;
           navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
@@ -75,42 +112,8 @@
       stopBtn.disabled = true;
       startBtn.onclick = startRecording;
       stopBtn.onclick = stopRecording;
-
       };
     </script>
     <script src="js/audioRecorder.js"></script>
-    <script src="js/recognizer.js"></script>
-    <script>
-      var recognizer;
-      var recorder;
-      recognizerLoader = new RecognizerLoader();
-      recognizerLoaderCallback = function() {
-            recognizer = new Recognizer();
-            recognizer.initialize();
-            recognizer.addWord("ONE", "W AH N");
-            recognizer.addWord("TWO", "T UW");
-            recognizer.addWord("THREE", "TH R IY");
-            recognizer.addWord("FOUR", "F AO R");
-            recognizer.addWord("FIVE", "F AY V");
-            recognizer.addWord("SIX", "S IH K S");
-            recognizer.addWord("SEVEN", "S EH V AH N");
-            recognizer.addWord("EIGHT", "EY T");
-            recognizer.addWord("NINE", "N AY N");
-            recognizer.addWord("ZERO", "Z IH R OW");
-            recognizer.startGrammar(1);
-            recognizer.addTransition(0, 0, "ONE");
-            recognizer.addTransition(0, 0, "TWO");
-            recognizer.addTransition(0, 0, "THREE");
-            recognizer.addTransition(0, 0, "FOUR");
-            recognizer.addTransition(0, 0, "FIVE");
-            recognizer.addTransition(0, 0, "SIX");
-            recognizer.addTransition(0, 0, "SEVEN");
-            recognizer.addTransition(0, 0, "EIGHT");
-            recognizer.addTransition(0, 0, "NINE");
-            recognizer.addTransition(0, 0, "ZERO");
-            recognizer.endGrammar();
-            if (recorder) recorder.recognizer = recognizer;
-      };
-    </script>
   </body>
 </html>

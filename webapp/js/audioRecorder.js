@@ -31,7 +31,7 @@
 
 	this.start = function() {
 	    if (this.recognizer) {
-		this.recognizer.start();
+                recognizer.postMessage({ command: 'start' });
 		recording = true;
 		return true;
 	    }
@@ -40,7 +40,7 @@
 	
 	this.stop = function() {
 	    if (recording && this.recognizer) {
-		this.recognizer.stop();
+                recognizer.postMessage({ command: 'stop' });
 		recording = false;
 	    }
 	    worker.postMessage({ command: 'clear' });
@@ -52,8 +52,7 @@
 	myClosure = this;
 	worker.onmessage = function(e){
 	    if ((e.data.command == 'newBuffer') && recording) {
-		myClosure.recognizer.process(e.data.data);
-		updateHyp(myClosure.recognizer.getHyp());
+                myClosure.recognizer.postMessage({ command: 'process', data: e.data.data });
 	    }
 	};
 	source.connect(this.node);

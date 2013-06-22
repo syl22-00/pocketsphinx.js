@@ -21,18 +21,28 @@
     <div id="current-status">Loading page</div>
 
     <script>
-      var recognizer = null;
-      var recorder = null;
+      var recognizer, recorder, callbackManager, audio_context;
+      var recorderReady = recognizerReady = false;
+      function postRecognizerJob(message, callback) {
+        var msg = message || {};
+        if(callbackManager) msg.callbackId = callbackManager.add(callback);
+        if (recognizer) recognizer.postMessage(msg);
+      };
+
       function spawnWorker(workerurl, onReady) {
-          var recognizerWorker = new Worker(workerurl);
-          recognizerWorker.onmessage = function(event) {
-            onReady(recognizerWorker);
+          recognizer = new Worker(workerurl);
+          recognizer.onmessage = function(event) {
+            onReady(recognizer);
           };
-          recognizerWorker.postMessage();
+          recognizer.postMessage();
       };
 
       function updateHyp(hyp) {
         output.innerHTML = hyp;
+      };
+
+      function updateUI() {
+        if (recorder && recognizer) startBtn.disabled = stopBtn.disabled = false;
       };
 
       function updateStatus(newStatus) {
@@ -44,54 +54,66 @@
         else document.getElementById('recording-indicator').innerHTML = "";
       };
 
-      var audio_context;
       function startUserMedia(stream) {
         var input = audio_context.createMediaStreamSource(stream);
         input.connect(audio_context.destination);
         recorder = new AudioRecorder(input);
         if (recognizer) recorder.recognizer = recognizer;
-        startBtn.disabled = false;
-        stopBtn.disabled = false;
+        updateUI();
         updateStatus("Audio recorder ready");
-      }
+      };
 
       var startRecording = function() {
         if (recorder && recorder.start()) displayRecording(true);
-      else console.log("Not starting");
+      };
 
-      }
       var stopRecording = function() {
         recorder && recorder.stop();
         displayRecording(false);
-      }
-
-      var initRecognizer = function(worker) {
-         worker.postMessage({ command: 'initialize' });
       };
 
-      var feedRecognizer = function(worker) {
-         worker.postMessage({ command: 'addWords', data: [["ONE", "W AH N"], ["TWO", "T UW"], ["THREE", "TH R IY"], ["FOUR", "F AO R"], ["FIVE", "F AY V"], ["SIX", "S IH K S"], ["SEVEN", "S EH V AH N"], ["EIGHT", "EY T"], ["NINE", "N AY N"], ["ZERO", "Z IH R OW"]]});
-         var grammar = {numStates: 1, transitions: [{from: 0, to: 0, word: "ONE"},{from: 0, to: 0, word: "TWO"},{from: 0, to: 0, word: "THREE"},{from: 0, to: 0, word: "FOUR"},{from: 0, to: 0, word: "FIVE"},{from: 0, to: 0, word: "SIX"},{from: 0, to: 0, word: "SEVEN"},{from: 0, to: 0, word: "EIGHT"},{from: 0, to: 0, word: "NINE"},{from: 0, to: 0, word: "ZERO"}]};
-         worker.postMessage({command: 'addGrammar', data: grammar});
+      var recognizerReady = function() {
+           updateStatus("Recognizer ready");
+           updateUI();
+      };
+
+      var feedGrammar = function(g) {
+           postRecognizerJob({command: 'addGrammar', data: g},
+                              recognizerReady);
+      };
+
+      var feedWords = function(words) {
+           postRecognizerJob({command: 'addWords', data: words},
+                        function() {feedGrammar(grammar);});
+      };
+
+      var initRecognizer = function() {
+          postRecognizerJob({command: 'initialize'},
+                            function() {
+                                        if (recorder) recorder.recognizer = recognizer;
+                                        feedWords(wordList);});
       };
 
       window.onload = function init() {
         updateStatus("Initializing Web Audio and speech recognizer, waiting for approval to access your microphone");
+        callbackManager = new CallbackManager();
         spawnWorker("js/recognizer.js", function(worker) {
             worker.onmessage = function(e) {
-                if (e.data.hasOwnProperty('status') && e.data.hasOwnProperty('command')) {
-                      if ((e.data.command == "initialize") && (e.data.status == "done")) {
-                        updateStatus("Recognizer is ready");
-                        recognizer = worker;
-                        if (recorder) recorder.recognizer = recognizer;
-                        feedRecognizer(worker);
-                      }
+                if (e.data.hasOwnProperty('id')) {
+                  var clb = callbackManager.get(e.data['id']);
+                  if(clb) clb();
                 }
                 if (e.data.hasOwnProperty('hyp')) {
-                       updateHyp(e.data.hyp);
+                  var newHyp = e.data.hyp;
+                  if (e.data.hasOwnProperty('final') &&  e.data.final)
+                  newHyp = "Final: " + newHyp;
+                  updateHyp(newHyp);
+                }
+                if (e.data.hasOwnProperty('status') && (e.data.status == "error")) {
+                  updateStatus("Error in " + e.data.command + " with code " + e.data.code);
                 }
             };
-            initRecognizer(worker);
+            initRecognizer();
         });
         try {
           window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -113,7 +135,10 @@
       startBtn.onclick = startRecording;
       stopBtn.onclick = stopRecording;
       };
+      var wordList = [["ONE", "W AH N"], ["TWO", "T UW"], ["THREE", "TH R IY"], ["FOUR", "F AO R"], ["FIVE", "F AY V"], ["SIX", "S IH K S"], ["SEVEN", "S EH V AH N"], ["EIGHT", "EY T"], ["NINE", "N AY N"], ["ZERO", "Z IH R OW"]];
+      var grammar = {numStates: 1, transitions: [{from: 0, to: 0, word: "ONE"},{from: 0, to: 0, word: "TWO"},{from: 0, to: 0, word: "THREE"},{from: 0, to: 0, word: "FOUR"},{from: 0, to: 0, word: "FIVE"},{from: 0, to: 0, word: "SIX"},{from: 0, to: 0, word: "SEVEN"},{from: 0, to: 0, word: "EIGHT"},{from: 0, to: 0, word: "NINE"},{from: 0, to: 0, word: "ZERO"}]};
     </script>
     <script src="js/audioRecorder.js"></script>
+    <script src="js/callbackManager.js"></script>
   </body>
 </html>

@@ -8,13 +8,13 @@ function startup(onMessage) {
 startup(function(event) {
     switch(event.data.command){
     case 'initialize':
-	initialize();
+	initialize(event.data.callbackId);
 	break;
     case 'addWords':
-	addWords(event.data.data);
+	addWords(event.data.data, event.data.callbackId);
 	break;
     case 'addGrammar':
-	addGrammar(event.data.data);
+	addGrammar(event.data.data, event.data.callbackId);
 	break;
     case 'start':
 	start();
@@ -30,7 +30,13 @@ startup(function(event) {
 
 importScripts('pocketsphinx.js');
 
-var recognizer = null;
+var recognizer;
+var mySelf = this;
+
+var post = function(message) {
+    mySelf.postMessage(message);
+};
+
 
 var Recognizer = function() {
     psGetState = Module.cwrap('psGetState');
@@ -74,7 +80,7 @@ var Recognizer = function() {
 	return psAddTransition(from, to, word_ptr);
     }
     this.start = function() {
-	    return psStart();
+	return psStart();
     }
     this.stop = function() {
 	return psStop();
@@ -89,41 +95,42 @@ var Recognizer = function() {
     }
 };
 
-function initialize() {
+function initialize(clbId) {
     if (recognizer == null)
         recognizer = new Recognizer();
     var initStatus = recognizer.initialize();
     if (initStatus != 0) {
-	this.postMessage({status: "error", command: "initialize", code: initStatus});
+	post({status: "error", command: "initialize", code: initStatus});
     } else {
-	this.postMessage({status: "done", command: "initialize"});
+	post({status: "done", command: "initialize", id: clbId});
     }
 };
 
-function addWords(data) {
+function addWords(data, clbId) {
     if (recognizer) {
 	while (data.length > 0) {
 	    var w = data.pop();
 	    if (w.length == 2) {
 		var output = recognizer.addWord(w[0], w[1]);
 		if (output != 0)
-		    this.postMessage({status: "error", command: "addWords", code: output});
+		    post({status: "error", command: "addWords", code: output});
 	    } else { 
-		this.postMessage({status: "error", command: "addWords", code: "js-data"});
+		post({status: "error", command: "addWords", code: "js-data"});
 	    }
 	}
+        post({id: clbId});
     } else {
-	this.postMessage({status: "error", command: "addWords", code: "js-no-recognizer"});
+	post({status: "error", command: "addWords", code: "js-no-recognizer"});
     }
 };    
 
-function addGrammar(data) {
+function addGrammar(data, clbId) {
     var output;
     if (recognizer) {
 	if (data.hasOwnProperty('numStates') && data.numStates > 0) {
 	    output = recognizer.startGrammar(data.numStates);
 	    if (output != 0) {
-		this.postMessage({status: "error", command: "addGrammar", code: output});
+		post({status: "error", command: "addGrammar", code: output});
 		return;
 	    }
 	    if (data.hasOwnProperty('transitions') && (data.transitions.length > 0)) {
@@ -132,27 +139,27 @@ function addGrammar(data) {
 		    if (t.hasOwnProperty('from') && t.hasOwnProperty('to') && t.hasOwnProperty('word')) {
 			output = recognizer.addTransition(t.from, t.to, t.word);
 			if (output != 0) {
-			    this.postMessage({status: "error", command: "addGrammar", code: output});
+			    post({status: "error", command: "addGrammar", code: output});
 			    return;
 			}
 		    } else {
-			this.postMessage({status: "error", command: "addGrammar", code: "js-data"});
+			post({status: "error", command: "addGrammar", code: "js-data"});
 			return;
 		    }
 		}
 	    } else {
-		this.postMessage({status: "error", command: "addGrammar", code: "js-data"});
+		post({status: "error", command: "addGrammar", code: "js-data"});
 		return;
 
 	    }
 	    recognizer.endGrammar();
 	} else {
-	    this.postMessage({status: "error", command: "addGrammar", code: "js-data"});
+	    post({status: "error", command: "addGrammar", code: "js-data"});
 	    return;
 	}
-	this.postMessage({status: "done", command: "addGrammar"});
+	post({id: clbId, status: "done", command: "addGrammar"});
     } else {
-	this.postMessage({status: "error", command: "addGrammar", code: "js-no-recognizer"});
+	post({status: "error", command: "addGrammar", code: "js-no-recognizer"});
     }
 };
 
@@ -160,9 +167,9 @@ function start() {
     if (recognizer) {
 	var output = recognizer.start();
 	if (output != 0)
-	    this.postMessage({status: "error", command: "start", code: output});
+	    post({status: "error", command: "start", code: output});
     } else {
-	this.postMessage({status: "error", command: "start", code: "js-no-recognizer"});
+	post({status: "error", command: "start", code: "js-no-recognizer"});
     }
 };
 
@@ -170,9 +177,11 @@ function stop() {
     if (recognizer) {
 	var output = recognizer.stop();
 	if (output != 0)
-	    this.postMessage({status: "error", command: "stop", code: output});
+	    post({status: "error", command: "stop", code: output});
+	else 
+	    post({hyp: recognizer.getHyp(), final: true});
     } else {
-	this.postMessage({status: "error", command: "stop", code: "js-no-recognizer"});
+	post({status: "error", command: "stop", code: "js-no-recognizer"});
     }
 };
 
@@ -180,10 +189,10 @@ function process(array) {
     if (recognizer) {
 	var output = recognizer.process(array);
 	if (output != 0)
-	    this.postMessage({status: "error", command: "process", code: output});
+	    postMessage({status: "error", command: "process", code: output});
 	else 
-	    this.postMessage({hyp: recognizer.getHyp()}); 
+	    post({hyp: recognizer.getHyp()}); 
     } else {
-	this.postMessage({status: "error", command: "process", code: "js-no-recognizer"});
+	post({status: "error", command: "process", code: "js-no-recognizer"});
     }
 };

@@ -157,6 +157,14 @@ aside a.button {
   font-size: 21px;
 }
 
+.reco-output {
+  font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
+  color: #222;
+  margin-bottom: 30px;
+  font-size: 13px;
+  overflow: auto;
+}
+
 code, pre {
   font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
   color: #222;
@@ -334,10 +342,12 @@ ol li {
   list-style: decimal inside;
   padding-left: 3px;
 }
-
+dt {
+  font-weight: bold;
+  font-size: 1.2em;
+}
 dl dd {
-  font-style: italic;
-  font-weight: 100;
+/*  font-style: italic; */
 }
 
 footer {

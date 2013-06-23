@@ -29,9 +29,9 @@
 	    });
 	};
 
-	this.start = function() {
+	this.start = function(data) {
 	    if (this.recognizer) {
-                recognizer.postMessage({ command: 'start' });
+                recognizer.postMessage({ command: 'start', data: data });
 		recording = true;
 		return true;
 	    }

@@ -17,7 +17,7 @@ startup(function(event) {
 	addGrammar(event.data.data, event.data.callbackId);
 	break;
     case 'start':
-	start();
+	start(event.data.data);
 	break;
     case 'stop':
 	stop();
@@ -43,7 +43,8 @@ var Recognizer = function() {
     psGetHyp = Module.cwrap('psGetHyp', 'string');
     psInitialize = Module.cwrap('psInitialize');
     psStartGrammar = Module.cwrap('psStartGrammar', 'number', ['number']);
-    psEndGrammar = Module.cwrap('psEndGrammar');
+    psEndGrammar = Module.cwrap('psEndGrammar', 'number', ['number']);
+    psSwitchGrammar = Module.cwrap('psSwitchGrammar', 'number', ['number']);
     psAddWord = Module.cwrap('psAddWord', 'number', ['number','number']);
     psAddTransition = Module.cwrap('psAddTransition', 'number', ['number','number','number']);
     psStart = Module.cwrap('psStart');
@@ -65,7 +66,14 @@ var Recognizer = function() {
 	return psStartGrammar(numStates);
     }
     this.endGrammar = function() {
-	return psEndGrammar();
+	var id = c_malloc(4);
+	var out = psEndGrammar(id);
+	var retValue = [out, getValue(id, 'i32')];
+	c_free(id);
+	return retValue;
+    }
+    this.switchGrammar = function(id) {
+	return psSwitchGrammar(id);
     }
     this.addWord = function(word, pronunciation) {
 	var word_ptr = Module.allocate(intArrayFromString(word),
@@ -100,7 +108,7 @@ function initialize(clbId) {
         recognizer = new Recognizer();
     var initStatus = recognizer.initialize();
     if (initStatus != 0) {
-	post({status: "error", command: "initialize", code: initStatus});
+	postMessage({status: "error", command: "initialize", code: initStatus});
     } else {
 	post({status: "done", command: "initialize", id: clbId});
     }
@@ -113,24 +121,24 @@ function addWords(data, clbId) {
 	    if (w.length == 2) {
 		var output = recognizer.addWord(w[0], w[1]);
 		if (output != 0)
-		    post({status: "error", command: "addWords", code: output});
+		    postMessage({status: "error", command: "addWords", code: output});
 	    } else { 
-		post({status: "error", command: "addWords", code: "js-data"});
+		postMessage({status: "error", command: "addWords", code: "js-data"});
 	    }
 	}
-        post({id: clbId});
+        postMessage({id: clbId});
     } else {
-	post({status: "error", command: "addWords", code: "js-no-recognizer"});
+	postMessage({status: "error", command: "addWords", code: "js-no-recognizer"});
     }
-};    
+};
 
 function addGrammar(data, clbId) {
-    var output;
+    var output, id;
     if (recognizer) {
 	if (data.hasOwnProperty('numStates') && data.numStates > 0) {
 	    output = recognizer.startGrammar(data.numStates);
 	    if (output != 0) {
-		post({status: "error", command: "addGrammar", code: output});
+		postMessage({status: "error", command: "addGrammar", code: output});
 		return;
 	    }
 	    if (data.hasOwnProperty('transitions') && (data.transitions.length > 0)) {
@@ -139,37 +147,46 @@ function addGrammar(data, clbId) {
 		    if (t.hasOwnProperty('from') && t.hasOwnProperty('to') && t.hasOwnProperty('word')) {
 			output = recognizer.addTransition(t.from, t.to, t.word);
 			if (output != 0) {
-			    post({status: "error", command: "addGrammar", code: output});
+			    postMessage({status: "error", command: "addGrammar", code: output});
 			    return;
 			}
 		    } else {
-			post({status: "error", command: "addGrammar", code: "js-data"});
+			postMessage({status: "error", command: "addGrammar", code: "js-data"});
 			return;
 		    }
 		}
 	    } else {
-		post({status: "error", command: "addGrammar", code: "js-data"});
+		postMessage({status: "error", command: "addGrammar", code: "js-data"});
 		return;
-
 	    }
-	    recognizer.endGrammar();
+	    output = recognizer.endGrammar();
+	    id = output[1];
+	    if (output[0] != 0) {
+		postMessage({status: "error", command: "endGrammar", code: output[0]});
+	    }
 	} else {
-	    post({status: "error", command: "addGrammar", code: "js-data"});
+	    postMessage({status: "error", command: "addGrammar", code: "js-data"});
 	    return;
 	}
-	post({id: clbId, status: "done", command: "addGrammar"});
+	postMessage({id: clbId, data: id, status: "done", command: "addGrammar"});
     } else {
-	post({status: "error", command: "addGrammar", code: "js-no-recognizer"});
+	postMessage({status: "error", command: "addGrammar", code: "js-no-recognizer"});
     }
 };
 
-function start() {
+function start(id) {
     if (recognizer) {
-	var output = recognizer.start();
+	var output;
+	if (id) {
+	    output = recognizer.switchGrammar(id);
+	    if (output != 0)
+		postMessage({status: "error", command: "switchgrammar", code: output});
+	}
+	output = recognizer.start();
 	if (output != 0)
-	    post({status: "error", command: "start", code: output});
+	    postMessage({status: "error", command: "start", code: output});
     } else {
-	post({status: "error", command: "start", code: "js-no-recognizer"});
+	postMessage({status: "error", command: "start", code: "js-no-recognizer"});
     }
 };
 
@@ -177,11 +194,11 @@ function stop() {
     if (recognizer) {
 	var output = recognizer.stop();
 	if (output != 0)
-	    post({status: "error", command: "stop", code: output});
+	    postMessage({status: "error", command: "stop", code: output});
 	else 
-	    post({hyp: recognizer.getHyp(), final: true});
+	    postMessage({hyp: recognizer.getHyp(), final: true});
     } else {
-	post({status: "error", command: "stop", code: "js-no-recognizer"});
+	postMessage({status: "error", command: "stop", code: "js-no-recognizer"});
     }
 };
 
@@ -191,8 +208,8 @@ function process(array) {
 	if (output != 0)
 	    postMessage({status: "error", command: "process", code: output});
 	else 
-	    post({hyp: recognizer.getHyp()}); 
+	    postMessage({hyp: recognizer.getHyp()}); 
     } else {
-	post({status: "error", command: "process", code: "js-no-recognizer"});
+	postMessage({status: "error", command: "process", code: "js-no-recognizer"});
     }
 };

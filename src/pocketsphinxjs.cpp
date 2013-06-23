@@ -23,8 +23,11 @@ extern "C" {
   int psStartGrammar(int numStates) {
     return psStartGrammarImpl(numStates);
   }
-  int psEndGrammar() {
-    return psEndGrammarImpl();
+  int psEndGrammar(int32_t *id) {
+    return psEndGrammarImpl(id);
+  }
+  int psSwitchGrammar(int id) {
+    return psSwitchGrammarImpl(id);
   }
   int psAddWord(char *word, char *pronunciation) {
     return psAddWordImpl(word, pronunciation);

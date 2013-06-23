@@ -10,7 +10,7 @@
       <li>This demo works on Chrome with the Web Audio API, make sure it works for you and actually records audio (audio recording on Chrome does not work well on all configs).</li>
       <li>Press "Start" and speak digits</li>
     </ul>
-
+    <select id="grammars"></select><br/>
     <button id="startBtn">Start</button>
     <button id="stopBtn">Stop</button>
     <span id="recording-indicator" style="border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; width: 20px; height: 20px; background: red;"></span>
@@ -64,7 +64,8 @@
       };
 
       var startRecording = function() {
-        if (recorder && recorder.start()) displayRecording(true);
+      var id = document.getElementById('grammars').value;
+      if (recorder && recorder.start(id)) displayRecording(true);
       };
 
       var stopRecording = function() {
@@ -73,18 +74,36 @@
       };
 
       var recognizerReady = function() {
-           updateStatus("Recognizer ready");
+           updateGrammars();
            updateUI();
+           updateStatus("Recognizer ready");
       };
 
-      var feedGrammar = function(g) {
-           postRecognizerJob({command: 'addGrammar', data: g},
-                              recognizerReady);
+      var updateGrammars = function() {
+        var selectTag = document.getElementById('grammars');
+        for (var i = 0 ; i < grammarIds.length ; i++) {
+            var newElt = document.createElement('option');
+            newElt.value=grammarIds[i].id;
+            newElt.innerHTML = grammarIds[i].title;
+            selectTag.appendChild(newElt);
+        }                          
+      };
+
+
+      var feedGrammar = function(g, index, id) {
+        if (id && (grammarIds.length > 0)) grammarIds[0].id = id.id;
+        if (index < g.length) {
+          grammarIds.unshift({title: g[index].title})
+	  postRecognizerJob({command: 'addGrammar', data: g[index].g},
+                             function(id) {feedGrammar(grammars, index + 1, {id:id});});
+        } else {
+          recognizerReady();
+        }
       };
 
       var feedWords = function(words) {
            postRecognizerJob({command: 'addWords', data: words},
-                        function() {feedGrammar(grammar);});
+                        function() {feedGrammar(grammars, 0);});
       };
 
       var initRecognizer = function() {
@@ -101,7 +120,9 @@
             worker.onmessage = function(e) {
                 if (e.data.hasOwnProperty('id')) {
                   var clb = callbackManager.get(e.data['id']);
-                  if(clb) clb();
+                  var data = {};
+                  if( e.data.hasOwnProperty('data')) data = e.data.data;
+                  if(clb) clb(data);
                 }
                 if (e.data.hasOwnProperty('hyp')) {
                   var newHyp = e.data.hyp;
@@ -135,8 +156,14 @@
       startBtn.onclick = startRecording;
       stopBtn.onclick = stopRecording;
       };
-      var wordList = [["ONE", "W AH N"], ["TWO", "T UW"], ["THREE", "TH R IY"], ["FOUR", "F AO R"], ["FIVE", "F AY V"], ["SIX", "S IH K S"], ["SEVEN", "S EH V AH N"], ["EIGHT", "EY T"], ["NINE", "N AY N"], ["ZERO", "Z IH R OW"]];
-      var grammar = {numStates: 1, transitions: [{from: 0, to: 0, word: "ONE"},{from: 0, to: 0, word: "TWO"},{from: 0, to: 0, word: "THREE"},{from: 0, to: 0, word: "FOUR"},{from: 0, to: 0, word: "FIVE"},{from: 0, to: 0, word: "SIX"},{from: 0, to: 0, word: "SEVEN"},{from: 0, to: 0, word: "EIGHT"},{from: 0, to: 0, word: "NINE"},{from: 0, to: 0, word: "ZERO"}]};
+      var wordList = [["ONE", "W AH N"], ["TWO", "T UW"], ["THREE", "TH R IY"], ["FOUR", "F AO R"], ["FIVE", "F AY V"], ["SIX", "S IH K S"], ["SEVEN", "S EH V AH N"], ["EIGHT", "EY T"], ["NINE", "N AY N"], ["ZERO", "Z IH R OW"], ["NEW-YORK", "N UW Y AO R K"], ["NEW-YORK-CITY", "N UW Y AO R K S IH T IY"], ["PARIS", "P AE R IH S"], ["SHANGHAI", "SH AE NG HH AY"], ["SAN-FRANCISCO", "S AE N F R AE N S IH S K OW"], ["LONDON", "L AH N D AH N"], ["BERLIN", "B ER L IH N"], ["SUCKS", "S AH K S"], ["ROCKS", "R AA K S"], ["IS", "IH Z"], ["NOT", "N AA T"], ["GOOD", "G IH D"], ["GREAT", "G R EY T"], ["WINDOWS", "W IH N D OW Z"], ["LINUX", "L IH N AH K S"], ["UNIX", "Y UW N IH K S"], ["MAC", "M AE K"], ["AND", "AE N D"], ["O", "OW"], ["S", "EH S"], ["X", "EH K S"]];
+// TODO: make it possible to add alternative pronunciations:
+// , ["PARIS(2)", "P EH R IH S"], ["GOOD(2)", "G UH D"], ["AND(2)", "AH N D"]
+      var grammarDigits = {numStates: 1, transitions: [{from: 0, to: 0, word: "ONE"},{from: 0, to: 0, word: "TWO"},{from: 0, to: 0, word: "THREE"},{from: 0, to: 0, word: "FOUR"},{from: 0, to: 0, word: "FIVE"},{from: 0, to: 0, word: "SIX"},{from: 0, to: 0, word: "SEVEN"},{from: 0, to: 0, word: "EIGHT"},{from: 0, to: 0, word: "NINE"},{from: 0, to: 0, word: "ZERO"}]};
+      var grammarCities = {numStates: 1, transitions: [{from: 0, to: 0, word: "NEW-YORK"}, {from: 0, to: 0, word: "NEW-YORK-CITY"}, {from: 0, to: 0, word: "PARIS"}, {from: 0, to: 0, word: "SHANGHAI"}, {from: 0, to: 0, word: "SAN-FRANCISCO"}, {from: 0, to: 0, word: "LONDON"}, {from: 0, to: 0, word: "BERLIN"}]};
+      var grammarOses = {numStates: 7, transitions: [{from: 0, to: 1, word: "WINDOWS"}, {from: 0, to: 1, word: "LINUX"}, {from: 0, to: 1, word: "UNIX"}, {from: 1, to: 2, word: "IS"}, {from: 2, to: 2, word: "NOT"}, {from: 2, to: 6, word: "GOOD"}, {from: 2, to: 6, word: "GREAT"}, {from: 1, to: 6, word: "ROCKS"}, {from: 1, to: 6, word: "SUCKS"}, {from: 0, to: 4, word: "MAC"}, {from: 4, to: 5, word: "O"}, {from: 5, to: 3, word: "S"}, {from: 3, to: 1, word: "X"}, {from: 6, to: 0, word: "AND"}]};
+      var grammars = [{title: "OSes", g: grammarOses}, {title: "Digits", g: grammarDigits}, {title: "Cities", g: grammarCities}];
+      var grammarIds = [];
     </script>
     <script src="js/audioRecorder.js"></script>
     <script src="js/callbackManager.js"></script>

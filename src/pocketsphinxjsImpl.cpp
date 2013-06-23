@@ -22,7 +22,7 @@ static PsState psState = UNINITIALIZED;
 static ps_decoder_t * recognizer = NULL;
 static fsg_set_t * grammar_set = NULL;
 static logmath_t * logmath = NULL;
-static int grammar_index = 0;
+static int32_t grammar_index = 0;
 static fsg_model_t * current_grammar = NULL;
 static std::vector<std::string> grammar_names;
 static std::string current_hyp;
@@ -33,6 +33,7 @@ int psInitializeImpl() {
   if (psState != UNINITIALIZED)
     return BAD_STATE;
   psState = INITIALIZING;
+  grammar_names.reserve(100);
   const arg_t cont_args_def[] = {
     POCKETSPHINX_OPTIONS,
     { "-argfile",
@@ -82,7 +83,6 @@ int psInitializeImpl() {
     psState = UNINITIALIZED;
     return RUNTIME_ERROR;
   }
-  // If we're there, it means we're successful
   std::cout << "Done\n";
   psState = INITIALIZED;
   current_hyp = "";
@@ -99,7 +99,7 @@ int psStartGrammarImpl(int numStates) {
   if (psState != INITIALIZED)
     return BAD_STATE;
   std::ostringstream grammar_name;
-  grammar_name << "grammar-" << grammar_index;
+  grammar_name << grammar_index;
   grammar_names.push_back(grammar_name.str());
   current_grammar = fsg_model_init(grammar_names.back().c_str(), logmath, 1.0, numStates);
   if (current_grammar == NULL)
@@ -110,13 +110,14 @@ int psStartGrammarImpl(int numStates) {
   return SUCCESS;
 }
 
-int psEndGrammarImpl() {
+int psEndGrammarImpl(int32_t *id) {
   if (psState != ENTERING_GRAMMAR)
     return BAD_STATE;
   fsg_model_add_silence(current_grammar, "<sil>", -1, 1.0);
   if (current_grammar != fsg_set_add(grammar_set, grammar_names.back().c_str(), current_grammar)) {
     return RUNTIME_ERROR;
   }
+  *id = grammar_index;
   grammar_index++;
   ps_update_fsgset(recognizer);
   fsg_model_t * fsg = fsg_set_select(grammar_set, grammar_names.back().c_str());
@@ -125,6 +126,19 @@ int psEndGrammarImpl() {
   if (ps_update_fsgset(recognizer) == NULL)
     return RUNTIME_ERROR;
   psState = INITIALIZED;
+  return SUCCESS;
+}
+
+int psSwitchGrammarImpl(int id) {
+  if (psState != INITIALIZED)
+    return BAD_STATE;
+  std::ostringstream grammar_name;
+  grammar_name << id;
+  fsg_model_t * fsg = fsg_set_select(grammar_set, grammar_name.str().c_str());
+  if (fsg == NULL)
+    return RUNTIME_ERROR;
+  if (ps_update_fsgset(recognizer) == NULL)
+    return RUNTIME_ERROR;
   return SUCCESS;
 }
 
@@ -178,11 +192,6 @@ int psProcessImpl(void* data, int length) {
   if ((data == NULL) || (length == 0))
     return RUNTIME_ERROR;
   ps_process_raw(recognizer, (short int *) data, length, 0, 0);
-  /*
-  short int * dataShort = (short int *) data;
-  for (int i = 0; i< length ; ++i)
-    std::cout << dataShort[i] << "\n";
-  */
   const char* h = ps_get_hyp(recognizer, &score, &sentence_id);
   current_hyp = (h == NULL) ? "" : h;
   return SUCCESS;

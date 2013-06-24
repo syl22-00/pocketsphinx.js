@@ -185,13 +185,109 @@ Audio data should be sent to the recognizer using repeated calls to this functio
     var out = psProcess(buffer, array.length); // The data and the length of the data must be given
     c_free(buffer);
 
-
-
 # 4. Using `pocketsphinx.js` inside a Web Worker with `recognizer.js`
 
 Using `recognizer.js`, `pocketsphinx.js` is downloaded and executed inside a Web Worker. The file is located in `webapp/js/`, both `recognizer.js` and `pocketsphinx.js` must be in the same folder at runtime. It is intended to be loaded as a new Web Worker:
 
     var recognizer = new Worker("js/recognizer.js");
+
+You can then interact with it using messages.
+
+## 4.1 Incoming Messages
+
+Messages posted to the recognizer Worker might include the following attributes:
+
+* `command`, command to be executed,
+* `data`, data to be passed to the command,
+* `callbackId`, id to be passed to the outgoing message, used to trigger a callback.
+
+## 4.2 Outgoing Messages
+
+The worker sends messages back to the UI thread, either to call back when actions have been performed, report errors or send periodic information such as the current recognition hypothesis.
+
+Messages posted by the recognizer worker might include:
+
+* `status`, which can be either `done` or `error`,
+* `command`, the command that sent the message,
+* `code`, an error code,
+* `id`, a callback id that was given in the received message
+* `data`, additional data that the callback function might make use of,
+* `hyp`, the current recognition hypothesis,
+* `final`, a boolean that indicates whether the hypothesis is final (sent after call to `stop`).
+
+## 4.3 API description
+
+### a. Error codes
+
+The error codes returned in messages posted back from the worker can be:
+
+* the error code returned by `pocketsphinx.js` as explained previously,
+* or one of the following strings:
+    * "js-data", if the provided data are invalid,
+    * "js-no-recognizer", if the recognizer is not initialized.
+
+### b. Initialization
+
+Once the worker is created, the recognizer must be initialized:
+
+    var id = 0; // This value will be given in the message received after the action completes
+    recognizer.postMessage({command: 'initialize', callbackId: id});
+
+Once it is done, the recognizer will post a message back, for instance:
+
+* `{status: "done", command: "initialize", id: clbId}`, if successful, where `clbId` is the callback id given in the original command message.
+* `{status: "error", command: "initialize", code: initStatus}`, if there is an error, where `initStatus` is the value returned by the call to `psInitialize`, see above for possible values.
+
+### c. Adding words
+
+Words to be recognized must be added to the recognizer before they can be used in grammars. See previous sections to know more about the format of dictionary items. Words can be added at any time after the recognizer is initialized, and several words can be added at once:
+
+    var words = [["ONE", "W AH N"], ["TWO", "T UW"], ["THREE", "TH R IY"]]; // An array of pairs [word, pronunciation]
+    recognizer.postMessage({command: 'addWords', data: words, callbackId: id});
+
+The message back could be:
+
+* `{id: clbId}`, the provided callback id, if given, as explained before, if successful.
+* `{status: "error", command: "addWords", code: code}`, if error, where possible values of the error code was described above.
+
+### d. Adding grammars
+
+As described previously, any number of grammars can be added. The recognizer can then switch between them. A grammar can be added at once using a JavaScript object that contains the number of states and an array of transitions, for instance:
+
+    var grammar = {numStates: 3, transitions: [{from: 0, to: 1, word: "HELLO"}, {from: 1, to: 2, word: "WORLD"}]};
+    recognizer.postMessage({command: 'addGrammar', data: grammar, callbackId: id});
+
+All words must have been added previously using the `addWords` command.
+
+In the message back, the grammar id assigned to the grammar is given. It can be used to switch to that grammar. So the message, if successful, would be like `{id: clbId, data: id, status: "done", command: "addGrammar"}`, where `id` is the id of the newly created grammar. In case of errors, the message would be as described previously.
+
+### e. Starting recognition
+
+The message to start recognition should include the id of the grammar to be used:
+
+    recognizer.postMessage({command: 'start', data: id}); // where id is the id of a previously added grammar.
+
+### f. Processing data
+
+Audio samples should be sent to the recognizer using the `process` command:
+
+    recognizer.postMessage({command: 'process', data: array}); // array is an array of audio samples
+
+Audio samples should be 2 byte-integers, at 16 kHz.
+
+While data are processed, hypothesis will be sent back in a message in the form `{hyp: "RECOGNIZED STRING"}`.
+
+### g. Ending recognition
+
+Recognition can be simply stopped using the `stop` command: 
+
+    recognizer.postMessage({command: 'stop'});
+
+It will then send a last message with the hypothesis, marked as final (which means that it is more accurate as it comes after a second pass that was trigered by the `stop` command). It would look like: `{hyp: "FINAL RECOGNIZED STRING", final: true}`.
+
+## 4.4 Using `CallbackManager`
+
+## 4.5 Detecting when the Worker is ready
 
 # 5. Wiring `recognizer.js` to the audio recorder
 

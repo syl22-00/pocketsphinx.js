@@ -287,7 +287,77 @@ It will then send a last message with the hypothesis, marked as final (which mea
 
 ## 4.4 Using `CallbackManager`
 
+In order to facilitate the interaction with the recognizer worker, we have made a simple utility that helps associate callbacks to be executed when the worker posts a message responding to a commend you sent. You can find `callbackManager.js` in `webapp/js`.
+
+To use it, first create a new instance of CallbackManager:
+
+    var callbackManager = new CallbackManager();
+
+When you post a message to the recognizer worker and want to associate a callback function to it, you first add your callback function to the manager, whih gives you a callback id in return:
+
+    recognizer.postMessage({command: 'addWords', data: words, callbackId: callbackManager.add(function() {alert("Words added");})});
+
+In the `onmessage` function of your worker, use the callback manager to check and trigger callback functions:
+
+    recognizer.onmessage = function(e) {
+        if (e.data.hasOwnProperty('id')) {
+            // If the message has an id field, it
+            // means that we might have a callback associated
+            var clb = callbackManager.get(e.data['id']);
+            var data = {};
+            // As mentinned previously, additional data can be passed to the callback
+            // such as the id of a newly added grammar
+            if(e.data.hasOwnProperty('data')) data = e.data.data;
+            if(clb) clb(data);
+        }
+        // Check for other message types here
+    };
+
+Check `live.html` in `webapp` for more examples.
+
+
 ## 4.5 Detecting when the Worker is ready
+
+When a new worker is instanciated, it immediately returns a worker object, but the actual download of the JavaScript files might take some time, especially in our case where `pocketsphinx.js` is fairly large. One way of detecting whether the files are fully downloaded and loaded is to post a first message right after it is instanciated and wait for a message back from the worker.
+
+    var recognizer;
+    function spawnWorker(workerurl, onReady) {
+        recognizer = new Worker(workerurl);
+        recognizer.onmessage = function(event) {
+            // onReady will be called when there is a message
+            // back
+            onReady(recognizer);
+        };
+        recognizer.postMessage();
+    };
+
+Then, after the first message back was received, propers listening to onmessage can be added:
+
+    spawnWorker("js/recognizer.js", function(worker) {
+        worker.onmessage = function(e) {
+        // Add what you want to do with messages back from the worker
+        };
+        // Here is a good place to send the 'initialize' command to the recognizer
+     });
+
+Of course, the worker must be able to respond to the first message, as we did in `recognizer.js`:
+
+    function startup(onMessage) {
+        self.onmessage = function(event) {
+            self.onmessage = onMessage;
+            self.postMessage();
+        }
+    };
+    // This function is called first, it triggers
+    // a first postmessage, then adds the proper respond to
+    // commands: 
+    startup(function(event) {
+        switch(event.data.command){
+            //We deal with commands properly
+        }
+    });
+
+All these are illustrated in `webapp/live.html` and `recognizer.js`.
 
 # 5. Wiring `recognizer.js` to the audio recorder
 

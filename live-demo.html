@@ -19,41 +19,36 @@
   <body>
     <header>
       <div class="inner">
-        <h1>Pocketsphinx.js</h1>
+        <a href="http://syl22-00.github.io/pocketsphinx.js"><h1>Pocketsphinx.js</h1></a>
         <h2>Speech recognition in JavaScript</h2>
         <a href="https://github.com/syl22-00/pocketsphinx.js" class="button"><small>View project on</small>GitHub</a>
       </div>
     </header>
-
+    
     <div id="content-wrapper">
       <div class="inner clearfix">
         <section id="main-content">
-          <h2>
-	    <a name="pocketsphinxjs-live-demo" class="anchor" href="#pocketsphinxjs-live-demo"><span class="octicon octicon-link"></span></a>Pocketsphinx.js Live Demo.</h2>
-
-	  <p>This demo works on Chrome with the Web Audio API, make sure it works for you and actually records audio (audio recording on Chrome does not work well on all configs).</p>
-
-	  <h3>Usage</h3>
-	  <p>Select one of the <a href="#grammar-definitions">grammars</a>, press <em>Start</em>, and start speaking.</p>
-
+          <h1>
+	    <a name="pocketsphinxjs-live-demo" class="anchor" href="#pocketsphinxjs-live-demo"><span class="octicon octicon-link"></span></a>Pocketsphinx.js Live Demo.</h1>
+	  <p>This demo works on Chrome with the Web Audio API. Make sure you are using a very recent version of Chrome as many versions have issues that make the recorded audio silent.</p>
+	  <h1>Usage</h1>
+	  <p>Click on <em>Allow</em> to authorize Chrome to access your microphone, select a <a href="#grammar-definitions">grammar</a>, press <em>Start</em>, and start speaking.</p>
 	  <select id="grammars"></select>
 	  <button id="startBtn">Start</button>
 	  <button id="stopBtn">Stop</button>
 	  <span id="recording-indicator" style="border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; width: 20px; height: 20px; background: red;"></span>
-
-	 
-	  <h3>Recognition Output</h3>
+	  <h1>Recognition Output</h1>
 	  <div id="output" class="reco-output" style="height:100px;" >
 	  </div>
-	  <h3>Status</h3>
+	  <h1>Status</h1>
 	  <div class="reco-output" id="current-status">Loading page</div>
-
-	  <h3><a class="anchor" name="grammar-definitions">Grammars</a></h3>
+	  
+	  <h1><a class="anchor" name="grammar-definitions">Grammars</a></h1>
 	  <dl>
 	    <dt>Cities</dt>
-	    <dd>Say some of the following cities: <code>New-York</code>, <code>Paris</code>, <code>Shanghai</code>, <code>London</code> and <code>Berlin</code>.</dd>
+	    <dd>Say some of the following cities: <code>New-York City</code>, <code>San Francisco</code>, <code>Paris</code>, <code>Shanghai</code>, <code>London</code> and <code>Berlin</code>.</dd>
 	    <dt>Digits</dt>
-	    <dd>Say digits, from <code>zero</code> to <code>nine</code>.</dd>
+	    <dd>Say digits, between <code>zero</code> and <code>nine</code>.</dd>
 	    <dt>OSes</dt>
 	    <dd>Talk about your beloved or despised operating systems, such as <code>Linux rocks and Windows sucks</code>.</dd>
 	  </dl>
@@ -101,7 +96,7 @@
       };
 
       function updateUI() {
-        if (recorder && recognizer) startBtn.disabled = stopBtn.disabled = false;
+        if (recorderReady && recognizerReady) startBtn.disabled = stopBtn.disabled = false;
       };
 
       function updateStatus(newStatus) {
@@ -118,6 +113,7 @@
         input.connect(audio_context.destination);
         recorder = new AudioRecorder(input);
         if (recognizer) recorder.recognizer = recognizer;
+        recorderReady = true;
         updateUI();
         updateStatus("Audio recorder ready");
       };
@@ -134,6 +130,7 @@
 
       var recognizerReady = function() {
            updateGrammars();
+           recognizerReady = true;
            updateUI();
            updateStatus("Recognizer ready");
       };

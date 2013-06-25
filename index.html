@@ -19,7 +19,7 @@
   <body>
     <header>
       <div class="inner">
-        <h1>Pocketsphinx.js</h1>
+        <a href="http://syl22-00.github.io/pocketsphinx.js"><h1>Pocketsphinx.js</h1></a>
         <h2>Speech recognition in JavaScript</h2>
         <a href="https://github.com/syl22-00/pocketsphinx.js" class="button"><small>View project on</small>GitHub</a>
       </div>
@@ -28,19 +28,22 @@
     <div id="content-wrapper">
       <div class="inner clearfix">
         <section id="main-content">
-          <h3>
-<a name="welcome-to-pocketsphinxjs" class="anchor" href="#welcome-to-pocketsphinxjs"><span class="octicon octicon-link"></span></a>Welcome to Pocketsphinx.js.</h3>
+          <h1>
+	    <a name="welcome-to-pocketsphinxjs" class="anchor" href="#welcome-to-pocketsphinxjs"><span class="octicon octicon-link"></span></a>Welcome to Pocketsphinx.js.</h1>
+	  
+	  <p>Pocketsphinx.js is a speech recognition library writtent entirely in JavaScript and running entirely in the web browser. It does not require flash or any browser plug-in and does not require any server-side processing. It makes use of <a href="https://github.com/kripken/emscripten">Emscripten</a> to convert <a href="http://cmusphinx.sourceforge.net/">PocketSphinx</a>, an open-source speech recognizer written in C, into JavaScript. Audio is recorded with the Web Audio API.</p>
+	  
+	  <h1>
+	    <a name="current-status" class="anchor" href="#current-status"><span class="octicon octicon-link"></span></a>Current status.</h1>
+	  
+	  <p>The library is already usable, it can be tried on the <a href="live-demo.html">Live Demo page</a>. It provides a simple API which is fully documented in the source code.</p>
+	  
+	  <h1>
+	    <a name="live-demo" class="anchor" href="#live-demo"><span class="octicon octicon-link"></span></a>Live demo.</h1>
+	  <p>There is a live demo <a href="live-demo.html">there</a>. It only works on Chrome as live audio capture uses parts of the Web Audio API that are currently only available on that browser.</p>
 
-<p>This project is an attempt to create a speech recognition library entirely in JavaScript. The idea is to make use of <a href="https://github.com/kripken/emscripten">Emscripten</a> to convert <a href="http://cmusphinx.sourceforge.net/">PocketSphinx</a> into JavaScript and feed the recognizer with audio recorded with the Web Audio API.</p>
-
-<h3>
-<a name="current-status" class="anchor" href="#current-status"><span class="octicon octicon-link"></span></a>Current status.</h3>
-
-<p>It works, assuming you are using Chrome with a functional audio hardware setting. We have found that on many platforms and hardware, the audio data recorded through the Web Audio API are silent, this will hopefully be addressed soon.</p>
-
-<h3>
-<a name="live-demo" class="anchor" href="#live-demo"><span class="octicon octicon-link"></span></a>Live demo.</h3>
-	  <p>Try it out <a href="live-demo.html">there</a>.</p>
+	  <h1>License</h1>
+	  It's open-source (MIT license, with PocketSphinx also under a BSD-style license), and available on <a href="https://github.com/syl22-00/pocketsphinx.js">Github</a>.
         </section>
 
         <aside id="sidebar">

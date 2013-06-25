@@ -361,11 +361,54 @@ All these are illustrated in `webapp/live.html` and `recognizer.js`.
 
 # 5. Wiring `recognizer.js` to the audio recorder
 
+We include an audio recording library based on the Web Audio API that accesses the microphone, gets audio samples, converts them to the proper sample rate (16kHz), and sends them to the recognizer. This library is derived from [Recorderjs](https://github.com/mattdiamond/Recorderjs).
+
+Include `audioRecorder.js` in the HTML file and make sure `audioRecorderWorker.js` is in the same folder. To use it, create a new instance of `AudioRecorder` giving it as argument a `MediaStreamSource`. As of Today, only Google Chrome implements it. You also need to set the recognizer attribute to a Recognizer worker, as described above.
+
+
+    var audio_context = new AudioContext;
+    // Callback once user authorises access to the microphone:
+    function startUserMedia(stream) {
+        var input = audio_context.createMediaStreamSource(stream);
+        input.connect(audio_context.destination);
+        recorder = new AudioRecorder(input);
+        // The recognizer worker must be given to the recorder
+        if (recognizer) recorder.recognizer = recognizer;
+    };
+    navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
+        // What happens in case of errors...
+    });
+
+Once the recorder is up and running, you can start and stop recording and recognition with:
+
+    // To start recording:
+    recorder.start();
+    // The hypothesis is periodically sent by the recognizer, as described previously
+    // To stop recording:
+    recorder.stop();  // The final hypothesis is sent
+
+
+This is also illustrated in the given live demo, in the `webapp/` folder.
+
+Note that live audio capture is only available on recent versions of Google Chrome, and on many platforms that feature is not usable and only produces silent audio. Hopefully this will be solved soon. You can track progress on the chromium issue tracker:
+
+<https://code.google.com/p/chromium/issues/detail?id=170384>
+<http://code.google.com/p/chromium/issues/detail?id=112367>
+
 # 6. Live demo
 
 The file `webapp/live.html` is an example of live recognition using the web audio API. It works on Chrome, if the Web audio API actually works. Note that we observed the recorded audio to be silent on most (but not all) configuration we have tried.
 
+To build an application, this is a good starting point as it illustrates the different components decribed in this document. In that demo, three different grammars are available and the app can switch between them.
+
 # 7. Notes about speech recognition and performance
+
+If you are not familiar with speech recognition, you might need to take some time to learn some of the concepts, mainly:
+
+* acoustic models (we provide one small model for English but other Sphinx acoustic models can be used as well),
+* language models (at this point, we only have the API to input grammars, as FSGs, but API to input statistical language models could be added).
+
+In terms of performance, you should get exaclty the same result as using PocketSphinx compiled on other platforms.
 
 ## 7.1 Acoustic model
 

@@ -7,7 +7,7 @@ PocketSphinx.js is speech recognizer that runs entirely in the web browser. It i
 * a speech recognizer written in C ([PocketSphinx](http://cmusphinx.sourceforge.net/)) converted into JavaScript using [Emscripten](https://github.com/kripken/emscripten),
 * an audio recorder using the Web Audio API.
 
-You can try it on the project page: <http://syl22-00.github.io/pocketsphinx.js>.
+You can try it on the project page: <http://syl22-00.github.io/pocketsphinx.js> and have a look at our [FAQ](https://github.com/syl22-00/pocketsphinx.js/wiki/FAQ).
 
 Table of contents:
 
@@ -392,8 +392,7 @@ This is also illustrated in the given live demo, in the `webapp/` folder.
 
 Note that live audio capture is only available on recent versions of Google Chrome, and on many platforms that feature is not usable and only produces silent audio. Hopefully this will be solved soon. You can track progress on the chromium issue tracker:
 
-<https://code.google.com/p/chromium/issues/detail?id=170384>
-<http://code.google.com/p/chromium/issues/detail?id=112367>
+<https://code.google.com/p/chromium/issues/detail?id=170384> and <http://code.google.com/p/chromium/issues/detail?id=112367>.
 
 # 6. Live demo
 

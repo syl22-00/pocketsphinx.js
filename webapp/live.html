@@ -10,7 +10,7 @@
       <li>This demo works on Chrome with the Web Audio API, make sure it works for you and actually records audio (audio recording on Chrome does not work well on all configs).</li>
       <li>Press "Start" and speak</li>
     </ul>
-    <select id="grammars"></select><br/>
+    <select id="grammars"></select>
     <button id="startBtn">Start</button>
     <button id="stopBtn">Stop</button>
     <span id="recording-indicator" style="border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; width: 20px; height: 20px; background: red;"></span>
@@ -42,7 +42,7 @@
           recognizer.onmessage = function(event) {
             onReady(recognizer);
           };
-          recognizer.postMessage();
+          recognizer.postMessage({});
       };
 
       // To display the hypothesis sent by the recognizer
@@ -177,14 +177,14 @@
           window.AudioContext = window.AudioContext || window.webkitAudioContext;
           navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
           window.URL = window.URL || window.webkitURL;
-          audio_context = new AudioContext;
+          audio_context = new AudioContext();
         } catch (e) {
-          updateStatus("No web audio support in this browser");
-          return;
+          updateStatus("Error initializing Web Audio browser");
         }
-        navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
-          updateStatus("No live audio input in this browser");
-      });
+        if (navigator.getUserMedia) navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
+                                        updateStatus("No live audio input in this browser");
+                                    });
+        else updateStatus("No web audio support in this browser");
 
       // Wiring JavaScript to the UI
       var startBtn = document.getElementById('startBtn');

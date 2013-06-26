@@ -403,7 +403,7 @@ To build an application, this is a good starting point as it illustrates the dif
 
 # 7. Test suite
 
-There is a test suite being developed in `tests/js`, it makes use of [QUnit](http://qunitjs.com/cookbook/). There is a README file inside the folder.
+There is a test suite being developed in `tests/js`, it makes use of [QUnit](http://qunitjs.com). There is a README file inside the folder.
 
 # 8. Notes about speech recognition and performance
 

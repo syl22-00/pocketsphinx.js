@@ -1,7 +1,7 @@
 function startup(onMessage) {
     self.onmessage = function(event) {
 	self.onmessage = onMessage;
-	self.postMessage();
+	self.postMessage({});
     }
 };
 

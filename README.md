@@ -288,7 +288,7 @@ It will then send a last message with the hypothesis, marked as final (which mea
 
 ## 4.4 Using `CallbackManager`
 
-In order to facilitate the interaction with the recognizer worker, we have made a simple utility that helps associate callbacks to be executed when the worker posts a message responding to a commend you sent. You can find `callbackManager.js` in `webapp/js`.
+In order to facilitate the interaction with the recognizer worker, we have made a simple utility that helps associate callbacks to be executed when the worker posts a message responding to a command you sent. You can find `callbackManager.js` in `webapp/js`.
 
 To use it, first create a new instance of CallbackManager:
 

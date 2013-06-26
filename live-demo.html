@@ -88,7 +88,7 @@
           recognizer.onmessage = function(event) {
             onReady(recognizer);
           };
-          recognizer.postMessage();
+          recognizer.postMessage({});
       };
 
       function updateHyp(hyp) {
@@ -196,14 +196,14 @@
           window.AudioContext = window.AudioContext || window.webkitAudioContext;
           navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
           window.URL = window.URL || window.webkitURL;
-          audio_context = new AudioContext;
+          audio_context = new AudioContext();
         } catch (e) {
-          updateStatus("No web audio support in this browser");
-          return;
+          updateStatus("Error initializing Web Audio browser");
         }
-        navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
-          updateStatus("No live audio input in this browser");
-      });
+        if (navigator.getUserMedia) navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
+                                        updateStatus("No live audio input in this browser");
+                                    });
+        else updateStatus("No web audio support in this browser");
 
       var startBtn = document.getElementById('startBtn');
       var stopBtn = document.getElementById('stopBtn');

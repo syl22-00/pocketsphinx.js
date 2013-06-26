@@ -1,10 +1,11 @@
 /*****************************************
  *
- * This is the publci interface of PocketSphinx.js
+ * This is the public interface of Pocketsphinx.js
  * The following functions can be accessed from 
  * JavaScript.
  *
- * It is a C wrapper to avoid name-mangling
+ * It is a C wrapper around our C++ implementation 
+ * to avoid name-mangling
  *
  *****************************************/
 

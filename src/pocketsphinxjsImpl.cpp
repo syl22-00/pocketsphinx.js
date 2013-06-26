@@ -1,16 +1,26 @@
+/****************************************************
+ *
+ * This file includes the implementation of the functions
+ * made available to JavaScript. They are mainly convenience
+ * functions around PocketSphinx API.
+ *
+ **************************************************/
+
 #include <iostream>
 #include <vector>
 #include <string>
 #include <sstream>
 #include "pocketsphinx.h"
 
-#define MAX_HYP_LENGTH = 1024;
-
+/** Possible return values of most calls */
 enum PsReturnType {SUCCESS = 0,
 		   BAD_STATE = 1,
 		   BAD_ARGUMENT = 2,
 		   RUNTIME_ERROR = 3};
 
+/** The recognizer uses static variables,
+ * we keep track of the state
+ */
 enum PsState {UNINITIALIZED = 0,
 	      INITIALIZED = 1,
 	      INITIALIZING = 2,
@@ -19,6 +29,9 @@ enum PsState {UNINITIALIZED = 0,
 
 static PsState psState = UNINITIALIZED;
 
+// Implementation is based on static variables,
+// there is no thread issue as there is no data
+// shared between threads in JavaScript
 static ps_decoder_t * recognizer = NULL;
 static fsg_set_t * grammar_set = NULL;
 static logmath_t * logmath = NULL;
@@ -29,11 +42,22 @@ static std::string current_hyp;
 static int32 score;
 static char const * sentence_id;
 
+/**********************************
+ *
+ * This initializes a new recognizer
+ *
+ * @return 0 if successful, error code otherwise
+ *
+ *********************************/
 int psInitializeImpl() {
   if (psState != UNINITIALIZED)
     return BAD_STATE;
   psState = INITIALIZING;
-  grammar_names.reserve(100);
+  // TODO: we need to keep grammar names in scope
+  // while the recognizer is alive. Storing the stings
+  // in a vector is fine until it gets expanded, making new
+  // copies of the strings, invalidating the char* pointers
+  grammar_names.reserve(1000);
   const arg_t cont_args_def[] = {
     POCKETSPHINX_OPTIONS,
     { "-argfile",
@@ -60,41 +84,56 @@ int psInitializeImpl() {
   // First, create a config with the provided arguments  
   cmd_ln_t * config = cmd_ln_parse_r(NULL, cont_args_def, argc, argv, FALSE);
   if (config == NULL) {
-    std::cout << "Config is NULL\n";
     psState = UNINITIALIZED;
     return RUNTIME_ERROR;
   }
   // Now it is time to initialize the decoder
   recognizer = ps_init(config);
   if (recognizer == NULL) {
-    std::cout << "recognizer is NULL\n";
     psState = UNINITIALIZED;
     return RUNTIME_ERROR;
   }
   logmath = logmath_init(1.0001, 0, 0);
   if (logmath == NULL) {
-    std::cout << "logmath is NULL\n";
     psState = UNINITIALIZED;
     return RUNTIME_ERROR;
   }
   grammar_set = ps_update_fsgset(recognizer);
   if (grammar_set == NULL) {
-    std::cout << "grammar_set is NULL\n";
     psState = UNINITIALIZED;
     return RUNTIME_ERROR;
   }
-  std::cout << "Done\n";
   psState = INITIALIZED;
   current_hyp = "";
   return SUCCESS;
 }
 
+/**************************************
+ *
+ * Retrieves the current state
+ * @return current state
+ *
+ *************************************/
 int psGetStateImpl() {return psState;}
 
+/**************************************
+ *
+ * Retrieves the current hypothesis
+ * @return current hypothesis
+ *
+ *************************************/
 const char* psGetHypImpl() {
   return current_hyp.c_str();
 }
 
+/***********************************
+ *
+ * Starts inputing a new grammar
+ *
+ * @param numStates, the number of states of the grammar
+ * @return 0 if successful, error code otherwise
+ * 
+ ***********************************/
 int psStartGrammarImpl(int numStates) {
   if (psState != INITIALIZED)
     return BAD_STATE;
@@ -110,6 +149,14 @@ int psStartGrammarImpl(int numStates) {
   return SUCCESS;
 }
 
+
+/*******************************************
+ *
+ * Finishes inputing a grammar
+ * @param pointer to host the value of the id of the grammar
+ * @return 0 if successful, error code otherwise
+ *
+ *****************************************/
 int psEndGrammarImpl(int32_t *id) {
   if (psState != ENTERING_GRAMMAR)
     return BAD_STATE;
@@ -129,6 +176,13 @@ int psEndGrammarImpl(int32_t *id) {
   return SUCCESS;
 }
 
+/*******************************************
+ *
+ * Switches the recognizer to the given grammar
+ * @param id of the grammar to switch to
+ * @return 0 if successful, error code otherwise
+ *
+ *****************************************/
 int psSwitchGrammarImpl(int id) {
   if (psState != INITIALIZED)
     return BAD_STATE;
@@ -142,11 +196,18 @@ int psSwitchGrammarImpl(int id) {
   return SUCCESS;
 }
 
+/*******************************************
+ *
+ * Adds a new word to the dictionary
+ * @param word to add
+ * @param pronunciation of the word to add
+ * @return 0 if successful, error code otherwise
+ *
+ *****************************************/
 int psAddWordImpl(char *word, char *pronunciation) {
   if (psState != INITIALIZED)
     return BAD_STATE;
   if (recognizer == NULL) {
-    std::cout << "Recognizer is null\n";
     return RUNTIME_ERROR;
   }
   if (ps_add_word(recognizer, word, pronunciation, 1) < 0)
@@ -154,6 +215,15 @@ int psAddWordImpl(char *word, char *pronunciation) {
   return SUCCESS;
 }
 
+/*******************************************
+ *
+ * Adds a transition to the grammar currently being entered
+ * @param starting state of the transition
+ * @param destination state of the transition
+ * @param word associated to the transition
+ * @return 0 if successful, error code otherwise
+ *
+ *****************************************/
 int psAddTransitionImpl(int fromState, int toState, char* word) {
   if (psState != ENTERING_GRAMMAR)
     return BAD_STATE;
@@ -163,6 +233,12 @@ int psAddTransitionImpl(int fromState, int toState, char* word) {
   return SUCCESS;
 }
 
+/*******************************************
+ *
+ * Starts recognition on the current grammar
+ * @return 0 if successful, error code otherwise
+ *
+ *****************************************/
 int psStartImpl() {
   if (psState != INITIALIZED)
     return BAD_STATE;
@@ -174,6 +250,12 @@ int psStartImpl() {
   return SUCCESS;
 }
 
+/*******************************************
+ *
+ * Stops recognition
+ * @return 0 if successful, error code otherwise
+ *
+ *****************************************/
 int psStopImpl() {
   if (psState != RECORDING)
     return BAD_STATE;
@@ -186,6 +268,14 @@ int psStopImpl() {
   return SUCCESS;
 }
 
+/*******************************************
+ *
+ * Processes the given audio samples
+ * @param pointer ot an array of audio samples (short integers)
+ * @param size of the array
+ * @return 0 if successful, error code otherwise
+ *
+ *****************************************/
 int psProcessImpl(void* data, int length) {
   if (psState != RECORDING)
     return BAD_STATE;

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Test Suite for pocketsphinx.js</title>
+    <link rel="stylesheet" href="qunit/qunit.css">
+  </head>
+  <body>
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+    <script src="qunit/qunit.js"></script>
+    <script>
+      test( "Module public functions", function() {
+        ok(Module.cwrap('psGetState'), "psGetState should be in the module");
+        ok(Module.cwrap('psGetHyp', 'string'), "psGetHyp should be in the module");
+        ok(Module.cwrap('psInitialize'), "psInitialize should be in the module");
+        ok(Module.cwrap('psStartGrammar', 'number', ['number']), "psStartGrammar should be in the module");
+        ok(Module.cwrap('psEndGrammar', 'number', ['number']), "psEndGrammar should be in the module");
+        ok(Module.cwrap('psSwitchGrammar', 'number', ['number']), "psSwitchGrammar should be in the module");
+        ok(Module.cwrap('psAddWord', 'number', ['number','number']), "psAddWord should be in the module");
+        ok(Module.cwrap('psAddTransition', 'number', ['number','number','number']), "psAddTransition should be in the module");
+        ok(Module.cwrap('psStart'), "psStart should be in the module");
+        ok(Module.cwrap('psStop'), "psStop should be in the module");
+        ok(Module.cwrap('psProcess', 'number', ['number','number']), "psProcess should be in the module");
+        ok(Module.cwrap('malloc', 'number', ['number']), "malloc should be in the module");
+        ok(Module.cwrap('free', 'number', ['number']), "free should be in the module");
+      });
+      test( "Module non-existent functions", function() {
+        // Not sure about the best way to test these, but this seems to be working
+        var hasThrown = false;
+        try {Module.cwrap('psGet');}
+        catch(e) {hasThrown = true;}
+        ok(hasThrown, "psGet should not be in the module");
+
+        hasThrown = false;
+        try {Module.cwrap('', 'number', ['number','number','number']);}
+        catch(e) {hasThrown = true;}
+        ok(hasThrown, "empty function name should not be in module");
+      });
+      function wrapModule() {
+          return {psGetState: Module.cwrap('psGetState'),
+          psGetHyp: Module.cwrap('psGetHyp', 'string'),
+          psInitialize: Module.cwrap('psInitialize'),
+          psStartGrammar: Module.cwrap('psStartGrammar', 'number', ['number']),
+          psEndGrammar: Module.cwrap('psEndGrammar', 'number', ['number']),
+          psSwitchGrammar: Module.cwrap('psSwitchGrammar', 'number', ['number']),
+          psAddWord: Module.cwrap('psAddWord', 'number', ['number','number']),
+          psAddTransition: Module.cwrap('psAddTransition', 'number', ['number','number','number']),
+          psStart: Module.cwrap('psStart'),
+          psStop: Module.cwrap('psStop'),
+          psProcess: Module.cwrap('psProcess', 'number', ['number','number']),
+          c_malloc: Module.cwrap('malloc', 'number', ['number']),
+          c_free: Module.cwrap('free', 'number', ['number'])};
+      }
+      test("Valid calls before initialization", function() {
+          var module = wrapModule();
+          equal(module.psGetState(), 0, "Recognizer should be uninitalized at first");
+          equal(module.psGetHyp(), "", "Hypothesis should be empty at first");
+      });
+      test("Invalid calls before initialization", function() {
+          var module = wrapModule();
+          equal(module.psStartGrammar(0), 1, "Recognizer should be initalized to start grammar");
+          equal(module.psStartGrammar(1), 1, "Recognizer should be initalized to start grammar");
+          equal(module.psStartGrammar(100), 1, "Recognizer should be initalized to start grammar");
+          equal(module.psEndGrammar(module.c_malloc(4)), 1, "Recognizer should be initalized to end grammar");
+          equal(module.psSwitchGrammar(0), 1, "Recognizer should be initalized to switch grammar");
+          equal(module.psAddWord(0, 0), 1, "Recognizer should be initalized to add word");
+          equal(module.psAddTransition(0, 0, 0), 1, "Recognizer should be initalized to ");
+          equal(module.psStart(), 1, "Recognizer should be initalized to start recognition");
+          equal(module.psStop(), 1, "Recognizer should be initalized to stop recognition");
+          equal(module.psProcess(0, 0), 1, "Recognizer should be initalized to process audio data");
+      });
+      test("Recognizer initialization", function() {
+          var module = wrapModule();
+          equal(module.psInitialize(), 0, "Recognizer initialization should return 0");
+          equal(module.psGetState(), 1, "Recognizer should be at initalized state after initialization");
+          equal(module.psInitialize(), 1, "Recognizer should not be re-initialized");
+          equal(module.psGetState(), 1, "Recognizer should remain at initalized state after attempt of re-initialization");
+      });
+    </script>
+    <script src="../../webapp/js/pocketsphinx.js"></script>
+  </body>
+</html>

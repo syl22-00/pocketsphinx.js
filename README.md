@@ -17,8 +17,9 @@ Table of contents:
 4. Using `pocketsphinx.js` inside a Web Worker with `recognizer.js`
 5. Wiring `recognizer.js` to the audio recorder
 6. Live demo
-7. Notes about speech recognition and performance
-8. License
+7. Test suite
+8. Notes about speech recognition and performance
+9. License
 
 # 1. Overview
 
@@ -400,7 +401,11 @@ The file `webapp/live.html` is an example of live recognition using the web audi
 
 To build an application, this is a good starting point as it illustrates the different components decribed in this document. In that demo, three different grammars are available and the app can switch between them.
 
-# 7. Notes about speech recognition and performance
+# 7. Test suite
+
+There is a test suite being developed in `tests/js`, it makes use of [QUnit](http://qunitjs.com/cookbook/). There is a README file inside the folder.
+
+# 8. Notes about speech recognition and performance
 
 If you are not familiar with speech recognition, you might need to take some time to learn some of the concepts, mainly:
 
@@ -409,15 +414,15 @@ If you are not familiar with speech recognition, you might need to take some tim
 
 In terms of performance, you should get exaclty the same result as using PocketSphinx compiled on other platforms.
 
-## 7.1 Acoustic model
+## 8.1 Acoustic model
 
 The `am` folder contains an acoustic model trained with [SphinxTrain](http://cmusphinx.sourceforge.net/wiki/tutorialam). It is built using the [RM1](http://www.speech.cs.cmu.edu/databases/rm1/index.html) corpus, semi-continuous, with 200 senones.
 
-## 7.2 PocketSphinx
+## 8.2 PocketSphinx
 
 PocketSphinx.js ships with PocketSphinx and Sphinxbase version 0.8 with a few modification and fixes. Also, the `model` folder of PocketSphinx (which contains large acoustic and language models) was not included.
 
-# 8. License
+# 9. License
 
 PocketSphinx licensing terms are included in the `pocketsphinx` and `sphinxbase` folders. 
 

@@ -18,8 +18,9 @@ The test suite currently includes
     tests/js/pocketsphinx.js_test_*.js # QUnit tests
     tests/js/utils/wrapModule.js # Utility to access pocketsphin.js functions
 
-Tests must be run on with each Karma config file independently, for instance:
+Tests must be run with each Karma config file independently, for instance:
 
+    $ cd tests
     $ karma start karma_pocketsphinx.js_initialized_recognizer.conf.js --single-run
 
-The test suite tests the provided prebuilt version of `pocketsphinx.js`, edit the Karma config files if you wish to change that.
+The test suite tests the provided prebuilt version of `pocketsphinx.js`, in `webapp/js`. Edit the Karma config files if you wish to change that.

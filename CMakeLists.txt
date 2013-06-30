@@ -69,16 +69,31 @@ set(ps_lib_js "pocketsphinx.js")
 set(ps_lib "pocketsphinx")
 
 set(JS_COMPILATION_FLAGS "-s" "\ EXPORTED_FUNCTIONS=\"['_psInitialize','_psGetState','_psGetHyp','_psStartGrammar','_psEndGrammar','_psSwitchGrammar','_psAddWord','_psAddTransition','_psStart','_psStop','_psProcess','_malloc','_free']\"")
-set(AM_RESOURCES "am")
 
-# Building a library to be used from JavaScript
+if ((NOT HMM_BASE) OR (NOT HMM_FOLDERS))
+  set(HMM_BASE "${sphinx_root}")
+  set(HMM_FOLDERS "am")
+endif()
+
+message("HMM_BASE is ${HMM_BASE}")
+message("HMM_FOLDERS is ${HMM_FOLDERS}")
+
+# Building a shared library to be converted to JavaScript
 add_library(${ps_lib} SHARED "src/pocketsphinxjs.cpp" "src/pocketsphinxjsImpl.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
 
 # Copying resources into the build tree
-file(COPY ${sphinx_root}/${AM_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
+foreach(model ${HMM_FOLDERS})
+  message("Copying ${HMM_BASE}/${model} to binary dir")
+  file(COPY ${HMM_BASE}/${model} DESTINATION ${CMAKE_BINARY_DIR})
+endforeach()
+
+set(EMBED_HMM "")
+  foreach(model ${HMM_FOLDERS})
+  set(EMBED "${EMBED}" "--embed-file" "${model}" " ")
+endforeach()
 
 # Adding custom target for the HTML for the library
 add_custom_target(${ps_lib_js} ALL
-  COMMAND ${CMAKE_C_COMPILER} ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -O2 -o ${ps_lib_js} --embed-file ${AM_RESOURCES} ${JS_COMPILATION_FLAGS}
+  COMMAND ${CMAKE_C_COMPILER} ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -O2 -o ${ps_lib_js} ${EMBED} ${JS_COMPILATION_FLAGS}
   DEPENDS ${ps_lib}
   )

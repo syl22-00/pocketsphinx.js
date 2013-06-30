@@ -12,6 +12,9 @@
 #include "pocketsphinxjsImpl.h"
 
 extern "C" {
+  int psSetParam(char* key, char* value) {
+    return psSetParamImpl(key, value);
+  }
   int psGetState() {
     return psGetStateImpl();
   }

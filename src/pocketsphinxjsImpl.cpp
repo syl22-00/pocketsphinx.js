@@ -10,7 +10,10 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <set>
+#include <map>
 #include "pocketsphinx.h"
+#include "pocketsphinxjs-config.h"
 
 /** Possible return values of most calls */
 enum PsReturnType {SUCCESS = 0,
@@ -38,9 +41,15 @@ static logmath_t * logmath = NULL;
 static int32_t grammar_index = 0;
 static fsg_model_t * current_grammar = NULL;
 static std::vector<std::string> grammar_names;
+static std::set<std::string> acoustic_models;
+static std::string default_acoustic_model;
 static std::string current_hyp;
+static std::map<std::string, std::string> recognizer_parameters; 
 static int32 score;
 static char const * sentence_id;
+
+// Implemented later in this file
+int parseAcousticModels(const std::string &);
 
 /**********************************
  *
@@ -53,6 +62,8 @@ int psInitializeImpl() {
   if (psState != UNINITIALIZED)
     return BAD_STATE;
   psState = INITIALIZING;
+  // The acoustic models packaged should be added to our set
+  parseAcousticModels(HMM_FOLDERS);
   // TODO: we need to keep grammar names in scope
   // while the recognizer is alive. Storing the stings
   // in a vector is fine until it gets expanded, making new
@@ -78,9 +89,17 @@ int psInitializeImpl() {
       "Print word times in file transcription." },
     CMDLN_EMPTY_OPTION
   };
-  // We will initialize the decoder with the provided acoustic model
-  char * argv[] = {(char *)"-hmm", (char *)"am/rm1_200", (char *)"-bestpath", (char *)"no"};
-  int argc = 4;
+  if (recognizer_parameters.find("-hmm") == recognizer_parameters.end())
+    recognizer_parameters["-hmm"] = default_acoustic_model;
+  if (recognizer_parameters.find("-bestpath") == recognizer_parameters.end())
+    recognizer_parameters["-bestpath"] = "no";
+  int argc = 2 * recognizer_parameters.size();
+  char ** argv = new char*[argc];
+  int index = 0;
+  for (std::map<std::string, std::string>::iterator i = recognizer_parameters.begin() ; i != recognizer_parameters.end(); ++i) {
+    argv[index++] = (char*) i->first.c_str();
+    argv[index++] = (char*) i->second.c_str();
+  }
   // First, create a config with the provided arguments  
   cmd_ln_t * config = cmd_ln_parse_r(NULL, cont_args_def, argc, argv, FALSE);
   if (config == NULL) {
@@ -105,6 +124,23 @@ int psInitializeImpl() {
   }
   psState = INITIALIZED;
   current_hyp = "";
+  return SUCCESS;
+}
+
+/***********************************************
+ *
+ * Sets a recognizer parameter
+ * @param key of the key/value pair to pass
+ * @param value of the key/value pair to pass
+ * @return 0 if successful, error code otherwise
+ *
+ ***********************************************/
+int psSetParamImpl(char* key, char* value) {
+  std::string myKey = key;
+  std::string myValue = value;
+  if (myKey.size() == 0)
+    return BAD_ARGUMENT;
+  recognizer_parameters[myKey] = myValue;
   return SUCCESS;
 }
 
@@ -285,4 +321,22 @@ int psProcessImpl(void* data, int length) {
   const char* h = ps_get_hyp(recognizer, &score, &sentence_id);
   current_hyp = (h == NULL) ? "" : h;
   return SUCCESS;
+}
+
+/*******************************************
+ *
+ * Parses the string with available acoustic model and fills in
+ * the default model and the available models
+ * @param string to parse, the models are separated with ;
+ * @return 0 if successful, alaways successful
+ *
+ *****************************************/
+int parseAcousticModels(const std::string & model_list) {
+  std::string separator = ";";
+  std::string::size_type index;
+  default_acoustic_model = model_list.substr(0, index = model_list.find(separator));
+  acoustic_models.insert(default_acoustic_model);
+  while((index != std::string::npos) && (index != model_list.size() -1))
+    acoustic_models.insert(model_list.substr(index+1, -1 -index +(index = model_list.find(separator, index + 1))));
+  return 0;
 }

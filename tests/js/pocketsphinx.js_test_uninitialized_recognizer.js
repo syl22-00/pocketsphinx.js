@@ -1,5 +1,6 @@
 test( "Module public functions", function() {
     ok(Module.cwrap('psGetState'), "psGetState should be in the module");
+    ok(Module.cwrap('psSetParam', 'number', ['number','number']), "psSetParam should be in the module");
     ok(Module.cwrap('psGetHyp', 'string'), "psGetHyp should be in the module");
     ok(Module.cwrap('psInitialize'), "psInitialize should be in the module");
     ok(Module.cwrap('psStartGrammar', 'number', ['number']), "psStartGrammar should be in the module");
@@ -29,6 +30,9 @@ test("Valid calls before initialization", function() {
     var m = wrapModule();
     equal(m.psGetState(), 0, "Recognizer should be uninitalized at first");
     equal(m.psGetHyp(), "", "Hypothesis should be empty at first");
+    var key_ptr = Module.allocate(intArrayFromString("my_key"), 'i8', ALLOC_STACK);
+    var value_ptr = Module.allocate(intArrayFromString("my_value"), 'i8', ALLOC_STACK);
+    equal(m.psSetParam(key_ptr, value_ptr), 0, "We should be able to set recognizer parameters before initialization");
 });
 test("Invalid calls before initialization", function() {
     var m = wrapModule();

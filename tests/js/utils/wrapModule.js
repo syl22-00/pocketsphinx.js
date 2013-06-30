@@ -1,6 +1,7 @@
 
 function wrapModule() {
     return {psGetState: Module.cwrap('psGetState'),
+	    psSetParam: Module.cwrap('psSetParam', 'number', ['number','number']),
             psGetHyp: Module.cwrap('psGetHyp', 'string'),
             psInitialize: Module.cwrap('psInitialize'),
             psStartGrammar: Module.cwrap('psStartGrammar', 'number', ['number']),

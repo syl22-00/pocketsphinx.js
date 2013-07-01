@@ -89,7 +89,7 @@ int psInitializeImpl() {
       "Print word times in file transcription." },
     CMDLN_EMPTY_OPTION
   };
-  if (recognizer_parameters.find("-hmm") == recognizer_parameters.end())
+  if ((recognizer_parameters.find("-hmm") == recognizer_parameters.end()) || (acoustic_models.find(recognizer_parameters["-hmm"]) == acoustic_models.end()))
     recognizer_parameters["-hmm"] = default_acoustic_model;
   if (recognizer_parameters.find("-bestpath") == recognizer_parameters.end())
     recognizer_parameters["-bestpath"] = "no";

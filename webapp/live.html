@@ -136,6 +136,7 @@
 
       // This initializes the recognizer. When it calls back, we add words
       var initRecognizer = function() {
+          // You can pass parameters to the recognizer, such as : {command: 'initialize', data: [["-hmm", "my_model"], ["-fwdflat", "no"]]}
           postRecognizerJob({command: 'initialize'},
                             function() {
                                         if (recorder) recorder.recognizer = recognizer;

@@ -75,9 +75,9 @@ Make sure the files of the acoustic model are directly inside the `HMM_FOLDERS`:
 
 Please note:
 
-    * If you want to package your own models, you need to set both `HMM_BASE` and `HMM_FOLDERS`.
-    * By default, the first provided acoustic model will be loaded if none is specified before the recognizer is initialized. The model can be selected by giving the `"-hmm"` parameter. See upcoming sections for how to specify recognizer parameters.
-    * Make sure you optimize the size of your models (`mdef` in binary format, `sendump` instead of `mixture_weights`, see PocketSphinx docs).
+* If you want to package your own models, you need to set both `HMM_BASE` and `HMM_FOLDERS`.
+* By default, the first provided acoustic model will be loaded if none is specified before the recognizer is initialized. The model can be selected by giving the `"-hmm"` parameter. See upcoming sections for how to specify recognizer parameters.
+* Make sure you optimize the size of your models (`mdef` in binary format, `sendump` instead of `mixture_weights`, see PocketSphinx docs).
 
 
 # 3. API of `pocketsphinx.js`

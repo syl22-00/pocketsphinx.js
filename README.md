@@ -295,7 +295,7 @@ Once it is done, the recognizer will post a message back, for instance:
 
 Recognizer parameters to be passed to `PocketSphinx` can be given in the call to `initialize`. For instance:
 
-    recognizer.postMessage({command: 'initialize', callbackId: id, data=[["-hmm", "french"], ["-fwdflat", "no"]]});
+    recognizer.postMessage({command: 'initialize', callbackId: id, data: [["-hmm", "french"], ["-fwdflat", "no"]]});
 
 This will set the `pocketsphinx` command-line parameter `"-fwdflat"` to `no` and initialize the recognizer with the acoustic model `french`, assuming `pocketsphinx.js` was compiled with that model.
 

@@ -484,9 +484,10 @@ There is a test suite being developed in `tests/js`, it makes use of [QUnit](htt
 If you are not familiar with speech recognition, you might need to take some time to learn some of the concepts, mainly:
 
 * acoustic models (we provide one small model for English but other Sphinx acoustic models can be used as well),
-* language models (at this point, we only have the API to input grammars, as FSGs, but API to input statistical language models could be added).
+* language models (at this point, we only have the API to input grammars, as FSGs, but API to input statistical language models could be added),
+* Cepstral Mean Normalization (CMN) and the different CMN strategies.
 
-In terms of performance, you should get exaclty the same result as using PocketSphinx compiled on other platforms.
+In terms of performance, you should get exactly the same result as using PocketSphinx compiled on other platforms. For instance, because of the CMN policy, the accuracy of the first utterance is usually pretty bad, especially for non-native speakers.
 
 ## 8.1 Acoustic model
 

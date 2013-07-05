@@ -155,16 +155,28 @@ If you have included several acoustic models when compiling `pocketsphinx.js`, y
 
 If you do not call `psSetParam` with `"-hmm"`, or call it with an incorrect value, the first model in the list will be used (here, `english`).
 
-### d. psInitialize
+### d. psResetParams
+
+Resets all parameters for the recognizer to their default values.
+
+    var psSetParam = Module.cwrap('psSetParam', 'number', ['number','number']);
+    var key = "-fwdflat"; // Must match a valid pocketsphinx command-line parameter
+    var value = "no"; // Must be a valid value for the parameter
+    var output = psSetParam(key_ptr, value_ptr);
+    var psResetParams =  Module.cwrap('psSetParam', 'number');
+    output = psResetParams() // Should return 0, previously set recognizer parameters have been reset to their default values
+
+### e. psInitialize
 
 Initializes the recognizer. This can take a few seconds, that's one of the reasons why you should use `pocketsphinx.js` inside a Web Worker.
 
     var psInitialize = Module.cwrap('psInitialize');
     var output = psInitialize(); // Returns 0 if successful, see possible error codes above
+    output = psInitialize(); // Should still return 0
 
-Note that if the recognizer is already initialized, it will return `BAD_STATE`.
+Note that if the recognizer is already initialized, it will be re-initialized with any new parameters that was set (or unset with the previously documented `psResetParams` function) since the last call to `psInitialize`.
 
-### e. psStartGrammar
+### f. psStartGrammar
 
 At this point, `poketsphinx.js` can only use Finite State Grammars (FSG) as language models. To input grammars, you should be in the `INITIALIZED` state, call `psStartGrammar`, add transitions with `psAddTransition`, then call `psEndGrammar`. Before that, you must have added all words used in the grammar with `psAddWord`, described below.
 
@@ -172,7 +184,7 @@ At this point, `poketsphinx.js` can only use Finite State Grammars (FSG) as lang
     var numStates = 1; // Number of states in the FSG
     var output = psStartGrammar(numStates); // Returns 0 if successful, see possible error codes above
 
-### f. psEndGrammar
+### g. psEndGrammar
 
 Once all transitions have been added, this should be called to close the grammar and retrieve its id. The given id will be used to switch to that grammar. A call to `psEndGrammar`, if successful, always switch the recognizer to the grammar so that no call to `psSwitchGrammar` is necessary to use it right away. It takes as argument a pointer to an allocated 4 byte-integer that will be set to the value of the id of the newly added grammar:
 
@@ -182,7 +194,7 @@ Once all transitions have been added, this should be called to close the grammar
     var id = getValue(id_ptr, 'i32'); // Gets the value of the id
     c_free(id_ptr); // Frees the memory
 
-### g. psSwitchGrammar
+### h. psSwitchGrammar
 
 The recognizer can switch, at runtime, between grammars, using their id provided by `psEndGrammar`. For instance:
 
@@ -190,7 +202,7 @@ The recognizer can switch, at runtime, between grammars, using their id provided
     var myGrammarId = 5; // Value that was given by call to psEndGrammar
     var out = psSwitchGrammar(myGrammarId); // Returns 0 if successful, see possible error codes above
 
-### h. psAddWord
+### i. psAddWord
 
 All words used in grammars must be present in the pronunciation dictionary. Refer to the [CMU Pronunciation Dictionary site](http://www.speech.cs.cmu.edu/cgi-bin/cmudict) if you are not familiar with it.
 
@@ -202,7 +214,7 @@ All words used in grammars must be present in the pronunciation dictionary. Refe
     var pron_ptr = Module.allocate(intArrayFromString(pronunciation), 'i8', ALLOC_STACK);
     var out = psAddWord(word_ptr, pron_ptr); // Returns 0 if successful, see possible error codes above
 
-### i. psAddTransition
+### j. psAddTransition
 
 Transitions should be added to grammars between the calls to `psStartGrammar` and `psEndGrammar`. For now, we assume states start at `0` and `numStates - 1` is the last state, if the grammar has `numStates` states.
 
@@ -213,21 +225,21 @@ Transitions should be added to grammars between the calls to `psStartGrammar` an
     var to_state = 1; // Second state of the transition
     var out = psAddTransition(from_state, to_state, word_ptr); // Returns 0 if successful, see possible error codes above
 
-### j. psStart
+### k. psStart
 
 Starts the recognition process, using the last added grammar or the one set with the last call to `psSwitchGrammar`. The recognizer should be at the `INITIALIZED` state to be able to start recognition.
 
     var psStart = Module.cwrap('psStart');
     var out = psStart();  // Returns 0 if successful, see possible error codes above
 
-### k. psStop
+### l. psStop
 
 Stops the recognition process. As the recognizer will run a second pass when this is called, the hypothesis returned by `psGetHyp` is more accurate after than before the call to `psStop`.
 
     var psStop = Module.cwrap('psStop');
     var out = psStop();  // Returns 0 if successful, see possible error codes above
 
-### l. psProcess
+### m. psProcess
 
 Audio data should be sent to the recognizer using repeated calls to this function, between calls to `psStart` and `psStop`. Data should be 2-byte integers (audio should be 16 kHz, 16 bit for the provided acoustic model. If you choose to use a different acoustic model, you'll need to adjust those accordingly.).
 
@@ -298,6 +310,8 @@ Recognizer parameters to be passed to `PocketSphinx` can be given in the call to
     recognizer.postMessage({command: 'initialize', callbackId: id, data: [["-hmm", "french"], ["-fwdflat", "no"]]});
 
 This will set the `pocketsphinx` command-line parameter `"-fwdflat"` to `no` and initialize the recognizer with the acoustic model `french`, assuming `pocketsphinx.js` was compiled with that model.
+
+Note that once it is initialized, the recognizer can be re-initialized with different parameters. That way, for instance, a web application can switch between different acoustic models at runtime.
 
 ### c. Adding words
 

@@ -41,6 +41,7 @@ var post = function(message) {
 var Recognizer = function() {
     psGetState = Module.cwrap('psGetState');
     psSetParam = Module.cwrap('psSetParam', 'number', ['number','number']);
+    psResetParams = Module.cwrap('psResetParams', 'number');
     psGetHyp = Module.cwrap('psGetHyp', 'string');
     psInitialize = Module.cwrap('psInitialize');
     psStartGrammar = Module.cwrap('psStartGrammar', 'number', ['number']);
@@ -63,6 +64,9 @@ var Recognizer = function() {
 	var value_ptr = Module.allocate(intArrayFromString(value),
 				       'i8', ALLOC_STACK);
 	return psSetParam(key_ptr, value_ptr);
+    }
+    this.resetParams = function() {
+	return psResetParams();
     }
     this.getHyp = function() {
 	return psGetHyp();
@@ -114,17 +118,24 @@ var Recognizer = function() {
 function initialize(data, clbId) {
     if (recognizer == null)
         recognizer = new Recognizer();
-    if (data)
+    var output;
+    if (data) {
+	output = recognizer.resetParams();
+	if (output != 0) {
+	    postMessage({status: "error", command: "initialize", code: output});
+	    return;
+	}
 	while (data.length > 0) {
 	    var p = data.pop();
 	    if (p.length == 2) {
-		var output = recognizer.setParam(p[0], p[1]);
+		output = recognizer.setParam(p[0], p[1]);
 		if (output != 0)
 		    postMessage({status: "error", command: "initialize", code: output});
 	    } else { 
 		postMessage({status: "error", command: "initialize", code: "js-data"});
 	    }
 	}
+    }
     var initStatus = recognizer.initialize();
     if (initStatus != 0) {
 	postMessage({status: "error", command: "initialize", code: initStatus});

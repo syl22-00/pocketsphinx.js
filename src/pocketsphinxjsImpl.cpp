@@ -59,11 +59,12 @@ int parseAcousticModels(const std::string &);
  *
  *********************************/
 int psInitializeImpl() {
-  if (psState != UNINITIALIZED)
+  if ((psState != UNINITIALIZED) && (psState != INITIALIZED))
     return BAD_STATE;
   psState = INITIALIZING;
   // The acoustic models packaged should be added to our set
-  parseAcousticModels(HMM_FOLDERS);
+  if (default_acoustic_model.size() == 0)
+    parseAcousticModels(HMM_FOLDERS);
   // TODO: we need to keep grammar names in scope
   // while the recognizer is alive. Storing the stings
   // in a vector is fine until it gets expanded, making new
@@ -107,7 +108,13 @@ int psInitializeImpl() {
     return RUNTIME_ERROR;
   }
   // Now it is time to initialize the decoder
-  recognizer = ps_init(config);
+  if (recognizer == NULL)
+    recognizer = ps_init(config);
+  else
+    if (ps_reinit(recognizer, config) != 0) {
+      psState = UNINITIALIZED;
+      return RUNTIME_ERROR;
+    }
   if (recognizer == NULL) {
     psState = UNINITIALIZED;
     return RUNTIME_ERROR;
@@ -141,6 +148,18 @@ int psSetParamImpl(char* key, char* value) {
   if (myKey.size() == 0)
     return BAD_ARGUMENT;
   recognizer_parameters[myKey] = myValue;
+  return SUCCESS;
+}
+
+/***********************************************
+ *
+ * Resets (i.e clears) all previously entered
+ * recognizer parameter
+ * @return 0 if successful, error code otherwise
+ *
+ ***********************************************/
+int psResetParamsImpl() {
+  recognizer_parameters.clear();
   return SUCCESS;
 }
 

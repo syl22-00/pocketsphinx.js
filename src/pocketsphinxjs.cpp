@@ -15,6 +15,9 @@ extern "C" {
   int psSetParam(char* key, char* value) {
     return psSetParamImpl(key, value);
   }
+  int psResetParams() {
+    return psResetParamsImpl();
+  }
   int psGetState() {
     return psGetStateImpl();
   }

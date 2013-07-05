@@ -12,7 +12,7 @@ files = [
   QUNIT_ADAPTER,
   '../webapp/js/pocketsphinx.js',
   'js/utils/wrapModule.js',
-  'js/pocketsphinx.js_test_uninitialized_recognizer.js'
+  'js/pocketsphinx.js_test_initializing_recognizer.js'
 ];
 
 

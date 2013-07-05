@@ -5,6 +5,7 @@
 
 int psGetStateImpl();
 int psSetParamImpl(char*, char*);
+int psResetParamsImpl();
 const char* psGetHypImpl();
 int psInitializeImpl();
 int psStartGrammarImpl(int numStates);

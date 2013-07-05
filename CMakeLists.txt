@@ -68,7 +68,7 @@ endforeach(cfile)
 set(ps_lib_js "pocketsphinx.js")
 set(ps_lib "pocketsphinx")
 
-set(JS_COMPILATION_FLAGS "-s" "\ EXPORTED_FUNCTIONS=\"['_psInitialize','_psGetState','_psSetParam','_psGetHyp','_psStartGrammar','_psEndGrammar','_psSwitchGrammar','_psAddWord','_psAddTransition','_psStart','_psStop','_psProcess','_malloc','_free']\"")
+set(JS_COMPILATION_FLAGS "-s" "\ EXPORTED_FUNCTIONS=\"['_psInitialize','_psGetState','_psSetParam','_psResetParams','_psGetHyp','_psStartGrammar','_psEndGrammar','_psSwitchGrammar','_psAddWord','_psAddTransition','_psStart','_psStop','_psProcess','_malloc','_free']\"")
 
 if ((NOT HMM_BASE) OR (NOT HMM_FOLDERS))
   set(HMM_BASE "${sphinx_root}/am")

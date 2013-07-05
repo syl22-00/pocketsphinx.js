@@ -9,28 +9,28 @@ LAPACK_LITE_SRCS = \
 endif
 
 libsphinxutil_la_SOURCES = \
-        bitvec.c \
+	bitvec.c \
 	bio.c \
-        case.c \
-        ckd_alloc.c \
+	case.c \
+	ckd_alloc.c \
 	dtoa.c \
 	listelem_alloc.c \
-        cmd_ln.c \
-        err.c \
-        filename.c \
+	cmd_ln.c \
+	err.c \
+	filename.c \
 	genrand.c \
-        glist.c \
-        hash_table.c \
-        heap.c \
+	glist.c \
+	hash_table.c \
+	heap.c \
 	huff_code.c \
-        info.c \
+	info.c \
 	logmath.c \
 	mmio.c \
-        pio.c \
+	pio.c \
 	matrix.c \
-        profile.c \
+	profile.c \
 	sbthread.c \
-        strfuncs.c \
+	strfuncs.c \
 	unlimit.c \
 	utf8.c \
 	$(LAPACK_LITE_SRCS)

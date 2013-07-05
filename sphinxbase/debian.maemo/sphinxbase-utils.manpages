@@ -1,0 +1,8 @@
+debian/sphinx_fe.1
+debian/sphinx_pitch.1
+debian/sphinx_cepview.1
+debian/sphinx_jsgf2fsg.1
+debian/sphinx_lm_eval.1
+doc/sphinx_lm_sort.1
+doc/sphinx_cont_adseg.1
+doc/sphinx_cont_fileseg.1

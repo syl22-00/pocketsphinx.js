@@ -461,6 +461,11 @@ fsg_model_add_alt(fsg_model_t * fsg, char const *baseword,
     if (fsg->altwords == NULL)
         fsg->altwords = bitvec_alloc(fsg->n_word_alloc);
     bitvec_set(fsg->altwords, altwid);
+    if (fsg_model_is_filler(fsg, basewid)) {
+         if (fsg->silwords == NULL)
+	      fsg->silwords = bitvec_alloc(fsg->n_word_alloc);
+         bitvec_set(fsg->silwords, altwid);
+    }
 
     E_DEBUG(2, ("Adding alternate word transitions (%s,%s) to FSG\n",
                 baseword, altword));

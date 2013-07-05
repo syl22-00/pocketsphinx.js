@@ -42,7 +42,6 @@
  * @file jsgf_internal.h Internal definitions for JSGF grammar compiler
  */
 
-#define YY_NO_UNISTD_H 1
 #include <stdio.h>
 
 #include <sphinxbase/hash_table.h>
@@ -86,7 +85,7 @@ struct jsgf_s {
 struct jsgf_rule_s {
     int refcnt;      /**< Reference count. */
     char *name;      /**< Rule name (NULL for an alternation/grouping) */
-    int public;      /**< Is this rule marked 'public'? */
+    int is_public;      /**< Is this rule marked 'public'? */
     jsgf_rhs_t *rhs; /**< Expansion */
 
     int entry;       /**< Entry state for current instance of this rule. */
@@ -116,7 +115,7 @@ void jsgf_add_link(jsgf_t *grammar, jsgf_atom_t *atom, int from, int to);
 jsgf_atom_t *jsgf_atom_new(char *name, float weight);
 jsgf_atom_t *jsgf_kleene_new(jsgf_t *jsgf, jsgf_atom_t *atom, int plus);
 jsgf_rule_t *jsgf_optional_new(jsgf_t *jsgf, jsgf_rhs_t *exp);
-jsgf_rule_t *jsgf_define_rule(jsgf_t *jsgf, char *name, jsgf_rhs_t *rhs, int public);
+jsgf_rule_t *jsgf_define_rule(jsgf_t *jsgf, char *name, jsgf_rhs_t *rhs, int is_public);
 jsgf_rule_t *jsgf_import_rule(jsgf_t *jsgf, char *name);
 
 int jsgf_atom_free(jsgf_atom_t *atom);

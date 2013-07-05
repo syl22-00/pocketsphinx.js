@@ -124,6 +124,10 @@ ad_read(ad_rec_t * r, int16 * buf, int32 max)
     if (!r->recording)
 	return AD_EOF;
 	
+	if (max > 2048) {
+	    max = 2048;
+    }
+	
     if (pa_simple_read(r->pa, (void*)buf, max * 2, &error) < 0) {
 	fprintf(stderr, "Failed to read speech: %s\n", pa_strerror(error));
     }

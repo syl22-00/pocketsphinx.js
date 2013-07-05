@@ -445,7 +445,7 @@ int32 ngram_model_add_word(ngram_model_t *model,
  *
  * This function assumes that the class tags have already been defined
  * as unigrams in the language model.  All words in the class
- * definition will be added to the lexicon as special in-class words.
+ * definition will be added to the vocabulary as special in-class words.
  * For this reason is is necessary that they not have the same names
  * as any words in the general unigram distribution.  The convention
  * is to suffix them with ":class_tag", where class_tag is the class

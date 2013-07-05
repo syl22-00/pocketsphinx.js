@@ -263,7 +263,7 @@ error_out:
 
 
 static uint32
-chksum_accum(void *buf, int32 el_sz, int32 n_el, uint32 sum)
+chksum_accum(const void *buf, int32 el_sz, int32 n_el, uint32 sum)
 {
     int32 i;
     uint8 *i8;
@@ -339,7 +339,7 @@ bio_fread(void *buf, int32 el_sz, int32 n_el, FILE * fp, int32 swap,
 }
 
 int32
-bio_fwrite(void *buf, int32 el_sz, int32 n_el, FILE *fp,
+bio_fwrite(const void *buf, int32 el_sz, int32 n_el, FILE *fp,
            int32 swap, uint32 *chksum)
 {
     if (chksum)
@@ -501,6 +501,91 @@ bio_verify_chksum(FILE * fp, int32 byteswap, uint32 chksum)
         E_FATAL
             ("Checksum error; file-checksum %08x, computed %08x\n",
              file_chksum, chksum);
+}
+
+int
+bio_fwrite_3d(void ***arr,
+	   size_t e_sz,
+	   uint32 d1,
+	   uint32 d2,
+	   uint32 d3,
+	   FILE *fp,
+	   uint32 *chksum)
+{
+    size_t ret;
+
+    /* write out first dimension 1 */
+    ret = bio_fwrite(&d1, sizeof(uint32), 1, fp, 0, chksum);
+    if (ret != 1) {
+	if (ret == 0) {
+	    E_ERROR_SYSTEM("Unable to write complete data");
+	}
+	else {
+	    E_ERROR_SYSTEM("OS error in bio_fwrite_3d");
+	}
+	return -1;
+    }
+
+    /* write out first dimension 2 */
+    ret = bio_fwrite(&d2, sizeof(uint32), 1, fp, 0, chksum);
+    if (ret != 1) {
+	if (ret == 0) {
+	    E_ERROR_SYSTEM("Unable to write complete data");
+	}
+	else {
+	    E_ERROR_SYSTEM("OS error in bio_fwrite_3d");
+	}
+	return -1;
+    }
+
+    /* write out first dimension 3 */
+    ret = bio_fwrite(&d3, sizeof(uint32), 1, fp, 0, chksum);
+    if (ret != 1) {
+	if (ret == 0) {
+	    E_ERROR_SYSTEM("Unable to write complete data");
+	}
+	else {
+	    E_ERROR_SYSTEM("OS error in bio_fwrite_3d");
+	}
+	return -1;
+    }
+
+    /* write out the data in the array as one big block */
+    return bio_fwrite_1d(arr[0][0], e_sz, d1 * d2 * d3, fp, chksum);
+}
+
+int
+bio_fwrite_1d(void *arr,
+	   size_t e_sz,
+	   uint32 d1,
+	   FILE *fp,
+	   uint32 *chksum)
+{
+    size_t ret;
+    ret = bio_fwrite(&d1, sizeof(uint32), 1, fp, 0, chksum);
+    if (ret != 1) {
+	if (ret == 0) {
+	    E_ERROR_SYSTEM("Unable to write complete data");
+	}
+	else {
+	    E_ERROR_SYSTEM("OS error in bio_fwrite_1d");
+	}
+	return -1;
+    }
+
+    ret = bio_fwrite(arr, e_sz, d1, fp, 0, chksum);
+    if (ret != d1) {
+	if (ret == 0) {
+	    E_ERROR_SYSTEM("Unable to write complete data");
+	}
+	else {
+	    E_ERROR_SYSTEM("OS error in bio_fwrite_1d");
+	}
+
+	return -1;
+    }
+
+    return ret;
 }
 
 int16*

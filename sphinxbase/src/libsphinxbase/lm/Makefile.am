@@ -8,7 +8,6 @@ libsphinxlm_la_SOURCES =			\
 	ngram_model.c				\
 	ngram_model_arpa.c			\
 	ngram_model_dmp.c			\
-	ngram_model_dmp32.c			\
 	ngram_model_set.c			\
 	fsg_model.c				\
 	jsgf.c					\

@@ -239,10 +239,14 @@ lm3g_template_raw_score(ngram_model_t *base, int32 wid,
         score = (int32)(score / base->lw);
         /* Undo unigram interpolation */
         if (strcmp(base->word_str[wid], "<s>") != 0) { /* FIXME: configurable start_sym */
-            score = logmath_log(base->lmath,
-                                logmath_exp(base->lmath, score)
-                                - logmath_exp(base->lmath, 
-                                              base->log_uniform + base->log_uniform_weight));
+            /* This operation is numerically unstable, so try to avoid it
+             * as possible */
+            if (base->log_uniform + base->log_uniform_weight > logmath_get_zero(base->lmath)) {
+               score = logmath_log(base->lmath,
+                            logmath_exp(base->lmath, score)
+                            - logmath_exp(base->lmath, 
+                                          base->log_uniform + base->log_uniform_weight));
+            }
         }
         return score;
     case 1:

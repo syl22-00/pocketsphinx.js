@@ -47,6 +47,8 @@
 #include "jsgf_parser.h"
 #include "jsgf_scanner.h"
 
+extern int yyparse (void* scanner, jsgf_t* jsgf);
+
 /**
  * \file jsgf.c
  *
@@ -442,7 +444,7 @@ jsgf_rule_name(jsgf_rule_t *rule)
 int
 jsgf_rule_public(jsgf_rule_t *rule)
 {
-    return rule->public;
+    return rule->is_public;
 }
 
 static fsg_model_t *
@@ -556,7 +558,7 @@ error_out:
     return -1;
 }
 jsgf_rule_t *
-jsgf_define_rule(jsgf_t *jsgf, char *name, jsgf_rhs_t *rhs, int public)
+jsgf_define_rule(jsgf_t *jsgf, char *name, jsgf_rhs_t *rhs, int is_public)
 {
     jsgf_rule_t *rule;
     void *val;
@@ -576,10 +578,10 @@ jsgf_define_rule(jsgf_t *jsgf, char *name, jsgf_rhs_t *rhs, int public)
     rule->refcnt = 1;
     rule->name = ckd_salloc(name);
     rule->rhs = rhs;
-    rule->public = public;
+    rule->is_public = is_public;
 
     E_INFO("Defined rule: %s%s\n",
-           rule->public ? "PUBLIC " : "",
+           rule->is_public ? "PUBLIC " : "",
            rule->name);
     val = hash_table_enter(jsgf->rules, name, rule);
     if (val != (void *)rule) {
@@ -704,7 +706,7 @@ jsgf_import_rule(jsgf_t *jsgf, char *name)
                 rule_matches = !strcmp(rule_name, rule->name);
             }
             ckd_free(rule_name);
-            if (rule->public && rule_matches) {
+            if (rule->is_public && rule_matches) {
                 void *val;
                 char *newname;
 
@@ -733,8 +735,6 @@ jsgf_import_rule(jsgf_t *jsgf, char *name)
 jsgf_t *
 jsgf_parse_file(const char *filename, jsgf_t *parent)
 {
-    /* Since we modified this, we need to make sure we do not use it */
-    assert(0);
     yyscan_t yyscanner;
     jsgf_t *jsgf;
     int yyrv;
@@ -754,9 +754,7 @@ jsgf_parse_file(const char *filename, jsgf_t *parent)
     }
 
     jsgf = jsgf_grammar_new(parent);
-    /* This creates problem with emscript, we take it out for now:
     yyrv = yyparse(yyscanner, jsgf);
-    */
     if (yyrv != 0) {
         E_ERROR("Failed to parse JSGF grammar from '%s'\n", filename ? filename : "(stdin)");
         jsgf_grammar_free(jsgf);

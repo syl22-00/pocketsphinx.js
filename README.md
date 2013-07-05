@@ -494,7 +494,7 @@ The `am` folder contains an acoustic model trained with [SphinxTrain](http://cmu
 
 ## 8.2 PocketSphinx
 
-PocketSphinx.js ships with PocketSphinx and Sphinxbase version 0.8 with a few modification and fixes. Also, the `model` folder of PocketSphinx (which contains large acoustic and language models) was not included.
+PocketSphinx.js ships with PocketSphinx and Sphinxbase as they appear in the trunk of the subversion tree, and we try to keep is regularly updated. There is no modification nor fixes. However, the `model` folder of PocketSphinx (which contains large acoustic and language models) was not included.
 
 # 9. License
 

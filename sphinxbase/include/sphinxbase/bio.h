@@ -119,7 +119,7 @@ extern "C" {
  * </pre>
  * Lines beginning with # are ignored.
  * Memory for name and val allocated by this function; use bio_hdrarg_free to free them.
- * @return: 0 if successful, -1 otherwise.
+ * @return 0 if successful, -1 otherwise.
  */
 SPHINXBASE_EXPORT
 int32 bio_readhdr (FILE *fp,		/**< In: File to read */
@@ -130,7 +130,7 @@ int32 bio_readhdr (FILE *fp,		/**< In: File to read */
 /**
  * Write a simple binary file header, containing only the version string.  Also write
  * the byte order magic word.
- * @return: 0 if successful, -1 otherwise.
+ * @return 0 if successful, -1 otherwise.
  */
 SPHINXBASE_EXPORT
 int32 bio_writehdr_version (FILE *fp,  /**< Output: File to write */
@@ -138,6 +138,10 @@ int32 bio_writehdr_version (FILE *fp,  /**< Output: File to write */
 	);
 
 
+/**
+ * Write a simple binary file header with only byte order magic word.
+ * @return 0 if successful, -1 otherwise.
+ */
 SPHINXBASE_EXPORT
 int32 bio_writehdr(FILE *fp, ...);
 
@@ -151,13 +155,14 @@ void bio_hdrarg_free (char **name,	/**< In: Array previously returned by bio_rea
 
 /**
  * Like fread but perform byteswapping and accumulate checksum (the 2 extra arguments).
- * But unlike fread, returns -1 if required number of elements (n_el) not read; also,
+ *
+ * @return unlike fread, returns -1 if required number of elements (n_el) not read; also,
  * no byteswapping or checksum accumulation is performed in that case.
  */
 SPHINXBASE_EXPORT
-int32 bio_fread (void *buf,
-		 int32 el_sz,
-		 int32 n_el,
+int32 bio_fread (void *buf,		/**< In: buffer to write */
+		 int32 el_sz,		/**< In: element size */
+		 int32 n_el,		/**< In: number of elements */
 		 FILE *fp,              /**< In: An input file pointer */
 		 int32 swap,		/**< In: Byteswap iff (swap != 0) */
 		 uint32 *chksum	/**< In/Out: Accumulated checksum */
@@ -165,12 +170,13 @@ int32 bio_fread (void *buf,
 
 /**
  * Like fwrite but perform byteswapping and accumulate checksum (the 2 extra arguments).
+ *
  * @return the number of elemens written (like fwrite).
  */
 SPHINXBASE_EXPORT
-int32 bio_fwrite(void *buf,
-		 int32 el_sz,
-		 int32 n_el,
+int32 bio_fwrite(const void *buf,	/**< In: buffer to write */
+		 int32 el_sz,		/**< In: element size */
+		 int32 n_el,		/**< In: number of elements */
 		 FILE *fp,              /**< In: An input file pointer */
 		 int32 swap,		/**< In: Byteswap iff (swap != 0) */
 		 uint32 *chksum	/**< In/Out: Accumulated checksum */
@@ -184,7 +190,7 @@ int32 bio_fwrite(void *buf,
  * 
  * Byteswapping and checksum accumulation performed as necessary.
  * Fails fatally if expected data not read.
- * Return value: number of array elements allocated and read; -1 if error.
+ * @return number of array elements allocated and read; -1 if error.
  */
 SPHINXBASE_EXPORT
 int32 bio_fread_1d (void **buf,		/**< Out: contains array data; allocated by this
@@ -204,7 +210,7 @@ int32 bio_fread_1d (void **buf,		/**< Out: contains array data; allocated by thi
  *
  * Byteswapping and checksum accumulation performed as necessary.
  * Fails fatally if expected data not read.
- * Return value: number of array elements allocated and read; -1 if error.
+ * @return number of array elements allocated and read; -1 if error.
  */
 SPHINXBASE_EXPORT
 int32 bio_fread_2d(void ***arr,
@@ -223,7 +229,7 @@ int32 bio_fread_2d(void ***arr,
  *
  * Byteswapping and checksum accumulation performed as necessary.
  * Fails fatally if expected data not read.
- * Return value: number of array elements allocated and read; -1 if error.
+ * @return number of array elements allocated and read; -1 if error.
  */
 SPHINXBASE_EXPORT
 int32 bio_fread_3d(void ****arr,
@@ -246,24 +252,50 @@ void bio_verify_chksum (FILE *fp,	/**< In: File to read */
 			);
 
 
+
+/**
+ * Write a 1-d array.
+ * Checksum accumulation performed as necessary.
+ *
+ * @return number of array elements successfully written or -1 if error.
+ */
+SPHINXBASE_EXPORT
+int bio_fwrite_1d(void *arr,       /**< In: Data to write */
+                  size_t e_sz,     /**< In: Size of the elements in bytes */
+                  uint32 d1,       /**< In: First dimension */
+                  FILE *fp,        /**< In: File to write to */
+                  uint32 *chksum   /**< In/Out: Checksum accumulator */
+                  );
+
+/**
+ * Write a 3-d array (set of matrices).
+ * Checksum accumulation performed as necessary.
+ *
+ * @return number of array elements successfully written or -1 if error.
+ */
+SPHINXBASE_EXPORT
+int bio_fwrite_3d(void ***arr,    /**< In: Data to write */
+                  size_t e_sz,    /**< In: Size of the elements in bytes */
+                  uint32 d1,      /**< In: First dimension */
+                  uint32 d2,      /**< In: Second dimension */
+                  uint32 d3,      /**< In: Third dimension */
+                  FILE *fp,       /**< In: File to write to */
+                  uint32 *chksum  /**< In/Out: Checksum accumulator */
+                  );
+
 /**
  * Read raw data from the wav file.
  *
- * @param directory the folder where the file is located
- * @param filename the name of the file
- * @param extension file extension
- * @param header the size of the header to skip usually 44 bytes.
- * @param endian Endian of the data
- * @param nsamps number of samples read
- * @return pointer to the data
+ * @return pointer to the data.
  */
 SPHINXBASE_EXPORT
-int16* bio_read_wavfile(char const *directory,
-			char const *filename,
-			char const *extension,
-			int32 header,
-			int32 endian,
-			int32 *nsamps);
+int16* bio_read_wavfile(char const *directory, /**< In: the folder where the file is located */
+			char const *filename,  /**< In: the name of the file */
+			char const *extension, /**< In: file extension */
+			int32 header,          /**< In: the size of the header to skip usually 44 bytes */
+			int32 endian,          /**< In: endian of the data */
+			int32 *nsamps          /**< Out: number of samples read */
+			);
 
 #ifdef __cplusplus
 }

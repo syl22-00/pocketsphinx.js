@@ -250,7 +250,7 @@ ReadBigrams(lineiter_t **li, ngram_model_arpa_t * model)
 
         if (w1 != prev_w1) {
             if (w1 < prev_w1) {
-                E_ERROR("Bigrams not in unigram order\n");
+                E_ERROR("Bigram %s %s not in unigram order word id: %d prev word id: %d\n", word1, word2, w1, prev_w1);
                 return -1;
             }
 

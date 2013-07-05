@@ -839,7 +839,7 @@ feat_init(char const *type, cmn_type_t cmn, int32 varnorm,
         while (sscanf(strp, "%s%n", wd, &l) == 1) {
             strp += l;
             if ((i >= fcb->n_stream)
-                || (sscanf(wd, "%d", &(fcb->stream_len[i])) != 1)
+                || (sscanf(wd, "%u", &(fcb->stream_len[i])) != 1)
                 || (fcb->stream_len[i] <= 0))
                 E_FATAL("Bad feature type argument\n");
             /* Input size before windowing */

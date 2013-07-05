@@ -163,7 +163,7 @@ Resets all parameters for the recognizer to their default values.
     var key = "-fwdflat"; // Must match a valid pocketsphinx command-line parameter
     var value = "no"; // Must be a valid value for the parameter
     var output = psSetParam(key_ptr, value_ptr);
-    var psResetParams =  Module.cwrap('psSetParam', 'number');
+    var psResetParams =  Module.cwrap('psResetParams', 'number');
     output = psResetParams() // Should return 0, previously set recognizer parameters have been reset to their default values
 
 ### e. psInitialize
@@ -309,7 +309,7 @@ Recognizer parameters to be passed to `PocketSphinx` can be given in the call to
 
     recognizer.postMessage({command: 'initialize', callbackId: id, data: [["-hmm", "french"], ["-fwdflat", "no"]]});
 
-This will set the `pocketsphinx` command-line parameter `"-fwdflat"` to `no` and initialize the recognizer with the acoustic model `french`, assuming `pocketsphinx.js` was compiled with that model.
+This will set the `pocketsphinx` command-line parameter `"-fwdflat"` to `no` and initialize the recognizer with the acoustic model `french`, assuming `pocketsphinx.js` was compiled with such model.
 
 Note that once it is initialized, the recognizer can be re-initialized with different parameters. That way, for instance, a web application can switch between different acoustic models at runtime.
 

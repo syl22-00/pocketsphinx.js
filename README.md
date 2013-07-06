@@ -436,7 +436,7 @@ All these are illustrated in `webapp/live.html` and `recognizer.js`.
 
 # 5. Wiring `recognizer.js` to the audio recorder
 
-We include an audio recording library based on the Web Audio API that accesses the microphone, gets audio samples, converts them to the proper sample rate (16kHz), and sends them to the recognizer. This library is derived from [Recorderjs](https://github.com/mattdiamond/Recorderjs).
+We include an audio recording library based on the Web Audio API that accesses the microphone, gets audio samples, converts them to the proper sample rate (16kHz), and sends them to the recognizer. This library is derived from [Recorderjs](https://github.com/mattdiamond/Recorderjs). To know more about audio capture and playback on the web, you could have a look at this [overview of audio on the Web](https://github.com/syl22-00/TechDocs/blob/master/AudioInBrowser.md).
 
 Include `audioRecorder.js` in the HTML file and make sure `audioRecorderWorker.js` is in the same folder. To use it, create a new instance of `AudioRecorder` giving it as argument a `MediaStreamSource`. As of Today, only Google Chrome implements it. You also need to set the recognizer attribute to a Recognizer worker, as described above.
 

@@ -6,8 +6,7 @@
 	var bufferLen = config.bufferLen || 4096;
 	var outputBufferLength = config.outputBufferLength || 4000;
 	this.context = source.context;
-	// Todo, see if we can change input or output channel numbers
-	this.node = this.context.createJavaScriptNode(bufferLen, 2, 2);
+	this.node = this.context.createScriptProcessor(bufferLen);
 	var worker = new Worker(config.worker || AUDIO_RECORDER_WORKER);
 	worker.postMessage({
 	    command: 'init',

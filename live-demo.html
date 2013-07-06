@@ -110,7 +110,6 @@
 
       function startUserMedia(stream) {
         var input = audio_context.createMediaStreamSource(stream);
-        input.connect(audio_context.destination);
         recorder = new AudioRecorder(input);
         if (recognizer) recorder.recognizer = recognizer;
         recorderReady = true;

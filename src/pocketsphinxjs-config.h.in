@@ -3,4 +3,7 @@
 
 #define HMM_FOLDERS "@HMM_FOLDERS@"
 
+#cmakedefine DICT_FILES "@DICT_FILES@"
+#cmakedefine LM_FILES "@LM_FILES@"
+
 #endif /* _POCKETSPHINXJS_CONFIG_H_ */

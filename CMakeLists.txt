@@ -84,7 +84,7 @@ include_directories("${CMAKE_BINARY_DIR}/include")
 # Building a shared library to be converted to JavaScript
 add_library(${ps_lib} SHARED "src/pocketsphinxjs.cpp" "src/pocketsphinxjsImpl.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
 
-# Copying resources into the build tree
+# Copying acoustic models into the build tree
 foreach(model ${HMM_FOLDERS})
   message("Copying ${HMM_BASE}/${model} to binary dir")
   file(COPY ${HMM_BASE}/${model} DESTINATION ${CMAKE_BINARY_DIR})
@@ -94,6 +94,24 @@ set(EMBED_HMM "")
   foreach(model ${HMM_FOLDERS})
   set(EMBED "${EMBED}" "--embed-file" "${model}" " ")
 endforeach()
+
+# Package dictionaries if needed
+if(DICT_BASE AND DICT_FILES)
+  foreach(dict ${DICT_FILES})
+    message("Copying ${DICT_BASE}/${dict} to binary dir")
+    file(COPY ${DICT_BASE}/${dict} DESTINATION ${CMAKE_BINARY_DIR})
+    set(EMBED "${EMBED}" "--embed-file" "${dict}" " ")
+  endforeach()
+endif()
+
+# Package language models if needed
+if(LM_BASE AND LM_FILES)
+  foreach(lm ${LM_FILES})
+    message("Copying ${LM_BASE}/${lm} to binary dir")
+    file(COPY ${LM_BASE}/${lm} DESTINATION ${CMAKE_BINARY_DIR})
+    set(EMBED "${EMBED}" "--embed-file" "${lm}" " ")
+  endforeach()
+endif()
 
 # Adding custom target for the HTML for the library
 add_custom_target(${ps_lib_js} ALL

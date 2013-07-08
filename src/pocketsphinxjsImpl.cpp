@@ -15,6 +15,11 @@
 #include "pocketsphinx.h"
 #include "pocketsphinxjs-config.h"
 
+typedef std::vector<std::string> StringsListType;
+typedef std::set<std::string> StringsSetType;
+typedef std::map<std::string, std::string> StringsMapType;
+typedef std::map<std::string, std::string>::iterator StringsMapIterator;
+
 /** Possible return values of most calls */
 enum PsReturnType {SUCCESS = 0,
 		   BAD_STATE = 1,
@@ -40,17 +45,21 @@ static fsg_set_t * grammar_set = NULL;
 static logmath_t * logmath = NULL;
 static int32_t grammar_index = 0;
 static fsg_model_t * current_grammar = NULL;
-static std::vector<std::string> grammar_names;
-static std::set<std::string> acoustic_models;
+static StringsListType grammar_names;
+static StringsSetType acoustic_models;
+static StringsSetType language_models;
+static StringsSetType dictionaries;
 static std::string default_acoustic_model;
+static std::string default_language_model;
+static std::string default_dictionary;
 static std::string current_hyp;
-static std::map<std::string, std::string> recognizer_parameters; 
+static StringsMapType recognizer_parameters; 
 static int32 score;
 static char const * sentence_id;
-
+static bool is_fsg;
 // Implemented later in this file
-int parseAcousticModels(const std::string &);
-
+int parseStringList(const std::string &, StringsSetType*, std::string*);
+bool isValidParameter(const std::string &, const std::string &);
 /**********************************
  *
  * This initializes a new recognizer
@@ -64,9 +73,20 @@ int psInitializeImpl() {
   psState = INITIALIZING;
   // The acoustic models packaged should be added to our set
   if (default_acoustic_model.size() == 0)
-    parseAcousticModels(HMM_FOLDERS);
+    parseStringList(HMM_FOLDERS, &acoustic_models, &default_acoustic_model);
+
+#ifdef LM_FILES
+  if (default_language_model.size() == 0)
+    parseStringList(LM_FILES, &language_models, &default_language_model);
+#endif /* LM_FILES */
+
+#ifdef DICT_FILES
+  if (default_dictionary.size() == 0)
+    parseStringList(DICT_FILES, &dictionaries, &default_dictionary);
+#endif /* DICT_FILES */
+
   // TODO: we need to keep grammar names in scope
-  // while the recognizer is alive. Storing the stings
+  // while the recognizer is alive. Storing the strings
   // in a vector is fine until it gets expanded, making new
   // copies of the strings, invalidating the char* pointers
   grammar_names.reserve(1000);
@@ -97,9 +117,13 @@ int psInitializeImpl() {
   int argc = 2 * recognizer_parameters.size();
   char ** argv = new char*[argc];
   int index = 0;
-  for (std::map<std::string, std::string>::iterator i = recognizer_parameters.begin() ; i != recognizer_parameters.end(); ++i) {
-    argv[index++] = (char*) i->first.c_str();
-    argv[index++] = (char*) i->second.c_str();
+  is_fsg = true;
+  for (StringsMapIterator i = recognizer_parameters.begin() ; i != recognizer_parameters.end(); ++i) {
+    if (isValidParameter(i->first, i->second)) {
+      if (i->first == "-lm") is_fsg = false;
+      argv[index++] = (char*) i->first.c_str();
+      argv[index++] = (char*) i->second.c_str();
+    }
   }
   // First, create a config with the provided arguments  
   cmd_ln_t * config = cmd_ln_parse_r(NULL, cont_args_def, argc, argv, FALSE);
@@ -119,13 +143,14 @@ int psInitializeImpl() {
     psState = UNINITIALIZED;
     return RUNTIME_ERROR;
   }
+  if (is_fsg) {
+    grammar_set = ps_update_fsgset(recognizer);
+    if (grammar_set == NULL) {
+      return RUNTIME_ERROR;
+    }
+  }
   logmath = logmath_init(1.0001, 0, 0);
   if (logmath == NULL) {
-    psState = UNINITIALIZED;
-    return RUNTIME_ERROR;
-  }
-  grammar_set = ps_update_fsgset(recognizer);
-  if (grammar_set == NULL) {
     psState = UNINITIALIZED;
     return RUNTIME_ERROR;
   }
@@ -350,12 +375,22 @@ int psProcessImpl(void* data, int length) {
  * @return 0 if successful, alaways successful
  *
  *****************************************/
-int parseAcousticModels(const std::string & model_list) {
+int parseStringList(const std::string & list, StringsSetType* strings_set, std::string* default_string = NULL) {
+  if ((strings_set == NULL) || (list.size() == 0))
+    return BAD_ARGUMENT;
   std::string separator = ";";
   std::string::size_type index;
-  default_acoustic_model = model_list.substr(0, index = model_list.find(separator));
-  acoustic_models.insert(default_acoustic_model);
-  while((index != std::string::npos) && (index != model_list.size() -1))
-    acoustic_models.insert(model_list.substr(index+1, -1 -index +(index = model_list.find(separator, index + 1))));
-  return 0;
+  std::string first_string = list.substr(0, index = list.find(separator));
+  if (default_string != NULL)
+    *default_string = first_string;
+  strings_set->insert(first_string);
+  while((index != std::string::npos) && (index != list.size() -1))
+    strings_set->insert(list.substr(index+1, -1 -index +(index = list.find(separator, index + 1))));
+  return SUCCESS;
+}
+
+bool isValidParameter(const std::string & key, const std::string & value) {
+  if ((key == "-dict") && (dictionaries.find(value) == dictionaries.end())) return false;
+  if ((key == "-lm") && (language_models.find(value) == language_models.end())) return false;
+  return true;
 }

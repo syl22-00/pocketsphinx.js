@@ -53,9 +53,11 @@ The build is a classic CMake cross-compilation, using the toolchain provided by 
 
 This generates `pocketsphinx.js`. At this point, optimization level is hard-coded, so modify `CMakeLists.txt` directly if you would like to change it.
 
-## 2.b Compilation with custom acoustic models
+## 2.b Compilation with custom models and dictionary
 
-The compilation process packages the acoustic models inside the resulting JavaScript file. If you would like to use your own models, you should specify where they are when running `cmake`. For that, place all models you want to package inside a `HMM_BASE` folder. Each model being in its own folder inside `HMM_BASE`:
+The compilation process packages the acoustic models inside the resulting JavaScript file and also, possibly, language models and dictionary files. If you would like to package your own models, you should specify where they are when running `cmake`. For that, place all models you want to package inside a base folder and specify the files or subfolders you want to include.
+
+For instance, to package acoustic models, place them inside a `HMM_BASE` folder. Each model being in its own folder inside `HMM_BASE`:
 
     $ cmake -DEMSCRIPTEN=1 -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Platform/Emscripten_unix.cmake -DHMM_BASE=/path/to/models -DHMM_FOLDERS="model1;model2;..." ..
 
@@ -73,12 +75,21 @@ Make sure the files of the acoustic model are directly inside the `HMM_FOLDERS`:
     model2:
     feat.params  mdef  means  sendump  transition_matrices  variances
 
-Please note:
+You can do the same thing with statistical language models and dictionary files, using the following CMake parameters:
 
-* If you want to package your own models, you need to set both `HMM_BASE` and `HMM_FOLDERS`.
+* Acoustic models: `HMM_BASE` and `HMM_FOLDERS`,
+* Statistical language models: `LM_BASE` and `LM_FILES`.
+* Dictionary files: `DICT_BASE` and `DICT_FILES`.
+
+Please note that:
+
+* If you want to package files, you need to set both `..._BASE` and `..._FOLDERS` or `..._FILES`.
+* If you do not specify an acoustic model to package, the default model will be packaged (the model is in `am/rm1_200/`).
 * By default, the first provided acoustic model will be loaded if none is specified before the recognizer is initialized. The model can be selected by giving the `"-hmm"` parameter. See upcoming sections for how to specify recognizer parameters.
-* Make sure you optimize the size of your models (`mdef` in binary format, `sendump` instead of `mixture_weights`, see PocketSphinx docs).
-
+* Make sure you optimize the size of your acoustic models (`mdef` in binary format, `sendump` instead of `mixture_weights`, see PocketSphinx docs).
+* Statistical language models and dictionary files are optional. As explained later, grammars and dictionary words can be added at runtime.
+* If you want to package statistical language models, you must provide a dictionary that contains all words used in the SLMs.
+* The Pocketsphinx parameter for dictionary files is `"-dict"` and for language models `"-lm"`. See next sections for how to specify recognizer parameters.
 
 # 3. API of `pocketsphinx.js`
 
@@ -86,7 +97,7 @@ You can interact with `pocketsphinx.js` directly if you need to, but it is proba
 
 ## 3.1 Principles
 
-The file `pocketsphinx.js` can be directly included into an html file but as it is fairly large (a few MB, depending on the optimization level used during compilation), downloading and loading it will take time and affect the UI thread. So, as explained later, you should use it inside a Web Worker, for instance using `recognizer.js`.
+The file `pocketsphinx.js` can be directly included into an HTML file but as it is fairly large (a few MB, depending on the optimization level used during compilation), downloading and loading it will take time and affect the UI thread. So, as explained later, you should use it inside a Web Worker, for instance using `recognizer.js`.
 
 You should probably have a look at emscripten's docs to understand how to interact with emscripten-generated JavaScript. For instance, to retrieve the recognizer's state:
 
@@ -155,6 +166,8 @@ If you have included several acoustic models when compiling `pocketsphinx.js`, y
 
 If you do not call `psSetParam` with `"-hmm"`, or call it with an incorrect value, the first model in the list will be used (here, `english`).
 
+Similarly, you should use recognizer parameters to load a statistical language model (`"-lm"`) or dictionary (`"-dict"`) you have previously packaged inside `pocketshinx.js`. Note that if you want to use a SLM, you must also have a dictionary file that contains the words used in the SLM.
+
 ### d. psResetParams
 
 Resets all parameters for the recognizer to their default values.
@@ -178,7 +191,7 @@ Note that if the recognizer is already initialized, it will be re-initialized wi
 
 ### f. psStartGrammar
 
-At this point, `poketsphinx.js` can only use Finite State Grammars (FSG) as language models. To input grammars, you should be in the `INITIALIZED` state, call `psStartGrammar`, add transitions with `psAddTransition`, then call `psEndGrammar`. Before that, you must have added all words used in the grammar with `psAddWord`, described below.
+At this point, `pocketsphinx.js` can only use Finite State Grammars (FSG) as language models. To input grammars, you should be in the `INITIALIZED` state, call `psStartGrammar`, add transitions with `psAddTransition`, then call `psEndGrammar`. Before that, you must have added all words used in the grammar with `psAddWord`, described below.
 
     var psStartGrammar = Module.cwrap('psStartGrammar', 'number', ['number']);
     var numStates = 1; // Number of states in the FSG
@@ -307,11 +320,11 @@ Once it is done, the recognizer will post a message back, for instance:
 
 Recognizer parameters to be passed to `PocketSphinx` can be given in the call to `initialize`. For instance:
 
-    recognizer.postMessage({command: 'initialize', callbackId: id, data: [["-hmm", "french"], ["-fwdflat", "no"]]});
+    recognizer.postMessage({command: 'initialize', callbackId: id, data: [["-hmm", "french"], ["-fwdflat", "no"], ["-dict", "french.dic"], ["-lm", "french.DMP"]]});
 
-This will set the `pocketsphinx` command-line parameter `"-fwdflat"` to `no` and initialize the recognizer with the acoustic model `french`, assuming `pocketsphinx.js` was compiled with such model.
+This will set the `pocketsphinx` command-line parameter `-fwdflat` to `no` and initialize the recognizer with the acoustic model `french`, the language model `french.DMP` and the dictionary `french.dic`, assuming `pocketsphinx.js` was compiled with such models.
 
-Note that once it is initialized, the recognizer can be re-initialized with different parameters. That way, for instance, a web application can switch between different acoustic models at runtime.
+Note that once it is initialized, the recognizer can be re-initialized with different parameters. That way, for instance, a web application can switch between different acoustic and language models at runtime.
 
 ### c. Adding words
 
@@ -358,7 +371,7 @@ Recognition can be simply stopped using the `stop` command:
 
     recognizer.postMessage({command: 'stop'});
 
-It will then send a last message with the hypothesis, marked as final (which means that it is more accurate as it comes after a second pass that was trigered by the `stop` command). It would look like: `{hyp: "FINAL RECOGNIZED STRING", final: true}`.
+It will then send a last message with the hypothesis, marked as final (which means that it is more accurate as it comes after a second pass that was triggered by the `stop` command). It would look like: `{hyp: "FINAL RECOGNIZED STRING", final: true}`.
 
 ## 4.4 Using `CallbackManager`
 
@@ -380,7 +393,7 @@ In the `onmessage` function of your worker, use the callback manager to check an
             // means that we might have a callback associated
             var clb = callbackManager.get(e.data['id']);
             var data = {};
-            // As mentinned previously, additional data can be passed to the callback
+            // As mentioned previously, additional data can be passed to the callback
             // such as the id of a newly added grammar
             if(e.data.hasOwnProperty('data')) data = e.data.data;
             if(clb) clb(data);
@@ -393,7 +406,7 @@ Check `live.html` in `webapp` for more examples.
 
 ## 4.5 Detecting when the Worker is ready
 
-When a new worker is instanciated, it immediately returns a worker object, but the actual download of the JavaScript files might take some time, especially in our case where `pocketsphinx.js` is fairly large. One way of detecting whether the files are fully downloaded and loaded is to post a first message right after it is instanciated and wait for a message back from the worker.
+When a new worker is instantiated, it immediately returns a worker object, but the actual download of the JavaScript files might take some time, especially in our case where `pocketsphinx.js` is fairly large. One way of detecting whether the files are fully downloaded and loaded is to post a first message right after it is instantiated and wait for a message back from the worker.
 
     var recognizer;
     function spawnWorker(workerurl, onReady) {
@@ -442,7 +455,7 @@ Include `audioRecorder.js` in the HTML file and make sure `audioRecorderWorker.j
 
 
     var audio_context = new AudioContext;
-    // Callback once user authorises access to the microphone:
+    // Callback once user authorizes access to the microphone:
     function startUserMedia(stream) {
         var input = audio_context.createMediaStreamSource(stream);
         input.connect(audio_context.destination);

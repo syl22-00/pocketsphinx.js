@@ -475,7 +475,7 @@ Once the recorder is up and running, you can start and stop recording and recogn
     // To stop recording:
     recorder.stop();  // The final hypothesis is sent
 
-The constructor for AudioRecorder can take an optional config object. Most importandly, this config can include a callback function which is executed when there is an error during recording. As of today, the only possible error is when the input samples are silent, probably caused by the Chrome issue described below.
+The constructor for AudioRecorder can take an optional config object. Most importantly, this config can include a callback function which is executed when there is an error during recording. As of today, the only possible error is when the input samples are silent, probably caused by the Chrome issue described below.
 
     var audioRecorderConfig = {errorCallback: function(x) {alert("Error from recorder: " + x);}};
     recorder = new AudioRecorder(input, audioRecorderConfig);

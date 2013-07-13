@@ -3,6 +3,7 @@
     var AudioRecorder = function(source, cfg) {
 	this.recognizer = null;
 	var config = cfg || {};
+	var errorCallback = config.errorCallback || function() {};
 	var bufferLen = config.bufferLen || 4096;
 	var outputBufferLength = config.outputBufferLength || 4000;
 	this.context = source.context;
@@ -49,7 +50,8 @@
 	    this.stop();
 	};
 	myClosure = this;
-	worker.onmessage = function(e){
+	worker.onmessage = function(e) {
+	    if (e.data.error && (e.data.error == "silent")) errorCallback("silent");
 	    if ((e.data.command == 'newBuffer') && recording) {
                 myClosure.recognizer.postMessage({ command: 'process', data: e.data.data });
 	    }

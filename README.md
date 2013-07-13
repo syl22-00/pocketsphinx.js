@@ -475,8 +475,13 @@ Once the recorder is up and running, you can start and stop recording and recogn
     // To stop recording:
     recorder.stop();  // The final hypothesis is sent
 
+The constructor for AudioRecorder can take an optional config object. Most importandly, this config can include a callback function which is executed when there is an error during recording. As of today, the only possible error is when the input samples are silent, probably caused by the Chrome issue described below.
 
-This is also illustrated in the given live demo, in the `webapp/` folder.
+    var audioRecorderConfig = {errorCallback: function(x) {alert("Error from recorder: " + x);}};
+    recorder = new AudioRecorder(input, audioRecorderConfig);
+
+
+All these are illustrated in the given live demo, in the `webapp/` folder.
 
 Note that live audio capture is only available on recent versions of Google Chrome, and on many platforms that feature is not usable and only produces silent audio. Hopefully this will be solved soon. You can track progress on the chromium issue tracker:
 

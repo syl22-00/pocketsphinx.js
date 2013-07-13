@@ -22,6 +22,7 @@ function init(config){
 }
 
 function record(inputBuffer){
+    var isSilent = true;
     for (var i = 0; i < inputBuffer[0].length; i++){
 	recBuffers.push((inputBuffer[0][i] + inputBuffer[1][i]) * 16383.0);
     }
@@ -41,11 +42,13 @@ function record(inputBuffer){
 		indexOut++;
 	    }
 	    result[indexIn] = bin / num;
+	    if(isSilent && (result[indexIn] != 0)) isSilent = false;
 	    indexIn++;
 	}
 	var output = {};
 	output.command = 'newBuffer';
 	output.data = result;
+	if (isSilent) output.error = "silent";
 	this.postMessage(output);
 	recBuffers = recBuffers.slice(indexOut);
     }

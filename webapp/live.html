@@ -71,7 +71,8 @@
       // in it, we instanciate the recorder
       function startUserMedia(stream) {
         var input = audio_context.createMediaStreamSource(stream);
-        recorder = new AudioRecorder(input);
+        var audioRecorderConfig = {errorCallback: function(x) {updateStatus("Error from recorder: " + x);}};
+        recorder = new AudioRecorder(input, audioRecorderConfig);
         // If a recognizer is ready, we pass it to the recorder
         if (recognizer) recorder.recognizer = recognizer;
         recorderReady = true;

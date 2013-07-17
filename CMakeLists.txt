@@ -123,3 +123,7 @@ configure_file (
   "${CMAKE_CURRENT_SOURCE_DIR}/src/pocketsphinxjs-config.h.in"
   "${CMAKE_BINARY_DIR}/include/pocketsphinxjs-config.h"
   )
+
+add_custom_target(test.js ALL
+  COMMAND ${CMAKE_C_COMPILER} "${CMAKE_CURRENT_SOURCE_DIR}/src/psRecognizer.cpp" -o PSRecognizer.html --bind
+  )

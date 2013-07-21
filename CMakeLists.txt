@@ -78,11 +78,14 @@ endif()
 message("HMM_BASE is ${HMM_BASE}")
 message("HMM_FOLDERS is ${HMM_FOLDERS}")
 
+# We are using the C++ binding utility of emscripten, this needs to be added to the compilation command
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --bind")
+
 # Add include dir in build tree as we'll place config header files there
 include_directories("${CMAKE_BINARY_DIR}/include")
 
 # Building a shared library to be converted to JavaScript
-add_library(${ps_lib} SHARED "src/pocketsphinxjs.cpp" "src/pocketsphinxjsImpl.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
+add_library(${ps_lib} SHARED "src/pocketsphinxjs.cpp" "src/pocketsphinxjsImpl.cpp" "src/psRecognizer.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
 
 # Copying acoustic models into the build tree
 foreach(model ${HMM_FOLDERS})
@@ -113,17 +116,13 @@ if(LM_BASE AND LM_FILES)
   endforeach()
 endif()
 
-# Adding custom target for the HTML for the library
+# Adding custom target for the JavaScript library. Note -O2 -s ASM_JS=0, which seems to be necessary with bind
 add_custom_target(${ps_lib_js} ALL
-  COMMAND ${CMAKE_C_COMPILER} ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -O2 -o ${ps_lib_js} ${EMBED} ${JS_COMPILATION_FLAGS}
+  COMMAND ${CMAKE_C_COMPILER} -O2 -s ASM_JS=0 --bind ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED} ${JS_COMPILATION_FLAGS}
   DEPENDS ${ps_lib}
   )
 
 configure_file (
   "${CMAKE_CURRENT_SOURCE_DIR}/src/pocketsphinxjs-config.h.in"
   "${CMAKE_BINARY_DIR}/include/pocketsphinxjs-config.h"
-  )
-
-add_custom_target(test.js ALL
-  COMMAND ${CMAKE_C_COMPILER} "${CMAKE_CURRENT_SOURCE_DIR}/src/psRecognizer.cpp" -o PSRecognizer.html --bind
   )

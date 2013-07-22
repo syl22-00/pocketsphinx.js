@@ -12,7 +12,7 @@
 #include "pocketsphinx.h"
 
 namespace pocketsphinxjs {
-  
+
   enum ReturnType {
     SUCCESS,
     BAD_STATE,
@@ -48,6 +48,7 @@ namespace pocketsphinxjs {
   typedef std::vector<std::string> StringsListType;
   typedef std::set<std::string> StringsSetType;
   typedef std::vector<ConfigItem> Config;
+  typedef std::vector<int> Integers;
 
   class Recognizer {
 
@@ -56,7 +57,7 @@ namespace pocketsphinxjs {
     Recognizer(const Config&);
     int reInit(const Config&);
     int addWords(const std::vector<Word>&);
-    int addGrammar(int, const Grammar&);
+    int addGrammar(Integers&, const Grammar&);
     int switchGrammar(int);
     std::string getHyp();
     int start();
@@ -102,15 +103,15 @@ namespace pocketsphinxjs {
  * words.push_back(["HELLO", "HH AH L OW"]);
  * words.push_back(["WORLD", "W ER L D"]);
  * recognizer.addWords(words);
+ * words.delete()
  * var transitions = new Module.VectorTransitions();
  * transitions.push_back({from: 0, to: 1, word: "HELLO"});
  * transitions.push_back({from: 1, to: 2, word: "WORLD"});
- * var c_malloc = Module.cwrap('malloc', 'number', ['number']);
- * var id_ptr = c_malloc(4);
- * recognizer.addGrammar(id_ptr, {start: 1, end: 2, numStates: 3, transitions: transitions});
- * var id = getValue(id_ptr, 'i32');
- * var c_free = Module.cwrap('free', 'number', ['number']);
- * c_free(id_ptr);
+ * var ids = new Module.Integers();
+ * recognizer.addGrammar(ids, {start: 1, end: 2, numStates: 3, transitions: transitions});
+ * transitions.delete();
+ * var id = ids.get(0);
+ * ids.delete();
  * var length = 100;
  * recognizer.start();
  * var buffer = new Module.AudioBuffer();
@@ -119,8 +120,9 @@ namespace pocketsphinxjs {
  * recognizer.process(buffer);
  * recognizer.process(buffer);
  * recognizer.process(buffer);
- * c_free(buffer);
+ * buffer.delete();
  * recognizer.stop();
+ * recognizer.delete();
  *
  *********************************************/
 
@@ -132,7 +134,6 @@ EMSCRIPTEN_BINDINGS(recognizer) {
     .value("BAD_STATE", ps::BAD_STATE)
     .value("BAD_ARGUMENT", ps::BAD_ARGUMENT)
     .value("RUNTIME_ERROR", ps::RUNTIME_ERROR);
-
 
   emscripten::value_tuple<ps::Word>("Word")
     .element(&ps::Word::word)
@@ -147,6 +148,7 @@ EMSCRIPTEN_BINDINGS(recognizer) {
   emscripten::register_vector<int16_t>("AudioBuffer");
   emscripten::register_vector<ps::Transition>("VectorTransitions");
   emscripten::register_vector<ps::Word>("VectorWords");
+  emscripten::register_vector<int>("Integers");
 
   emscripten::value_struct<ps::Grammar>("Grammar")
     .field("start", &ps::Grammar::start)

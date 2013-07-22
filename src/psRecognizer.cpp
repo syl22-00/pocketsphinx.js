@@ -28,8 +28,7 @@ namespace pocketsphinxjs {
       if (ps_add_word(decoder, words.at(i).word.c_str(), words.at(i).pronunciation.c_str(), 1) < 0) return RUNTIME_ERROR;
     return SUCCESS;
   }
-  int Recognizer::addGrammar(int id_ptr, const Grammar& grammar) {
-    int32_t* id = (int32_t*) id_ptr;
+  int Recognizer::addGrammar(Integers& id, const Grammar& grammar) {
     if (decoder == NULL) return BAD_STATE;
     std::ostringstream grammar_name;
     grammar_name << grammar_index;
@@ -46,7 +45,8 @@ namespace pocketsphinxjs {
     if (current_grammar != fsg_set_add(grammar_set, grammar_names.back().c_str(), current_grammar)) {
       return RUNTIME_ERROR;
     }
-    *id = grammar_index;
+    if (id.size() == 0) id.push_back(grammar_index);
+    else id.at(0) = grammar_index;
     grammar_index++;
     ps_update_fsgset(decoder);
     fsg_model_t * fsg = fsg_set_select(grammar_set, grammar_names.back().c_str());

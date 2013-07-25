@@ -10,25 +10,30 @@ namespace pocketsphinxjs {
 
   // Implemented later in this file
   ReturnType parseStringList(const std::string &, StringsSetType*, std::string*);
+
   Recognizer::Recognizer(): grammar_names(MAX_NUM_GRAMMARS), is_fsg(true), is_recording(false), current_hyp(""), grammar_index(0) {
     Config c;
     if (init(c) != SUCCESS) cleanup();
   }
+
   Recognizer::Recognizer(const Config& config) : grammar_names(MAX_NUM_GRAMMARS), is_fsg(true), is_recording(false), current_hyp(""), grammar_index(0) {
     if (init(config) != SUCCESS) cleanup();
   }
-  int Recognizer::reInit(const Config& config) {
+
+  ReturnType Recognizer::reInit(const Config& config) {
     ReturnType r = init(config);
     if (r != SUCCESS) cleanup();
     return r;
   }
-  int Recognizer::addWords(const std::vector<Word>& words) {
+
+  ReturnType Recognizer::addWords(const std::vector<Word>& words) {
     if (decoder == NULL) return BAD_STATE;
     for (int i=0 ; i<words.size() ; ++i)
       if (ps_add_word(decoder, words.at(i).word.c_str(), words.at(i).pronunciation.c_str(), 1) < 0) return RUNTIME_ERROR;
     return SUCCESS;
   }
-  int Recognizer::addGrammar(Integers& id, const Grammar& grammar) {
+
+  ReturnType Recognizer::addGrammar(Integers& id, const Grammar& grammar) {
     if (decoder == NULL) return BAD_STATE;
     std::ostringstream grammar_name;
     grammar_name << grammar_index;
@@ -56,7 +61,8 @@ namespace pocketsphinxjs {
       return RUNTIME_ERROR;
     return SUCCESS;
   }
-  int Recognizer::switchGrammar(int id) {
+
+  ReturnType Recognizer::switchGrammar(int id) {
     if (decoder == NULL) return BAD_STATE;
     std::ostringstream grammar_name;
     grammar_name << id;
@@ -67,7 +73,8 @@ namespace pocketsphinxjs {
       return RUNTIME_ERROR;
     return SUCCESS;
   }
-  int Recognizer::start() {
+
+  ReturnType Recognizer::start() {
     if ((decoder == NULL) || (is_recording)) return BAD_STATE;
     if (ps_start_utt(decoder, NULL) < 0) {
       return RUNTIME_ERROR;
@@ -76,7 +83,8 @@ namespace pocketsphinxjs {
     is_recording = true;
     return SUCCESS;
   }
-  int Recognizer::stop() {
+
+  ReturnType Recognizer::stop() {
     if ((decoder == NULL) || (!is_recording)) return BAD_STATE;
     if (ps_end_utt(decoder) < 0) {
       return RUNTIME_ERROR;
@@ -86,7 +94,8 @@ namespace pocketsphinxjs {
     is_recording = false;
     return SUCCESS;
   }
-  int Recognizer::process(const std::vector<int16_t>& buffer) {
+
+  ReturnType Recognizer::process(const std::vector<int16_t>& buffer) {
     if ((decoder == NULL) || (!is_recording)) return BAD_STATE;
     if (buffer.size() == 0)
       return RUNTIME_ERROR;
@@ -95,6 +104,7 @@ namespace pocketsphinxjs {
     current_hyp = (h == NULL) ? "" : h;
     return SUCCESS;
   }
+
   Recognizer::~Recognizer() {
     cleanup();
   }
@@ -161,7 +171,6 @@ namespace pocketsphinxjs {
       }
     }
 
-    // First, create a config with the provided arguments  
     cmd_ln_t * cmd_line = cmd_ln_parse_r(NULL, cont_args_def, argc, argv, FALSE);
     if (cmd_line == NULL) {
       delete [] argv;
@@ -193,7 +202,7 @@ namespace pocketsphinxjs {
 
   /*******************************************
    *
-   * Parses the string with available acoustic model and fills in
+   * Parses the string with available models and fills in
    * the default model and the available models
    * @param string to parse, the models are separated with ;
    * @return 0 if successful, alaways successful
@@ -212,5 +221,4 @@ namespace pocketsphinxjs {
       strings_set->insert(list.substr(index+1, -1 -index +(index = list.find(separator, index + 1))));
     return SUCCESS;
   }
-
-}
+} // namespace pocketsphinxjs

@@ -68,8 +68,6 @@ endforeach(cfile)
 set(ps_lib_js "pocketsphinx.js")
 set(ps_lib "pocketsphinx")
 
-set(JS_COMPILATION_FLAGS "-s" "\ EXPORTED_FUNCTIONS=\"['_psInitialize','_psGetState','_psSetParam','_psResetParams','_psGetHyp','_psStartGrammar','_psEndGrammar','_psSwitchGrammar','_psAddWord','_psAddTransition','_psStart','_psStop','_psProcess','_malloc','_free']\"")
-
 if ((NOT HMM_BASE) OR (NOT HMM_FOLDERS))
   set(HMM_BASE "${sphinx_root}/am")
   set(HMM_FOLDERS "rm1_200")
@@ -85,7 +83,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --bind")
 include_directories("${CMAKE_BINARY_DIR}/include")
 
 # Building a shared library to be converted to JavaScript
-add_library(${ps_lib} SHARED "src/pocketsphinxjs.cpp" "src/pocketsphinxjsImpl.cpp" "src/psRecognizer.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
+add_library(${ps_lib} SHARED "src/psRecognizer.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
 
 # Copying acoustic models into the build tree
 foreach(model ${HMM_FOLDERS})
@@ -118,7 +116,7 @@ endif()
 
 # Adding custom target for the JavaScript library. Note -O2 -s ASM_JS=0, which seems to be necessary with bind
 add_custom_target(${ps_lib_js} ALL
-  COMMAND ${CMAKE_C_COMPILER} -O2 -s ASM_JS=0 --bind ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED} ${JS_COMPILATION_FLAGS}
+  COMMAND ${CMAKE_C_COMPILER} -O2 -s ASM_JS=0 --bind ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
   DEPENDS ${ps_lib}
   )
 

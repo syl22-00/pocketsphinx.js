@@ -55,14 +55,14 @@ namespace pocketsphinxjs {
   public:
     Recognizer();
     Recognizer(const Config&);
-    int reInit(const Config&);
-    int addWords(const std::vector<Word>&);
-    int addGrammar(Integers&, const Grammar&);
-    int switchGrammar(int);
+    ReturnType reInit(const Config&);
+    ReturnType addWords(const std::vector<Word>&);
+    ReturnType addGrammar(Integers&, const Grammar&);
+    ReturnType switchGrammar(int);
     std::string getHyp();
-    int start();
-    int stop();
-    int process(const std::vector<int16_t>&);
+    ReturnType start();
+    ReturnType stop();
+    ReturnType process(const std::vector<int16_t>&);
     ~Recognizer();
     
   private:
@@ -139,6 +139,10 @@ EMSCRIPTEN_BINDINGS(recognizer) {
     .element(&ps::Word::word)
     .element(&ps::Word::pronunciation);
 
+  emscripten::value_tuple<ps::ConfigItem>("ConfigItem")
+    .element(&ps::ConfigItem::key)
+    .element(&ps::ConfigItem::value);
+
   emscripten::value_struct<ps::Transition>("Transition")
     .field("from", &ps::Transition::from)
     .field("to", &ps::Transition::to)
@@ -148,6 +152,7 @@ EMSCRIPTEN_BINDINGS(recognizer) {
   emscripten::register_vector<int16_t>("AudioBuffer");
   emscripten::register_vector<ps::Transition>("VectorTransitions");
   emscripten::register_vector<ps::Word>("VectorWords");
+  emscripten::register_vector<ps::ConfigItem>("Config");
   emscripten::register_vector<int>("Integers");
 
   emscripten::value_struct<ps::Grammar>("Grammar")

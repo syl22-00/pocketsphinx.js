@@ -34,7 +34,7 @@ The file `webapp/live.html` illustrates how these work together in a real applic
 
 # 2. Compilation of `pocketsphinx.js`
 
-A prebuilt version of `pocketsphinx.js` is available in `webapp/js`, or you can build it yourself. Below is the procedure on Linux (and probably Mac OS X). On Windows, refer to the emscripten manual.
+A prebuilt version of `pocketsphinx.js` is available in `webapp/js`, or you can build it yourself. Below is the procedure on Linux (and Mac OS X). On Windows, refer to the emscripten manual.
 
 ## 2.a Compilation with the default acoustic model
 
@@ -55,7 +55,7 @@ This generates `pocketsphinx.js`. At this point, optimization level is hard-code
 
 ## 2.b Compilation with custom models and dictionary
 
-The compilation process packages the acoustic models inside the resulting JavaScript file and also, possibly, language models and dictionary files. If you would like to package your own models, you should specify where they are when running `cmake`. For that, place all models you want to package inside a base folder and specify the files or subfolders you want to include.
+The compilation process packages the acoustic models inside the resulting JavaScript file and also, possibly, language models and dictionary files. If you would like to package your own models, you should specify where they are when running `cmake`. For that, place all models you want to package inside a base folder and specify the files or sub-folders you want to include.
 
 For instance, to package acoustic models, place them inside a `HMM_BASE` folder. Each model being in its own folder inside `HMM_BASE`:
 
@@ -97,179 +97,156 @@ You can interact with `pocketsphinx.js` directly if you need to, but it is proba
 
 ## 3.1 Principles
 
-The file `pocketsphinx.js` can be directly included into an HTML file but as it is fairly large (a few MB, depending on the optimization level used during compilation), downloading and loading it will take time and affect the UI thread. So, as explained later, you should use it inside a Web Worker, for instance using `recognizer.js`.
+The file `pocketsphinx.js` can be directly included into an HTML file but as it is fairly large (a few MB, depending on the optimization level used during compilation and packaged files), downloading and loading it will take time and affect the UI thread. So, as explained later, you should use it inside a Web worker, for instance using `recognizer.js`.
 
-You should probably have a look at emscripten's docs to understand how to interact with emscripten-generated JavaScript. For instance, to retrieve the recognizer's state:
-
-    $ var getState = Module.cwrap('psGetState');
-    $ var state = getState();
-
-Calls to `pocketsphinx.js` functions are synchronous, that's also why you probably need to load it in a Web Worker, as explained in later sections. The recognizer can be at any of these states:
-
-* UNINITIALIZED = 0, when the file is just loaded.
-* INITIALIZED = 1, after a successful call to the initialization function, and any time it is ready to perform actions.
-* ENTERING_GRAMMAR = 3, when it is getting grammar data.
-* RECORDING = 4, when it is getting audio data.
-
-Most calls return an error code, which can be one of the following:
-
-* SUCCESS = 0, if the action was performed successfully.
-* BAD_STATE = 1, if the current state does not allow the action.
-* BAD_ARGUMENT = 2, if the argument provided is invalid.
-* RUNTIME_ERROR = 3, if there is a runtime error in the recognizer.
+This API is based on `embind`, you should probably have a look at that [section in emscripten's docs](https://github.com/kripken/emscripten/wiki/embind) to understand how to interact with emscripten-generated JavaScript. Earlier versions of Pocketsphinx.js used a C-style API which is now deprecated, but it is still available in the `OBSOLETE_API` branch. 
 
 
-## 3.2 Calls
+As a first example, to create a new recognizer:
 
-In order to allocate and free memory, we import `malloc` and `free` first:
+    $ var recognizer = new Module.Recognizer();
+    ...
+    $ recognizer.delete();
 
-    var c_malloc = Module.cwrap('malloc', 'number', ['number']);
-    var c_free = Module.cwrap('free', 'number', ['number']);
+Calls to `pocketsphinx.js` functions are synchronous, that's also why you probably need to load it in a Web Worker, as explained in later sections.
 
-### a. psGetState
+Most calls return a ResultType object, which can be one of the following:
 
-Retrieves the current state:
+* SUCCESS, if the action was performed successfully.
+* BAD_STATE, if the current state does not allow the action.
+* BAD_ARGUMENT, if the argument provided is invalid.
+* RUNTIME_ERROR, if there is a runtime error in the recognizer.
 
-    var psGetState = Module.cwrap('psGetState');
-    var state = psGetState(); // Gets the current state of the recognizer
+In JavaScript these values can be referred as `Module.ReturnType.SUCCESS`, `Module.ReturnType.BAD_STATE`, etc. For instance:
 
-### b. psGetHyp
+    $ var recognizer = new Module.Recognizer();
+    ...
+    $ if (recognizer.reInit(config) != Module.ReturnType.SUCCESS)
+          alert("Error while recognizer is re-initialized");
 
-Retrieves the current hypothesis (the recognized string up to this point). It can be called at any time. If it is called during recording, this is the hypothesis up to that point, otherwise, it is the hypothesis of the last recorded sentence, after the second pass (more accurate than hypothesis during recognition):
+According to `embind`'s documentation, all objects created with the `new` operator must be deleted explicitly with a `.delete()` call.
 
-    var psGetHyp = Module.cwrap('psGetHyp', 'string');
-    var hyp = psGetHyp(); // Gets the current hypothesis
+## 3.2 Recognizer Object
 
-### c. psSetParam
+The entry point of `pocketsphinx.js` is the recognizer object. You can create as many instances as you want, but you probably don't need to and want so save memory. When a new instance is created, an optional `Config` object can be given which will be used to set parameters used to initialize Pocketsphinx. Refer to Pocketsphinx documentation to learn about the possible parameters. A `Config` object is basically an array of key-value pairs:
 
-Sets a PocketSphinx recognizer parameter. Parameters should be given before the recognizer is initialized with `psInitialize`. The parameters will be passed directly to pocketsphinx. For instance:
+    $ var config = new Module.Config();
+    $ config.push_back(["-fwdflat", "no"]);
+    $ var recognizer = new Module.recognizer(config);
+    $ config.delete();
+    ...
+    $ recognizer.delete();
 
-    var psSetParam = Module.cwrap('psSetParam', 'number', ['number','number']);
-    var key = "-fwdflat"; // Must match a valid pocketsphinx command-line parameter
-    var value = "no"; // Must be a valid value for the parameter
-    // We create C strings from the JavaScript strings:
-    var key_ptr = Module.allocate(intArrayFromString(key), 'i8', ALLOC_STACK); 
-    var value_ptr = Module.allocate(intArrayFromString(value), 'i8', ALLOC_STACK);
-    var output = psSetParam(key_ptr, value_ptr); // Returns 0 if successful, see possible error codes above
-    var psInitialize = Module.cwrap('psInitialize');
-    output = psInitialize(); // Returns 0 if successful, see possible error codes above
+This will initialize a recognizer with `"-fwdflat"` set to `"no"`.
 
-If you have included several acoustic models when compiling `pocketsphinx.js`, you can select which one should be used by setting the `"-hmm"` parameter. Say you have two models, one for English, one for French, and you have compiled the library with `-DHMM_FOLDERS="english;french"`, you can initialize the recognizer with the French model by setting the correct value before the call to `psInitialize`:
+If you have included several acoustic models when compiling `pocketsphinx.js`, you can select which one should be used by setting the `"-hmm"` parameter. Say you have two models, one for English, one for French, and you have compiled the library with `-DHMM_FOLDERS="english;french"`, you can initialize the recognizer with the French model by setting the correct value in the `Config` object:
 
-    var key = "-hmm";
-    var value = "french";
-    var key_ptr = Module.allocate(intArrayFromString(key), 'i8', ALLOC_STACK); 
-    var value_ptr = Module.allocate(intArrayFromString(value), 'i8', ALLOC_STACK);
-    var output = psSetParam(key_ptr, value_ptr);
-    var psInitialize = Module.cwrap('psInitialize');
-    output = psInitialize(); // Returns 0 if successful, see possible error codes above
+    $ var config = new Module.Config();
+    $ config.push_back(["-hmm", "french"]);
+    $ var recognizer = new Module.recognizer(config);
 
-If you do not call `psSetParam` with `"-hmm"`, or call it with an incorrect value, the first model in the list will be used (here, `english`).
+If you do not give the `"-hmm"` parameter, or give it an invalid value, the first model in the list will be used (here, `english`).
 
-Similarly, you should use recognizer parameters to load a statistical language model (`"-lm"`) or dictionary (`"-dict"`) you have previously packaged inside `pocketshinx.js`. Note that if you want to use a SLM, you must also have a dictionary file that contains the words used in the SLM.
+Similarly, you should use recognizer config parameters to load a statistical language model (`"-lm"`) or dictionary (`"-dict"`) you have previously packaged inside `pocketshinx.js`. Note that if you want to use a SLM, you must also have a dictionary file that contains the words used in the SLM.
 
-### d. psResetParams
+In addition, a recognizer object can be re-initialized with new parameters after the instance was created, with a call to `reInit`, for instance:
 
-Resets all parameters for the recognizer to their default values.
+    $ var config_english = new Module.Config();
+    $ config_english.push_back(["-hmm", "english"]);
+    $ var config_french = new Module.Config();
+    $ config_french.push_back(["-hmm", "french"]);
+    $ var recognizer = new Module.recognizer(config_english);
+    ...
+    $ if (recognizer.reInit(config_french) != Module.ReturnType.SUCCESS)
+          alert("Error while recognizer is re-initialized");
 
-    var psSetParam = Module.cwrap('psSetParam', 'number', ['number','number']);
-    var key = "-fwdflat"; // Must match a valid pocketsphinx command-line parameter
-    var value = "no"; // Must be a valid value for the parameter
-    var output = psSetParam(key_ptr, value_ptr);
-    var psResetParams =  Module.cwrap('psResetParams', 'number');
-    output = psResetParams() // Should return 0, previously set recognizer parameters have been reset to their default values
 
-### e. psInitialize
+## 3.3 Adding words and grammars
 
-Initializes the recognizer. This can take a few seconds, that's one of the reasons why you should use `pocketsphinx.js` inside a Web Worker.
+Dictionary and language model files can be packaged at compile time as explained previously. Meanwhile, dictionary words and grammars (Finite State Grammars, FSG) can be added at runtime.
 
-    var psInitialize = Module.cwrap('psInitialize');
-    var output = psInitialize(); // Returns 0 if successful, see possible error codes above
-    output = psInitialize(); // Should still return 0
+### a. Adding words
 
-Note that if the recognizer is already initialized, it will be re-initialized with any new parameters that was set (or unset with the previously documented `psResetParams` function) since the last call to `psInitialize`.
+All words used in grammars must be present in the pronunciation dictionary. Refer to the [CMU Pronunciation Dictionary site](http://www.speech.cs.cmu.edu/cgi-bin/cmudict) if you are not familiar with it. Words can be added as a vector of pairs word-pronunciation:
 
-### f. psStartGrammar
+    $ var recognizer = new Module.Recognizer();
+    $ var words = new Module.VectorWords();
+    $ words.push_back(["HELLO", "HH AH L OW"]);
+    $ words.push_back(["WORLD", "W ER L D"]);
+    $ if (recognizer.addWords(words) != Module.ReturnType.SUCCESS)
+          alert("Error while adding words"); // Probably because of bad format used for pronunciation
+    $ words.delete()
 
-At this point, `pocketsphinx.js` can only use Finite State Grammars (FSG) as language models. To input grammars, you should be in the `INITIALIZED` state, call `psStartGrammar`, add transitions with `psAddTransition`, then call `psEndGrammar`. Before that, you must have added all words used in the grammar with `psAddWord`, described below.
+### b. Adding grammars
 
-    var psStartGrammar = Module.cwrap('psStartGrammar', 'number', ['number']);
-    var numStates = 1; // Number of states in the FSG
-    var output = psStartGrammar(numStates); // Returns 0 if successful, see possible error codes above
+A FSG is a structure that includes an initial state, a last state as well as a set of transitions between these states. Again, make sure all words used in transitions are in the dictionary (either loaded through a packaged dictionary file or added at runtime using `addWords`). Here is an example of inputing one grammar:
 
-### g. psEndGrammar
+    $ var transitions = new Module.VectorTransitions();
+    $ transitions.push_back({from: 0, to: 1, word: "HELLO"});
+    $ transitions.push_back({from: 1, to: 2, word: "WORLD"});
+    $ var ids = new Module.Integers();
+    $ if (recognizer.addGrammar(ids, {start: 1, end: 2, numStates: 3, transitions: transitions}) != Module.ReturnType.SUCCESS)
+           alert("Error while adding grammar"); // Meaning that the grammar has issues
+    $ transitions.delete();
+    $ var id = ids.get(0); // This is the id assigned to the grammar
+    $ ids.delete();
 
-Once all transitions have been added, this should be called to close the grammar and retrieve its id. The given id will be used to switch to that grammar. A call to `psEndGrammar`, if successful, always switch the recognizer to the grammar so that no call to `psSwitchGrammar` is necessary to use it right away. It takes as argument a pointer to an allocated 4 byte-integer that will be set to the value of the id of the newly added grammar:
+Notice the `Integers` object that is used to return an id back to the app to refer to the grammar. This id is then used to switch the recognizer to using that specific grammar. You will note that `new Module.Integers()` actually returns a vector object that is then passed as a reference to `addGrammar`. If the call is successful, the first element of the array is the id assigned to the grammar.
 
-    var psEndGrammar = Module.cwrap('psEndGrammar', 'number', ['number']);
-    var id_ptr = c_malloc(4); // Creates a pointer to receive the value of the id
-    var out = psEndGrammar(id_ptr); // Returns 0 if successful, see possible error codes above
-    var id = getValue(id_ptr, 'i32'); // Gets the value of the id
-    c_free(id_ptr); // Frees the memory
+Also note that at this stage we have not implemented an API for transition probabilities.
 
-### h. psSwitchGrammar
+### c. Switching between grammars
 
-The recognizer can switch, at runtime, between grammars, using their id provided by `psEndGrammar`. For instance:
+A recognizer object can have any number of grammars but only one active grammar at a time. The active grammar is the one used when there is a call to `start()`, described later in this document. To switch to a specific grammar, you must use the id that was given during the call to `addGrammar`.
 
-    var psSwitchGrammar = Module.cwrap('psSwitchGrammar', 'number', ['number']);
-    var myGrammarId = 5; // Value that was given by call to psEndGrammar
-    var out = psSwitchGrammar(myGrammarId); // Returns 0 if successful, see possible error codes above
+    $ if (recognizer.switchGrammar(id) != Module.ReturnType.SUCCESS) // id is the first element of the ids vector after call to addGrammar
+           alert("Error while switching grammar"); // The id is probably wrong
 
-### i. psAddWord
 
-All words used in grammars must be present in the pronunciation dictionary. Refer to the [CMU Pronunciation Dictionary site](http://www.speech.cs.cmu.edu/cgi-bin/cmudict) if you are not familiar with it.
 
-    var psAddWord = Module.cwrap('psAddWord', 'number', ['number','number']);
-    var word = "HELLO";
-    var pronunciation = "HH EH L OW"; // CMU dict syntax
-    // We create C strings from the JavaScript strings:
-    var word_ptr = Module.allocate(intArrayFromString(word), 'i8', ALLOC_STACK); 
-    var pron_ptr = Module.allocate(intArrayFromString(pronunciation), 'i8', ALLOC_STACK);
-    var out = psAddWord(word_ptr, pron_ptr); // Returns 0 if successful, see possible error codes above
+## 3.4 Recognizing audio
 
-### j. psAddTransition
+To recognize audio, one must first call `start` to initialize recognition, then feed the recognizer with audio data with calls to `process` and finally call `stop` once done. During and after recognition, the recognized string can be retrieved with a call to `getHyp`.
 
-Transitions should be added to grammars between the calls to `psStartGrammar` and `psEndGrammar`. For now, we assume states start at `0` and `numStates - 1` is the last state, if the grammar has `numStates` states.
+Before calling start, one must make sure that the current language model is the correct one, mainly, whatever happened last:
 
-    var psAddTransition = Module.cwrap('psAddTransition', 'number', ['number','number','number']);
-    var word = "HELLO"; // The word should already have been added with psAddWord
-    var word_ptr = Module.allocate(intArrayFromString(word), 'i8', ALLOC_STACK);
-    var from_state = 0; // First state of the transition
-    var to_state = 1; // Second state of the transition
-    var out = psAddTransition(from_state, to_state, word_ptr); // Returns 0 if successful, see possible error codes above
+* If a grammar has just been given to the recognizer, it is automatically used as current language model.
+* If a call to `switchGrammar` was successful, the specified grammar will be used in the next call to `start`.
+* If a SLM was packaged in `pocketsphinx.js` and was loaded by being added in the parameters to the `Config` object used when the recognizer was instantiated (or re-initialized), then this model is the current language model.
 
-### k. psStart
+Calls to process must include audio buffers in the form of an `AudioBuffer` object. `AudioBuffer` objects can be re-used. They must contain audio samples, as 2-byte integers, recorded at 16kHz (unless your acoustic model uses different characteristics).
 
-Starts the recognition process, using the last added grammar or the one set with the last call to `psSwitchGrammar`. The recognizer should be at the `INITIALIZED` state to be able to start recognition.
+Here is an example:
 
-    var psStart = Module.cwrap('psStart');
-    var out = psStart();  // Returns 0 if successful, see possible error codes above
+    $ var array = ... // array that contains an audio buffer
+    $ var buffer = new Module.AudioBuffer();
+    $ for (var i = 0 ; i < array.length ; i++)
+          buffer.push_back(array[i]); // Feed the array with audio data
+    $ var output = recognizer.start(); // Starts recognition on current language model
+    $ output = recognizer.process(buffer); // Processes the buffer
+    $ var hyp = recognizer.getHyp(); // Gets the current recognized string (hypothesis)
+    ...
+    $ for (var i = 0 ; i < array.length ; i++)
+          buffer.set(i, array[i]); // Feed buffer with new data
+    $ output = recognizer.process(buffer);
+    $ hyp = recognizer.getHyp();
+    ...
+    $ output = recognizer.stop();
+    $ var final_hyp = recognizer.getHyp(); // Gets the final recognized string
+    $ buffer.delete();
 
-### l. psStop
+Remember to check the return values of the different calls and compare them to `Module.ReturnType....`.
 
-Stops the recognition process. As the recognizer will run a second pass when this is called, the hypothesis returned by `psGetHyp` is more accurate after than before the call to `psStop`.
+## 3.5 Releasing memory
 
-    var psStop = Module.cwrap('psStop');
-    var out = psStop();  // Returns 0 if successful, see possible error codes above
+In most cases you probably don't need to do that, but to free the memory used by the recognizer, you must call `recognizer.delete()`. Since you can re-initialize a recognizer with new parameters with a call to `reInit`, this should be only necessary if you're sure you don't need any recognizer object anymore.
 
-### m. psProcess
-
-Audio data should be sent to the recognizer using repeated calls to this function, between calls to `psStart` and `psStop`. Data should be 2-byte integers (audio should be 16 kHz, 16 bit for the provided acoustic model. If you choose to use a different acoustic model, you'll need to adjust those accordingly.).
-
-    var psProcess = Module.cwrap('psProcess', 'number', ['number','number']);
-    var array = ... // array contains the audio samples
-    var buffer = c_malloc(2 * array.length);
-    // The buffer must be filled in with calls to setValue
-    for (var i = 0 ; i < array.length ; i++)
-        setValue(buffer + i*2, array[i], 'i16');
-    var out = psProcess(buffer, array.length); // The data and the length of the data must be given
-    c_free(buffer);
 
 # 4. Using `pocketsphinx.js` inside a Web Worker with `recognizer.js`
 
-Using `recognizer.js`, `pocketsphinx.js` is downloaded and executed inside a Web Worker. The file is located in `webapp/js/`, both `recognizer.js` and `pocketsphinx.js` must be in the same folder at runtime. It is intended to be loaded as a new Web Worker:
+Using `recognizer.js`, `pocketsphinx.js` is downloaded and executed inside a Web worker. The file is located in `webapp/js/`, both `recognizer.js` and `pocketsphinx.js` must be in the same folder at runtime. It is intended to be loaded as a new Web worker object:
 
-    var recognizer = new Worker("js/recognizer.js");
+    $ var recognizer = new Worker("js/recognizer.js");
 
 You can then interact with it using messages.
 
@@ -310,8 +287,8 @@ The error codes returned in messages posted back from the worker can be:
 
 Once the worker is created, the recognizer must be initialized:
 
-    var id = 0; // This value will be given in the message received after the action completes
-    recognizer.postMessage({command: 'initialize', callbackId: id});
+    $ var id = 0; // This value will be given in the message received after the action completes
+    $ recognizer.postMessage({command: 'initialize', callbackId: id});
 
 Once it is done, the recognizer will post a message back, for instance:
 
@@ -320,7 +297,7 @@ Once it is done, the recognizer will post a message back, for instance:
 
 Recognizer parameters to be passed to `PocketSphinx` can be given in the call to `initialize`. For instance:
 
-    recognizer.postMessage({command: 'initialize', callbackId: id, data: [["-hmm", "french"], ["-fwdflat", "no"], ["-dict", "french.dic"], ["-lm", "french.DMP"]]});
+    $ recognizer.postMessage({command: 'initialize', callbackId: id, data: [["-hmm", "french"], ["-fwdflat", "no"], ["-dict", "french.dic"], ["-lm", "french.DMP"]]});
 
 This will set the `pocketsphinx` command-line parameter `-fwdflat` to `no` and initialize the recognizer with the acoustic model `french`, the language model `french.DMP` and the dictionary `french.dic`, assuming `pocketsphinx.js` was compiled with such models.
 
@@ -330,8 +307,8 @@ Note that once it is initialized, the recognizer can be re-initialized with diff
 
 Words to be recognized must be added to the recognizer before they can be used in grammars. See previous sections to know more about the format of dictionary items. Words can be added at any time after the recognizer is initialized, and several words can be added at once:
 
-    var words = [["ONE", "W AH N"], ["TWO", "T UW"], ["THREE", "TH R IY"]]; // An array of pairs [word, pronunciation]
-    recognizer.postMessage({command: 'addWords', data: words, callbackId: id});
+    $ var words = [["ONE", "W AH N"], ["TWO", "T UW"], ["THREE", "TH R IY"]]; // An array of pairs [word, pronunciation]
+    $ recognizer.postMessage({command: 'addWords', data: words, callbackId: id});
 
 The message back could be:
 
@@ -340,10 +317,10 @@ The message back could be:
 
 ### d. Adding grammars
 
-As described previously, any number of grammars can be added. The recognizer can then switch between them. A grammar can be added at once using a JavaScript object that contains the number of states and an array of transitions, for instance:
+As described previously, any number of grammars can be added. The recognizer can then switch between them. A grammar can be added at once using a JavaScript object that contains the number of states, the first and last states, and an array of transitions, for instance:
 
-    var grammar = {numStates: 3, transitions: [{from: 0, to: 1, word: "HELLO"}, {from: 1, to: 2, word: "WORLD"}]};
-    recognizer.postMessage({command: 'addGrammar', data: grammar, callbackId: id});
+    $ var grammar = {numStates: 3, start: 0, end: 2, transitions: [{from: 0, to: 1, word: "HELLO"}, {from: 1, to: 2, word: "WORLD"}]};
+    $ recognizer.postMessage({command: 'addGrammar', data: grammar, callbackId: id});
 
 All words must have been added previously using the `addWords` command.
 
@@ -353,13 +330,13 @@ In the message back, the grammar id assigned to the grammar is given. It can be 
 
 The message to start recognition should include the id of the grammar to be used:
 
-    recognizer.postMessage({command: 'start', data: id}); // where id is the id of a previously added grammar.
+    $ recognizer.postMessage({command: 'start', data: id}); // where id is the id of a previously added grammar.
 
 ### f. Processing data
 
 Audio samples should be sent to the recognizer using the `process` command:
 
-    recognizer.postMessage({command: 'process', data: array}); // array is an array of audio samples
+    $ recognizer.postMessage({command: 'process', data: array}); // array is an array of audio samples
 
 Audio samples should be 2-byte integers, at 16 kHz.
 
@@ -369,7 +346,7 @@ While data are processed, hypothesis will be sent back in a message in the form 
 
 Recognition can be simply stopped using the `stop` command: 
 
-    recognizer.postMessage({command: 'stop'});
+    $ recognizer.postMessage({command: 'stop'});
 
 It will then send a last message with the hypothesis, marked as final (which means that it is more accurate as it comes after a second pass that was triggered by the `stop` command). It would look like: `{hyp: "FINAL RECOGNIZED STRING", final: true}`.
 
@@ -379,11 +356,11 @@ In order to facilitate the interaction with the recognizer worker, we have made 
 
 To use it, first create a new instance of CallbackManager:
 
-    var callbackManager = new CallbackManager();
+    $ var callbackManager = new CallbackManager();
 
 When you post a message to the recognizer worker and want to associate a callback function to it, you first add your callback function to the manager, which gives you a callback id in return:
 
-    recognizer.postMessage({command: 'addWords', data: words, callbackId: callbackManager.add(function() {alert("Words added");})});
+    $ recognizer.postMessage({command: 'addWords', data: words, callbackId: callbackManager.add(function() {alert("Words added");})});
 
 In the `onmessage` function of your worker, use the callback manager to check and trigger callback functions:
 
@@ -404,7 +381,7 @@ In the `onmessage` function of your worker, use the callback manager to check an
 Check `live.html` in `webapp` for more examples.
 
 
-## 4.5 Detecting when the Worker is ready
+## 4.5 Detecting when the worker is ready
 
 When a new worker is instantiated, it immediately returns a worker object, but the actual download of the JavaScript files might take some time, especially in our case where `pocketsphinx.js` is fairly large. One way of detecting whether the files are fully downloaded and loaded is to post a first message right after it is instantiated and wait for a message back from the worker.
 
@@ -483,19 +460,17 @@ The constructor for AudioRecorder can take an optional config object. Most impor
 
 All these are illustrated in the given live demo, in the `webapp/` folder.
 
-Note that live audio capture is only available on recent versions of Google Chrome, and on many platforms that feature is not usable and only produces silent audio. Hopefully this will be solved soon. You can track progress on the chromium issue tracker:
-
-<https://code.google.com/p/chromium/issues/detail?id=170384> and <http://code.google.com/p/chromium/issues/detail?id=112367>.
+Note that live audio capture is only available on recent versions of Google Chrome. Prior to version 29, on many platforms, that feature is not usable and only produces silent audio. Firefox is expected to include the necessary features starting from version 24.
 
 # 6. Live demo
 
-The file `webapp/live.html` is an example of live recognition using the web audio API. It works on Chrome, if the Web audio API actually works. Note that we observed the recorded audio to be silent on most (but not all) configuration we have tried.
+The file `webapp/live.html` is an example of live recognition using the web audio API. It works on Chrome, if the Web audio API actually works. Note that we observed the recorded audio to be silent on most (but not all) configuration we have tried, prior to version 29. Version 29 worked fine on all platforms.
 
 To build an application, this is a good starting point as it illustrates the different components described in this document. In that demo, three different grammars are available and the app can switch between them.
 
 # 7. Test suite
 
-There is a test suite being developed in `tests/js`, it makes use of [QUnit](http://qunitjs.com). There is a README file inside the folder.
+There is a test suite being developed in `tests/js`, it makes use of [QUnit](http://qunitjs.com). There is a README file inside the folder. It is currently being re-fctored, following refactoring of the API.
 
 # 8. Notes about speech recognition and performance
 

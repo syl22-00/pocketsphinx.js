@@ -283,8 +283,24 @@ test( "Instantiation of several recognizers", function() {
     ok(error != undefined, "Using a deleted recognizer should raise an exception");
 });
 
-
-
+test( "Recognizer and configs", function() {
+    var y = new Module.Config();
+    ok (y != undefined, "New config should not be undefined");
+    y.push_back(["",""]);
+    var x = new Module.Recognizer(y);
+    var words = new Module.VectorWords();
+    words.push_back(["AH", "AH"]);
+    equal(x.addWords(words), Module.ReturnType.BAD_STATE, "Recognizer should not be valid");
+    y.set(0, ["-fwdflat", "no"]);
+    equal(x.reInit(y), Module.ReturnType.SUCCESS, "Re-init with valid config should work");
+    equal(x.getHyp(), "", "Initial hyp should be empty");
+    x.delete();
+    var error = undefined;
+    try {x.getHyp();}
+    catch (e) {error = e;}
+    ok(error != undefined, "Using a deleted recognizer should raise an exception");
+    equal(error.name, "BindingError", "Should be a BindError exception");
+});
 
 var recognizer;
 

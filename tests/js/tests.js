@@ -301,18 +301,58 @@ test( "Recognizer and configs", function() {
     ok(error != undefined, "Using a deleted recognizer should raise an exception");
     equal(error.name, "BindingError", "Should be a BindError exception");
 });
-
+/*
+// This doesn't work
+module("Recognizer memory");
+test( "Multiple recognizer instantiation and deletion", function() {
+    var x;
+    for (var i = 0;i<100;i++) {
+	x = new Module.Recognizer();
+	x.delete();
+    }
+    var error = undefined;
+    try {x.getHyp();}
+    catch (e) {error = e;}
+    ok(error != undefined, "Using a deleted recognizer should raise an exception");
+    equal(error.name, "BindingError", "Should be a BindError exception");
+});
+*/
 var recognizer;
+var buffer;
+var words;
+var transitions;
+var ids;
 
 module( "With living recognizer", {
     setup: function() {
 	recognizer = new Module.Recognizer();
+	buffer = new Module.AudioBuffer();
+	words = new Module.VectorWords();
+	transitions = new Module.VectorTransitions();
+	ids = new Module.Integers();
 	ok( recognizer != undefined, "Recognizer instantiated successfully" );
 	ok( true, "one extra assert per test" );
     }, teardown: function() {
 	recognizer.delete();
+	buffer.delete();
+	words.delete();
+	transitions.delete();
+	ids.delete();
     }
 });
-test( "test with setup and teardown", function() {
-    expect( 2 );
+
+test( "Recognizing silence", function() {
+    var num_samples = 1024;
+    for (var i = 0 ; i < num_samples ; i++) buffer.push_back(0);
+    words.push_back(["AH", "AH"]);
+    recognizer.addWords(words);
+    transitions.push_back({from: 0, to: 0, word: "AH"});
+    recognizer.addGrammar(ids, {numStates: 1, start: 0, end: 0, transitions: transitions});
+    equal(recognizer.start(), Module.ReturnType.SUCCESS, "Recognizer should start successfully");
+    var num_buffers = 64;
+    for (var j = 0 ; j < num_buffers ; j++) {
+	equal(recognizer.process(buffer), Module.ReturnType.SUCCESS, "Recognizer should process successfully");
+	equal(recognizer.getHyp(), "", "Recognizer should recognize nothing with silence");
+    }
+    equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
 });

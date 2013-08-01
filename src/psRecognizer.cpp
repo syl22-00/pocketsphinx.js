@@ -44,7 +44,10 @@ namespace pocketsphinxjs {
     current_grammar->start_state = grammar.start;
     current_grammar->final_state = grammar.end;
     for (int i=0;i<grammar.transitions.size();i++) {
-      fsg_model_trans_add(current_grammar, grammar.transitions.at(i).from, grammar.transitions.at(i).to, 0, fsg_model_word_add(current_grammar, grammar.transitions.at(i).word.c_str()));
+      if (grammar.transitions.at(i).word.size() == 0)
+	fsg_model_null_trans_add(current_grammar, grammar.transitions.at(i).from, grammar.transitions.at(i).to, grammar.transitions.at(i).logp);
+      else
+	fsg_model_trans_add(current_grammar, grammar.transitions.at(i).from, grammar.transitions.at(i).to, grammar.transitions.at(i).logp, fsg_model_word_add(current_grammar, grammar.transitions.at(i).word.c_str()));
     }
     fsg_model_add_silence(current_grammar, "<sil>", -1, 1.0);
     if (current_grammar != fsg_set_add(grammar_set, grammar_names.back().c_str(), current_grammar)) {

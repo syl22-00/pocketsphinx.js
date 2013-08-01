@@ -182,8 +182,9 @@ All words used in grammars must be present in the pronunciation dictionary. Refe
 A FSG is a structure that includes an initial state, a last state as well as a set of transitions between these states. Again, make sure all words used in transitions are in the dictionary (either loaded through a packaged dictionary file or added at runtime using `addWords`). Here is an example of inputing one grammar:
 
     $ var transitions = new Module.VectorTransitions();
-    $ transitions.push_back({from: 0, to: 1, word: "HELLO"});
-    $ transitions.push_back({from: 1, to: 2, word: "WORLD"});
+    $ transitions.push_back({from: 0, to: 1, logp: 0, word: "HELLO"}); // log-probability is 0 (i.e. probability is 1.0)
+    $ transitions.push_back({from: 1, to: 2, logp: 0, word: "WORLD"});
+    $ transitions.push_back({from: 1, to: 2, logp: 0, word: ""}); // null-transition
     $ var ids = new Module.Integers();
     $ if (recognizer.addGrammar(ids, {start: 1, end: 2, numStates: 3, transitions: transitions}) != Module.ReturnType.SUCCESS)
            alert("Error while adding grammar"); // Meaning that the grammar has issues
@@ -319,10 +320,12 @@ The message back could be:
 
 As described previously, any number of grammars can be added. The recognizer can then switch between them. A grammar can be added at once using a JavaScript object that contains the number of states, the first and last states, and an array of transitions, for instance:
 
-    $ var grammar = {numStates: 3, start: 0, end: 2, transitions: [{from: 0, to: 1, word: "HELLO"}, {from: 1, to: 2, word: "WORLD"}]};
+    $ var grammar = {numStates: 3, start: 0, end: 2, transitions: [{from: 0, to: 1, word: "HELLO"}, {from: 1, to: 2, logp: 0, word: "WORLD"}, {from: 1, to: 2}]};
     $ recognizer.postMessage({command: 'addGrammar', data: grammar, callbackId: id});
 
 All words must have been added previously using the `addWords` command.
+
+Notice that `logp` is optional, it defaults to 0. `word` is also optional, it defaults to `""` which is a null-transition.
 
 In the message back, the grammar id assigned to the grammar is given. It can be used to switch to that grammar. So the message, if successful, would be like `{id: clbId, data: id, status: "done", command: "addGrammar"}`, where `id` is the id of the newly created grammar. In case of errors, the message would be as described previously.
 

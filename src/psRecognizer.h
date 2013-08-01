@@ -23,6 +23,7 @@ namespace pocketsphinxjs {
   struct Transition {
     int from;
     int to;
+    int logp;
     std::string word;
   };
 
@@ -146,6 +147,7 @@ EMSCRIPTEN_BINDINGS(recognizer) {
   emscripten::value_object<ps::Transition>("Transition")
     .field("from", &ps::Transition::from)
     .field("to", &ps::Transition::to)
+    .field("logp", &ps::Transition::logp)
     .field("word", &ps::Transition::word);
 
 

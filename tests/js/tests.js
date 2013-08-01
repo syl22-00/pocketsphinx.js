@@ -75,13 +75,13 @@ test( "Transitions types", function() {
     equal(error.name, "TypeError", "Should be a TypeError exception");
 
     error = undefined;
-    try {x.push_back({from: "", to: "", hello: ""});}
+    try {x.push_back({from: "", to: "", logp: "", hello: ""});}
     catch (e) {error = e;}
     ok(error != undefined, "Adding an invalid value to vector should raise an exception");
     equal(error.name, "TypeError", "Should be a TypeError exception");
 
     error = undefined;
-    try {x.push_back(["", "", ""]);}
+    try {x.push_back(["", "", "", ""]);}
     catch (e) {error = e;}
     ok(error != undefined, "Adding an invalid value to vector should raise an exception");
     equal(error.name, "TypeError", "Should be a TypeError exception");
@@ -94,32 +94,32 @@ test( "Transitions types", function() {
 
 
     error = undefined;
-    try {x.push_back({from: "", to: 2, word: ""});}
+    try {x.push_back({from: "", to: 2, logp: 0, word: ""});}
     catch (e) {error = e;}
     ok(error != undefined, "Adding an invalid value to vector should raise an exception");
     equal(error.name, "TypeError", "Should be a TypeError exception");
 
     error = undefined;
-    try {x.push_back({from: 0, to: 1, word: 2});}
+    try {x.push_back({from: 0, to: 1, logp: 0, word: 2});}
     catch (e) {error = e;}
     ok(error != undefined, "Adding an invalid value to vector should raise an exception");
     equal(error.name, "BindingError", "Should be a BindingError exception");
 
-    x.push_back({from: 0, to: 0, word: ""});
+    x.push_back({from: 0, to: 0, logp: 0, word: ""});
     equal(x.size(), 1, "config size should grow");
-    x.push_back({from: 0, to: 0, word: ""});
-    x.push_back({from: 0, to: 0, word: ""});
-    x.push_back({from: 0, to: 0, word: ""});
-    x.push_back({from: 0, to: 0, word: ""});
-    x.push_back({from: 0, to: 0, word: ""});
-    x.push_back({from: 0, to: 0, word: ""});
-    x.push_back({from: 0, to: 0, word: ""});
-    x.push_back({from: 0, to: 0, word: ""});
-    x.push_back({from: 0, to: 0, word: ""});
-    x.push_back({from: 0, to: 0, word: ""});
+    x.push_back({from: 0, to: 0, logp: 0, word: ""});
+    x.push_back({from: 0, to: 0, logp: 0, word: ""});
+    x.push_back({from: 0, to: 0, logp: 0, word: ""});
+    x.push_back({from: 0, to: 0, logp: 0, word: ""});
+    x.push_back({from: 0, to: 0, logp: 0, word: ""});
+    x.push_back({from: 0, to: 0, logp: 0, word: ""});
+    x.push_back({from: 0, to: 0, logp: 0, word: ""});
+    x.push_back({from: 0, to: 0, logp: 0, word: ""});
+    x.push_back({from: 0, to: 0, logp: 0, word: ""});
+    x.push_back({from: 0, to: 0, logp: 0, word: ""});
     equal(x.size(), 11, "config size should grow");
 
-    x.push_back({from: 12, to: 13, word: "hello, world!", hello: 0});
+    x.push_back({from: 12, to: 13, logp: 0, word: "hello, world!", hello: 0});
     equal(x.size(), 12, "Extra fields in transition should not matter");
     equal(x.get(11).from, 12, "stored transitions should have the correct value");
     equal(x.get(11).to, 13, "stored transitions should have the correct value");
@@ -346,7 +346,7 @@ test( "Recognizing silence", function() {
     for (var i = 0 ; i < num_samples ; i++) buffer.push_back(0);
     words.push_back(["AH", "AH"]);
     recognizer.addWords(words);
-    transitions.push_back({from: 0, to: 0, word: "AH"});
+    transitions.push_back({from: 0, to: 0, logp: 0, word: "AH"});
     recognizer.addGrammar(ids, {numStates: 1, start: 0, end: 0, transitions: transitions});
     equal(recognizer.start(), Module.ReturnType.SUCCESS, "Recognizer should start successfully");
     var num_buffers = 64;

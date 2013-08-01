@@ -87,7 +87,9 @@ function addGrammar(data, clbId) {
 	    var transitions = new Module.VectorTransitions();
 	    while (data.transitions.length > 0) {
 		var t = data.transitions.pop();
-		if (t.hasOwnProperty('from') && t.hasOwnProperty('to') && t.hasOwnProperty('word')) {
+		if (t.hasOwnProperty('from') && t.hasOwnProperty('to')) {
+		    if (!t.hasOwnProperty('word')) t.word = "";
+		    if (!t.hasOwnProperty('logp')) t.logp = 0;
 		    transitions.push_back(t);
 		}
 	    }

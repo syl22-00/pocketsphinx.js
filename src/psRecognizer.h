@@ -135,15 +135,15 @@ EMSCRIPTEN_BINDINGS(recognizer) {
     .value("BAD_ARGUMENT", ps::BAD_ARGUMENT)
     .value("RUNTIME_ERROR", ps::RUNTIME_ERROR);
 
-  emscripten::value_tuple<ps::Word>("Word")
+  emscripten::value_array<ps::Word>("Word")
     .element(&ps::Word::word)
     .element(&ps::Word::pronunciation);
 
-  emscripten::value_tuple<ps::ConfigItem>("ConfigItem")
+  emscripten::value_array<ps::ConfigItem>("ConfigItem")
     .element(&ps::ConfigItem::key)
     .element(&ps::ConfigItem::value);
 
-  emscripten::value_struct<ps::Transition>("Transition")
+  emscripten::value_object<ps::Transition>("Transition")
     .field("from", &ps::Transition::from)
     .field("to", &ps::Transition::to)
     .field("word", &ps::Transition::word);
@@ -155,7 +155,7 @@ EMSCRIPTEN_BINDINGS(recognizer) {
   emscripten::register_vector<ps::ConfigItem>("Config");
   emscripten::register_vector<int>("Integers");
 
-  emscripten::value_struct<ps::Grammar>("Grammar")
+  emscripten::value_object<ps::Grammar>("Grammar")
     .field("start", &ps::Grammar::start)
     .field("end", &ps::Grammar::end)
     .field("numStates", &ps::Grammar::numStates)

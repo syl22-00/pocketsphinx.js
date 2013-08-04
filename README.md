@@ -194,8 +194,6 @@ A FSG is a structure that includes an initial state, a last state as well as a s
 
 Notice the `Integers` object that is used to return an id back to the app to refer to the grammar. This id is then used to switch the recognizer to using that specific grammar. You will note that `new Module.Integers()` actually returns a vector object that is then passed as a reference to `addGrammar`. If the call is successful, the first element of the array is the id assigned to the grammar.
 
-Also note that at this stage we have not implemented an API for transition probabilities.
-
 ### c. Switching between grammars
 
 A recognizer object can have any number of grammars but only one active grammar at a time. The active grammar is the one used when there is a call to `start()`, described later in this document. To switch to a specific grammar, you must use the id that was given during the call to `addGrammar`.
@@ -473,7 +471,7 @@ To build an application, this is a good starting point as it illustrates the dif
 
 # 7. Test suite
 
-There is a test suite being developed in `tests/js`, it makes use of [QUnit](http://qunitjs.com). There is a README file inside the folder. It is currently being re-fctored, following refactoring of the API.
+There is a test suite being developed in `tests/js`, it makes use of [QUnit](http://qunitjs.com). There is a README file inside the folder. It is currently being re-factored, following refactoring of the API.
 
 # 8. Notes about speech recognition and performance
 

@@ -28,8 +28,11 @@ namespace pocketsphinxjs {
 
   ReturnType Recognizer::addWords(const std::vector<Word>& words) {
     if (decoder == NULL) return BAD_STATE;
-    for (int i=0 ; i<words.size() ; ++i)
+    for (int i=0 ; i<words.size() ; ++i) {
+      // This case is not properly handeled by ps_add_word, so we treat it separately
+      if (words.at(i).pronunciation.size() == 0) return RUNTIME_ERROR;
       if (ps_add_word(decoder, words.at(i).word.c_str(), words.at(i).pronunciation.c_str(), 1) < 0) return RUNTIME_ERROR;
+    }
     return SUCCESS;
   }
 

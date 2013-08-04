@@ -356,3 +356,22 @@ test( "Recognizing silence", function() {
     }
     equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
 });
+
+test("Dictionary words", function() {
+    words.push_back(["A", "AH"]);
+    equal(recognizer.addWords(words), Module.ReturnType.SUCCESS, "Valid words should be added successfully");
+    words.set(0,["B", "!"]);
+    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
+    words.set(0,["C", ""]);
+    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
+    words.set(0,["D", "Q"]);
+    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
+    words.set(0,["E", "AH"]);
+    equal(recognizer.addWords(words), Module.ReturnType.SUCCESS, "Valid words should be added successfully");
+    words.set(0,["E", "AH"]);
+    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
+    words.set(0,["E(2)", "AH"]);
+    equal(recognizer.addWords(words), Module.ReturnType.SUCCESS, "Valid words should be added successfully");
+    words.set(0,["F(2)", "AH"]);
+    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
+});

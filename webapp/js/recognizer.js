@@ -66,8 +66,8 @@ function initialize(data, clbId) {
 function addWords(data, clbId) {
     if (recognizer) {
 	var words = new Module.VectorWords();
-	while (data.length > 0) {
-	    var w = data.pop();
+	for (var i = 0 ; i < data.length ; i++) {
+	    var w = data[i];
 	    if (w.length == 2) words.push_back([w[0], w[1]]);
 	}
 	var output = recognizer.addWords(words);

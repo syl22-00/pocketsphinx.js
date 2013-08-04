@@ -177,6 +177,14 @@ All words used in grammars must be present in the pronunciation dictionary. Refe
           alert("Error while adding words"); // Probably because of bad format used for pronunciation
     $ words.delete()
 
+Note that PocketSphinx allows you to input several pronunciation alternatives for a word, by adding suffixes to it (`(2)`, `(3)`, etc.). However, adding a word with a suffix before the word without suffix will fail when calling `addWords`:
+
+    $ words.push_back(["HELLO", "HH AH L OW"], ["HELLO(2)", "HH EH L OW"]); // OK
+    ...
+    $ words.push_back(["HELLO", "HH AH L OW"], ["HELLO", "HH EH L OW"]); // Invalid
+    ...
+    $ words.push_back(["HELLO(2)", "HH AH L OW"], ["HELLO", "HH EH L OW"]); // Invalid
+
 ### b. Adding grammars
 
 A FSG is a structure that includes an initial state, a last state as well as a set of transitions between these states. Again, make sure all words used in transitions are in the dictionary (either loaded through a packaged dictionary file or added at runtime using `addWords`). Here is an example of inputing one grammar:
@@ -313,6 +321,8 @@ The message back could be:
 
 * `{id: clbId}`, the provided callback id, if given, as explained before, if successful.
 * `{status: "error", command: "addWords", code: code}`, if error, where possible values of the error code was described above.
+
+Note that words can have several pronunciation alternatives as explained in Section 3.3.a.
 
 ### d. Adding grammars
 

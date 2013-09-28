@@ -357,6 +357,27 @@ test( "Recognizing silence", function() {
     equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
 });
 
+test( "Recognizing audio", function() {
+
+    for (var i = 0; i < wordList.length; i++) {
+	words.push_back(wordList[i]);
+    }
+
+    recognizer.addWords(words);
+    for (var i = 0; i < grammarOses.transitions.length; i++) {
+	transitions.push_back(grammarOses.transitions[i]);
+    }
+    recognizer.addGrammar(ids, {numStates: grammarOses.numStates, 
+				start: grammarOses.start, end: grammarOses.end,
+				transitions: transitions});
+    for (var i = 0 ; i < audio.length ; i++) buffer.push_back(audio[i]);
+
+    recognizer.start();
+    equal(recognizer.process(buffer), Module.ReturnType.SUCCESS, "Recognizer should process successfully");
+    equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
+    equal(recognizer.getHyp(), "WINDOWS SUCKS AND LINUX IS GREAT", "Recognizer should recognize the correct utterance");
+});
+
 test("Dictionary words", function() {
     words.push_back(["A", "AH"]);
     equal(recognizer.addWords(words), Module.ReturnType.SUCCESS, "Valid words should be added successfully");
@@ -375,3 +396,4 @@ test("Dictionary words", function() {
     words.set(0,["F(2)", "AH"]);
     equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
 });
+

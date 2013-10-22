@@ -116,7 +116,7 @@ endif()
 
 # Adding custom target for the JavaScript library. Note -O2 -s ASM_JS=0, which seems to be necessary with bind
 add_custom_target(${ps_lib_js} ALL
-  COMMAND ${CMAKE_C_COMPILER} -O2 -s ASM_JS=0 --bind ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
+  COMMAND ${CMAKE_C_COMPILER} -O2 -s ASM_JS=0 -s ALLOW_MEMORY_GROWTH=1 --bind ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
   DEPENDS ${ps_lib}
   )
 

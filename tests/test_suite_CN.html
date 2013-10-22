@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Pocketsphinx.js test suite for Chinese models</title>
+    <link rel="stylesheet" href="qunit-1.12.0.css">
+  </head>
+  <body>
+    <h1>Pocketsphinx.js test suite for Chinese models</h1>
+    <p>This test suite is based on the Chinese acoustic and language models provided with PocketSphinx (the original, from CMU). To get it working, you need to package the model files with the following cmake command:</p>
+    <code>cmake .. -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Platform/Emscripten.cmake -DHMM_BASE=path_to_pocketsphinx/model/hmm/zh -DHMM_FOLDERS=tdt_sc_8k -DDICT_BASE=path_to_pocketsphinx/model/lm/zh_CN -DDICT_FILES=mandarin_notone.dic -DLM_BASE=path_to_pocketsphinx/model/lm/zh_CN/ -DLM_FILES=gigatdt.5000.DMP</code>
+    <p>You can then build it, and rename pocketsphinx.js into pocketsphinx_CN.js</p>
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+    <script src="js/qunit-1.12.0.js"></script>
+    <!-- TODO make these fixtures
+    <script src="js/fixtures/audio_CN.js"></script>
+    <script src="js/fixtures/grammars_CN.js"></script>
+    -->
+    <script src="../build/pocketsphinx_CN.js"></script>
+    <script src="js/tests_CN.js"></script>
+  </body>
+</html>

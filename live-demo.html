@@ -30,9 +30,9 @@
         <section id="main-content">
           <h1>
 	    <a name="pocketsphinxjs-live-demo" class="anchor" href="#pocketsphinxjs-live-demo"><span class="octicon octicon-link"></span></a>Pocketsphinx.js Live Demo.</h1>
-	  <p>This demo works on Chrome with the Web Audio API. Make sure you are using a very recent version of Chrome as many versions have issues that make the recorded audio silent.</p>
+	  <p>This demo works on Chrome and Firefox (25+) with the Web Audio API.</p>
 	  <h1>Usage</h1>
-	  <p>Click on <em>Allow</em> to authorize Chrome to access your microphone, select a <a href="#grammar-definitions">grammar</a>, press <em>Start</em>, and start speaking.</p>
+	  <p>Allow your browser to access the microphone, select a <a href="#grammar-definitions">grammar</a>, press <em>Start</em>, and start speaking.</p>
 	  <select id="grammars"></select>
 	  <button id="startBtn">Start</button>
 	  <button id="stopBtn">Stop</button>
@@ -92,7 +92,7 @@
       };
 
       function updateHyp(hyp) {
-        output.innerHTML = hyp;
+        document.getElementById('output')..innerHTML = hyp;
       };
 
       function updateUI() {
@@ -168,7 +168,7 @@
                                         feedWords(wordList);});
       };
 
-      window.onload = function init() {
+      window.onload = function() {
         updateStatus("Initializing Web Audio and speech recognizer, waiting for approval to access your microphone");
         callbackManager = new CallbackManager();
         spawnWorker("js/recognizer.js", function(worker) {
@@ -193,7 +193,7 @@
         });
         try {
           window.AudioContext = window.AudioContext || window.webkitAudioContext;
-          navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+          navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
           window.URL = window.URL || window.webkitURL;
           audio_context = new AudioContext();
         } catch (e) {

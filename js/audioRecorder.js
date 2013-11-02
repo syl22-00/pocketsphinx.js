@@ -3,6 +3,7 @@
     var AudioRecorder = function(source, cfg) {
 	this.recognizer = null;
 	var config = cfg || {};
+	var errorCallback = config.errorCallback || function() {};
 	var bufferLen = config.bufferLen || 4096;
 	var outputBufferLength = config.outputBufferLength || 4000;
 	this.context = source.context;
@@ -15,9 +16,8 @@
 		outputBufferLength: outputBufferLength
 	    }
 	});
-
 	var recording = false;
-	this.node.onaudioprocess = function(e){
+	this.node.onaudioprocess = function(e) {
 	    if (!recording) return;
 	    worker.postMessage({
 		command: 'record',
@@ -27,7 +27,6 @@
 		]
 	    });
 	};
-
 	this.start = function(data) {
 	    if (this.recognizer) {
                 recognizer.postMessage({ command: 'start', data: data });
@@ -36,7 +35,6 @@
 	    }
 	    return false;
 	};
-	
 	this.stop = function() {
 	    if (recording && this.recognizer) {
                 recognizer.postMessage({ command: 'stop' });
@@ -44,12 +42,12 @@
 	    }
 	    worker.postMessage({ command: 'clear' });
 	};
-
 	this.cancel = function() {
 	    this.stop();
 	};
 	myClosure = this;
-	worker.onmessage = function(e){
+	worker.onmessage = function(e) {
+	    if (e.data.error && (e.data.error == "silent")) errorCallback("silent");
 	    if ((e.data.command == 'newBuffer') && recording) {
                 myClosure.recognizer.postMessage({ command: 'process', data: e.data.data });
 	    }

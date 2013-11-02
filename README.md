@@ -439,7 +439,7 @@ All these are illustrated in `webapp/live.html` and `recognizer.js`.
 
 We include an audio recording library based on the Web Audio API that accesses the microphone, gets audio samples, converts them to the proper sample rate (16kHz), and sends them to the recognizer. This library is derived from [Recorderjs](https://github.com/mattdiamond/Recorderjs). To know more about audio capture and playback on the web, you could have a look at this [overview of audio on the Web](https://github.com/syl22-00/TechDocs/blob/master/AudioInBrowser.md).
 
-Include `audioRecorder.js` in the HTML file and make sure `audioRecorderWorker.js` is in the same folder. To use it, create a new instance of `AudioRecorder` giving it as argument a `MediaStreamSource`. As of Today, only Google Chrome implements it. You also need to set the recognizer attribute to a Recognizer worker, as described above.
+Include `audioRecorder.js` in the HTML file and make sure `audioRecorderWorker.js` is in the same folder. To use it, create a new instance of `AudioRecorder` giving it as argument a `MediaStreamSource`. As of Today, the Google Chrome and Firefox (25+) implement it. You also need to set the recognizer attribute to a Recognizer worker, as described above.
 
 
     var audio_context = new AudioContext;
@@ -463,7 +463,7 @@ Once the recorder is up and running, you can start and stop recording and recogn
     // To stop recording:
     recorder.stop();  // The final hypothesis is sent
 
-The constructor for AudioRecorder can take an optional config object. Most importantly, this config can include a callback function which is executed when there is an error during recording. As of today, the only possible error is when the input samples are silent, probably caused by the Chrome issue described below.
+The constructor for AudioRecorder can take an optional config object. Most importantly, this config can include a callback function which is executed when there is an error during recording. As of today, the only possible error is when the input samples are silent.
 
     var audioRecorderConfig = {errorCallback: function(x) {alert("Error from recorder: " + x);}};
     recorder = new AudioRecorder(input, audioRecorderConfig);
@@ -471,11 +471,11 @@ The constructor for AudioRecorder can take an optional config object. Most impor
 
 All these are illustrated in the given live demo, in the `webapp/` folder.
 
-Note that live audio capture is only available on recent versions of Google Chrome. Prior to version 29, on many platforms, that feature is not usable and only produces silent audio. Firefox is expected to include the necessary features starting from version 24.
+Note that live audio capture is only available on recent versions of Google Chrome and Firefox. Chrome, prior to version 29, only produced silent audio on many platforms. Firefox includes the necessary features starting from version 25.
 
 # 6. Live demo
 
-The file `webapp/live.html` is an example of live recognition using the web audio API. It works on Chrome, if the Web audio API actually works. Note that we observed the recorded audio to be silent on most (but not all) configuration we have tried, prior to version 29. Version 29 worked fine on all platforms.
+The file `webapp/live.html` is an example of live recognition using the web audio API. It works on Chrome and Firefox (25+), if the web audio API actually works. Note that we observed the recorded audio to be silent on some configurations we have tried.
 
 To build an application, this is a good starting point as it illustrates the different components described in this document. In that demo, three different grammars are available and the app can switch between them.
 

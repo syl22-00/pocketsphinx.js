@@ -21,24 +21,24 @@
     <div id="current-status">Loading page</div>
 
     <script>
-      // These will be initialized lated
-      var recognizer, recorder, callbackManager, audio_context;
+      // These will be initialized later
+      var recognizer, recorder, callbackManager, audioContext, outputContainer;
       // Only when both recorder and recognizer do we have a ready application
       var recorderReady = recognizerReady = false;
 
       // A convenience function to post a message to the recognizer and associate
-      // a callbac to its response
+      // a callback to its response
       function postRecognizerJob(message, callback) {
         var msg = message || {};
-        if(callbackManager) msg.callbackId = callbackManager.add(callback);
+        if (callbackManager) msg.callbackId = callbackManager.add(callback);
         if (recognizer) recognizer.postMessage(msg);
       };
 
       // This function initializes an instance of the recorder
       // it posts a message right away and calls onReady when it
       // is ready so that onmessage can be properly set
-      function spawnWorker(workerurl, onReady) {
-          recognizer = new Worker(workerurl);
+      function spawnWorker(workerURL, onReady) {
+          recognizer = new Worker(workerURL);
           recognizer.onmessage = function(event) {
             onReady(recognizer);
           };
@@ -47,7 +47,7 @@
 
       // To display the hypothesis sent by the recognizer
       function updateHyp(hyp) {
-        output.innerHTML = hyp;
+        if (outputContainer) outputContainer.innerHTML = hyp;
       };
 
       // This updates the UI when the app might get ready
@@ -70,7 +70,7 @@
       // Callback function once the user authorises access to the microphone
       // in it, we instanciate the recorder
       function startUserMedia(stream) {
-        var input = audio_context.createMediaStreamSource(stream);
+        var input = audioContext.createMediaStreamSource(stream);
         var audioRecorderConfig = {errorCallback: function(x) {updateStatus("Error from recorder: " + x);}};
         recorder = new AudioRecorder(input, audioRecorderConfig);
         // If a recognizer is ready, we pass it to the recorder
@@ -145,8 +145,9 @@
 
       // When the page is loaded, we spawn a new recognizer worker and call getUserMedia to
       // request access to the microphone
-      window.onload = function init() {
-        updateStatus("Initializing Web Audio and speech recognizer, waiting for approval to access your microphone");
+      window.onload = function() {
+        outputContainer = document.getElementById("output");
+        updateStatus("Initializing web audio and speech recognizer, waiting for approval to access the microphone");
         callbackManager = new CallbackManager();
         spawnWorker("js/recognizer.js", function(worker) {
             // This is the onmessage function, once the worker is fully loaded
@@ -155,14 +156,13 @@
                 if (e.data.hasOwnProperty('id')) {
                   var clb = callbackManager.get(e.data['id']);
                   var data = {};
-                  if( e.data.hasOwnProperty('data')) data = e.data.data;
+                  if ( e.data.hasOwnProperty('data')) data = e.data.data;
                   if(clb) clb(data);
                 }
                 // This is a case when the recognizer has a new hypothesis
                 if (e.data.hasOwnProperty('hyp')) {
                   var newHyp = e.data.hyp;
-                  if (e.data.hasOwnProperty('final') &&  e.data.final)
-                  newHyp = "Final: " + newHyp;
+                  if (e.data.hasOwnProperty('final') &&  e.data.final) newHyp = "Final: " + newHyp;
                   updateHyp(newHyp);
                 }
                 // This is the case when we have an error
@@ -173,12 +173,13 @@
             // Once the worker is fully loaded, we can call the initialize function
             initRecognizer();
         });
+
         // The following is to initialize Web Audio
         try {
           window.AudioContext = window.AudioContext || window.webkitAudioContext;
           navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
           window.URL = window.URL || window.webkitURL;
-          audio_context = new AudioContext();
+          audioContext = new AudioContext();
         } catch (e) {
           updateStatus("Error initializing Web Audio browser");
         }

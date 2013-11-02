@@ -16,9 +16,8 @@
 		outputBufferLength: outputBufferLength
 	    }
 	});
-
 	var recording = false;
-	this.node.onaudioprocess = function(e){
+	this.node.onaudioprocess = function(e) {
 	    if (!recording) return;
 	    worker.postMessage({
 		command: 'record',
@@ -28,7 +27,6 @@
 		]
 	    });
 	};
-
 	this.start = function(data) {
 	    if (this.recognizer) {
                 recognizer.postMessage({ command: 'start', data: data });
@@ -37,7 +35,6 @@
 	    }
 	    return false;
 	};
-	
 	this.stop = function() {
 	    if (recording && this.recognizer) {
                 recognizer.postMessage({ command: 'stop' });
@@ -45,7 +42,6 @@
 	    }
 	    worker.postMessage({ command: 'clear' });
 	};
-
 	this.cancel = function() {
 	    this.stop();
 	};

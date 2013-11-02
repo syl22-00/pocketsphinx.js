@@ -23,10 +23,9 @@ function init(config){
 
 function record(inputBuffer){
     var isSilent = true;
-    for (var i = 0; i < inputBuffer[0].length; i++){
+    for (var i = 0 ; i < inputBuffer[0].length ; i++) {
 	recBuffers.push((inputBuffer[0][i] + inputBuffer[1][i]) * 16383.0);
     }
-
     while(recBuffers.length * outSampleRate / inSampleRate > outputBufferLength) {
 	var result = new Int16Array(outputBufferLength);
 	var bin = 0,
@@ -57,4 +56,3 @@ function record(inputBuffer){
 function clear(){
   recBuffers = [];
 }
-

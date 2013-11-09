@@ -13,7 +13,8 @@
 	    command: 'init',
 	    config: {
 		sampleRate: this.context.sampleRate,
-		outputBufferLength: outputBufferLength
+		outputBufferLength: outputBufferLength,
+		outputSampleRate: (config.outputSampleRate || 16000)
 	    }
 	});
 	var recording = false;

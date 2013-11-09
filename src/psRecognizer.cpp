@@ -165,6 +165,8 @@ namespace pocketsphinxjs {
       parameters["-hmm"] = default_acoustic_model;
     if (parameters.find("-bestpath") == parameters.end())
       parameters["-bestpath"] = "no";
+    if (parameters.find("-remove_noise") == parameters.end())
+      parameters["-remove_noise"] = "no";
 
     int argc = 2 * parameters.size();
     char ** argv = new char*[argc];

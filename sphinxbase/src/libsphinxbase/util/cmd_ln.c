@@ -8,27 +8,27 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * This work was supported in part by funding from the Defense Advanced 
- * Research Projects Agency and the National Science Foundation of the 
+ * This work was supported in part by funding from the Defense Advanced
+ * Research Projects Agency and the National Science Foundation of the
  * United States of America, and the CMU Sphinx Speech Consortium.
  *
- * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
- * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
  * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ====================================================================
@@ -43,18 +43,18 @@
  * Copyright (c) 1999 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
- * 
+ *
  * HISTORY
- * 
- * 10-Sep-1998	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Changed strcasecmp() call in cmp_name() to strcmp_nocase() call.
- * 
- * 15-Jul-1997	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Added required arguments handling.
- * 
- * 07-Dec-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Created, based on Eric's implementation.  Basically, combined several
- *		functions into one, eliminated validation, and simplified the interface.
+ *
+ * 10-Sep-1998 M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ *             Changed strcasecmp() call in cmp_name() to strcmp_nocase() call.
+ *
+ * 15-Jul-1997    M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ *         Added required arguments handling.
+ *
+ * 07-Dec-96    M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
+ *         Created, based on Eric's implementation.  Basically, combined several
+ *        functions into one, eliminated validation, and simplified the interface.
  */
 
 
@@ -96,8 +96,12 @@ struct cmd_ln_s {
 
 /** Global command-line, for non-reentrant API. */
 cmd_ln_t *global_cmdln;
-static void arg_dump_r(cmd_ln_t *cmdln, FILE * fp, arg_t const *defn, int32 doc);
-static cmd_ln_t * parse_options(cmd_ln_t *cmdln, const arg_t *defn, int32 argc, char* argv[], int32 strict);
+
+static void
+arg_dump_r(cmd_ln_t *, FILE *, arg_t const *, int32);
+
+static cmd_ln_t *
+parse_options(cmd_ln_t *, const arg_t *, int32, char* [], int32);
 
 /*
  * Find max length of name and default fields in the given defn array.
@@ -150,7 +154,7 @@ arg_sort(const arg_t * defn, int32 n)
 }
 
 static size_t
-strnappend(char **dest, size_t *dest_allocation, 
+strnappend(char **dest, size_t *dest_allocation,
        const char *source, size_t n)
 {
     size_t source_len, required_allocation;
@@ -174,7 +178,7 @@ strnappend(char **dest, size_t *dest_allocation,
             *dest = ckd_realloc(*dest, required_allocation * 2);
         }
         *dest_allocation = required_allocation * 2;
-    } 
+    }
 
     strncat(*dest, source, source_len);
 
@@ -182,7 +186,7 @@ strnappend(char **dest, size_t *dest_allocation,
 }
 
 static size_t
-strappend(char **dest, size_t *dest_allocation, 
+strappend(char **dest, size_t *dest_allocation,
        const char *source)
 {
     return strnappend(dest, dest_allocation, source, 0);
@@ -234,7 +238,7 @@ arg_resolve_env(const char *str)
 }
 
 static void
-arg_dump_r(cmd_ln_t *cmdln, FILE * fp, const arg_t * defn, int32 doc)
+arg_dump_r(cmd_ln_t *cmdln, FILE *fp, const arg_t * defn, int32 doc)
 {
     const arg_t **pos;
     int32 i, l, n;
@@ -244,8 +248,6 @@ arg_dump_r(cmd_ln_t *cmdln, FILE * fp, const arg_t * defn, int32 doc)
 
     /* No definitions, do nothing. */
     if (defn == NULL)
-        return;
-    if (fp == NULL)
         return;
 
     /* Find max lengths of name and default value fields, and #entries in defn */
@@ -308,12 +310,12 @@ arg_dump_r(cmd_ln_t *cmdln, FILE * fp, const arg_t * defn, int32 doc)
                         fprintf(fp, "%s", (char *)vp->ptr);
                     break;
                 case ARG_STRING_LIST:
-            	    array = (char const**)vp->ptr;
-            	    if (array)
-            		for (l = 0; array[l] != 0; l++) {
-            		    fprintf(fp, "%s,", array[l]);
-            		}
-            	    break;
+                    array = (char const**)vp->ptr;
+                    if (array)
+                        for (l = 0; array[l] != 0; l++) {
+                            fprintf(fp, "%s,", array[l]);
+                        }
+                    break;
                 case ARG_BOOLEAN:
                 case REQARG_BOOLEAN:
                     fprintf(fp, "%s", vp->i ? "yes" : "no");
@@ -329,7 +331,6 @@ arg_dump_r(cmd_ln_t *cmdln, FILE * fp, const arg_t * defn, int32 doc)
     ckd_free(pos);
 
     fprintf(fp, "\n");
-    fflush(fp);
 }
 
 static char **
@@ -337,14 +338,14 @@ parse_string_list(const char *str)
 {
     int count, i, j;
     const char *p;
-    char ** result;
+    char **result;
 
     p = str;
     count = 1;
     while (*p) {
 	if (*p == ',')
-	    count++;
-	p++;
+    	    count++;
+        p++;
     }
     /* Should end with NULL */
     result = (char **) ckd_calloc(count + 1, sizeof(char *));
@@ -352,8 +353,8 @@ parse_string_list(const char *str)
     for (i = 0; i < count; i++) {
 	for (j = 0; p[j] != ',' && p[j] != 0; j++);
 	result[i] = ckd_calloc(j + 1, sizeof(char));
-	strncpy( result[i], p, j);
-	p = p + j + 1;
+        strncpy( result[i], p, j);
+        p = p + j + 1;
     }
     return result;
 }
@@ -382,7 +383,7 @@ cmd_ln_val_init(int t, const char *str)
         case ARG_FLOATING:
         case REQARG_FLOATING:
             if (e_str == NULL || e_str[0] == 0)
-        	valid = 0;
+            valid = 0;
             val.fl = atof_c(e_str);
             break;
         case ARG_BOOLEAN:
@@ -406,7 +407,7 @@ cmd_ln_val_init(int t, const char *str)
             val.ptr = ckd_salloc(e_str);
             break;
         case ARG_STRING_LIST:
-    	    val.ptr = parse_string_list(e_str);
+            val.ptr = parse_string_list(e_str);
             break;
         default:
             E_ERROR("Unknown argument type: %d\n", t);
@@ -471,13 +472,13 @@ cmd_ln_val_free(cmd_ln_val_t *val)
 {
     int i;
     if (val->type & ARG_STRING_LIST) {
-	char ** array = (char **)val->val.ptr;
-	if (array) {
-	    for (i = 0; array[i] != NULL; i++) {
-		ckd_free(array[i]);
-	    }
-	    ckd_free(array);
-	}
+        char ** array = (char **)val->val.ptr;
+        if (array) {
+            for (i = 0; array[i] != NULL; i++) {
+                ckd_free(array[i]);
+            }
+            ckd_free(array);
+        }
     }
     if (val->type & ARG_STRING)
         ckd_free(val->val.ptr);
@@ -553,7 +554,7 @@ cmd_ln_parse_r(cmd_ln_t *inout_cmdln, const arg_t * defn, int32 argc, char *argv
     int32 i, j, n, argstart;
     hash_table_t *defidx = NULL;
     cmd_ln_t *cmdln;
-    
+
     /* Construct command-line object */
     if (inout_cmdln == NULL) {
         cmdln = ckd_calloc(1, sizeof(*cmdln));
@@ -589,7 +590,7 @@ cmd_ln_parse_r(cmd_ln_t *inout_cmdln, const arg_t * defn, int32 argc, char *argv
     argstart = 0;
     if (argc > 0 && argv[0][0] != '-') {
         argstart = 1;
-    } 
+    }
 
     /* Parse command line arguments (name-value pairs) */
     for (j = argstart; j < argc; j += 2) {
@@ -609,8 +610,8 @@ cmd_ln_parse_r(cmd_ln_t *inout_cmdln, const arg_t * defn, int32 argc, char *argv
         }
         argdef = v;
 
-        /* Enter argument value */	
-	if (j + 1 >= argc) {
+        /* Enter argument value */
+        if (j + 1 >= argc) {
             cmd_ln_print_help_r(cmdln, stderr, defn);
             E_ERROR("Argument value for '%s' missing\n", argv[j]);
             goto error;
@@ -627,7 +628,9 @@ cmd_ln_parse_r(cmd_ln_t *inout_cmdln, const arg_t * defn, int32 argc, char *argv
             }
         }
 
-        if ((v = hash_table_enter(cmdln->ht, argv[j], (void *)val)) != (void *)val) {
+        if ((v = hash_table_enter(cmdln->ht, argv[j], (void *)val)) !=
+            (void *)val)
+        {
             if (strict) {
                 cmd_ln_val_free(val);
                 E_ERROR("Duplicate argument name in arguments: %s\n",
@@ -675,17 +678,19 @@ cmd_ln_parse_r(cmd_ln_t *inout_cmdln, const arg_t * defn, int32 argc, char *argv
         E_ERROR("No arguments given, available options are:\n");
         cmd_ln_print_help_r(cmdln, stderr, defn);
         if (defidx)
-	    hash_table_free(defidx);
+            hash_table_free(defidx);
         if (inout_cmdln == NULL)
-	    cmd_ln_free_r(cmdln);
+            cmd_ln_free_r(cmdln);
         return NULL;
     }
 
 #ifndef _WIN32_WCE
     /* Set up logging. We need to do this earlier because we want to dump
      * the information to the configured log, not to the stderr. */
-    if (cmd_ln_exists_r(cmdln, "-logfn") && cmd_ln_str_r(cmdln, "-logfn"))
-        err_set_logfile(cmd_ln_str_r(cmdln, "-logfn"));
+    if (cmd_ln_exists_r(cmdln, "-logfn") && cmd_ln_str_r(cmdln, "-logfn")) {
+        if (err_set_logfile(cmd_ln_str_r(cmdln, "-logfn")) < 0)
+            E_FATAL_SYSTEM("cannot redirect log output");
+    }
 
     /* Echo command line */
     E_INFO("Parsing command line:\n");
@@ -695,7 +700,6 @@ cmd_ln_parse_r(cmd_ln_t *inout_cmdln, const arg_t * defn, int32 argc, char *argv
         E_INFOCONT("%s ", argv[i]);
     }
     E_INFOCONT("\n\n");
-    fflush(stderr);
 
     /* Print configuration */
     E_INFOCONT("Current configuration:\n");
@@ -916,13 +920,12 @@ cmd_ln_parse_file(const arg_t * defn, const char *filename, int32 strict)
 }
 
 void
-cmd_ln_print_help_r(cmd_ln_t *cmdln, FILE * fp, arg_t const* defn)
+cmd_ln_print_help_r(cmd_ln_t *cmdln, FILE *fp, arg_t const* defn)
 {
     if (defn == NULL)
         return;
     fprintf(fp, "Arguments list definition:\n");
     arg_dump_r(cmdln, fp, defn, 1);
-    fflush(fp);
 }
 
 int
@@ -1074,3 +1077,5 @@ cmd_ln_free(void)
     cmd_ln_free_r(global_cmdln);
     global_cmdln = NULL;
 }
+
+/* vim: set ts=4 sw=4: */

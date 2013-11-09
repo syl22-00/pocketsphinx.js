@@ -11,4 +11,4 @@ testname=`basename $0 .test`
 sed -ne 's,^ERROR:.*line [0-9]*:,ERROR:,p' < $testname.out > $testname.tmp.out \
     && mv $testname.tmp.out $testname.out
 compare_table defaults $testname.out $tests/unit/test_cmdln/$testname.res 100
-rm -f $testname.out
+#rm -f $testname.out

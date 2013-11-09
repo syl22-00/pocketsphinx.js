@@ -208,7 +208,6 @@ void matrixadd(float32 **inout_a, float32 **b, int32 n);
 
 #endif /* MATRIX_H */ 
 
-
 /*
  * Log record.  Maintained by RCS.
  *

@@ -8,27 +8,27 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * This work was supported in part by funding from the Defense Advanced 
- * Research Projects Agency and the National Science Foundation of the 
+ * This work was supported in part by funding from the Defense Advanced
+ * Research Projects Agency and the National Science Foundation of the
  * United States of America, and the CMU Sphinx Speech Consortium.
  *
- * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
- * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
  * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ====================================================================
@@ -41,6 +41,7 @@
 
 #include "config.h"
 
+#include <libgen.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -48,9 +49,153 @@
 #include <errno.h>
 
 #include "sphinxbase/err.h"
+#include "sphinxbase/prim_type.h"
 
-#ifdef SPHINX_DEBUG
+static FILE*  logfp = NULL;
+static int    logfp_disabled = FALSE;
+
 static int sphinx_debug_level;
+
+#if   defined __ANDROID__
+
+#ifdef __ANDROID__
+#include <android/log.h>
+#endif
+
+#if   defined __ANDROID__
+static void
+err_logcat_cb(void* user_data, err_lvl_t level, const char *fmt, ...);
+#elif defined _WIN32_WCE
+static void
+err_wince_cb(void* user_data, err_lvl_t level, const char *fmt, ...);
+#endif
+
+static err_cb_f err_cb = err_logcat_cb;
+#elif defined _WIN32_WCE
+static err_cb_f err_cb = err_wince_cb;
+#else
+static err_cb_f err_cb = err_logfp_cb;
+#endif
+static void* err_user_data;
+
+void
+err_msg(err_lvl_t lvl, const char *path, long ln, const char *fmt, ...)
+{
+    static const char *err_prefix[ERR_MAX] = {
+        "DEBUG", "INFO", "INFOCONT", "WARN", "ERROR", "FATAL"
+    };
+
+    char msg[1024];
+    char *fname;
+    va_list ap;
+
+    if (!err_cb)
+        return;
+
+    va_start(ap, fmt);
+    vsnprintf(msg, sizeof msg, fmt, ap);
+    va_end(ap);
+
+    if (path) {
+        fname = strdup(path);
+        if (lvl == ERR_INFOCONT)
+    	    err_cb(err_user_data, lvl, "%s(%ld): %s", basename(fname), ln, msg);
+        else if (lvl == ERR_INFO)
+            err_cb(err_user_data, lvl, "%s: %s(%ld): %s", err_prefix[lvl], basename(fname), ln, msg);
+        else
+    	    err_cb(err_user_data, lvl, "%s: \"%s\", line %ld: %s", err_prefix[lvl], basename(fname), ln, msg);
+        free(fname);
+    } else {
+        err_cb(err_user_data, lvl, "%s", msg);
+    }
+}
+
+#if   defined __ANDROID__
+static void
+err_logcat_cb(void *user_data, err_lvl_t lvl, const char *fmt, ...)
+{
+    static const int android_level[ERR_MAX] = {ANDROID_LOG_DEBUG, ANDROID_LOG_INFO,
+         ANDROID_LOG_INFO, ANDROID_LOG_WARN, ANDROID_LOG_ERROR, ANDROID_LOG_ERROR};
+
+    va_list ap;
+    va_start(ap, fmt);
+    __android_log_vprint(android_level[lvl], "cmusphinx", fmt, ap);
+    va_end(ap);
+}
+#elif defined _WIN32_WCE
+static void
+err_wince_cb(void *user_data, err_lvl_t lvl, const char *fmt, ...)
+{
+    char msg[1024];
+    WCHAR *wmsg;
+    size_t size;
+    va_list ap;
+
+    va_start(ap, fmt);
+    _vsnprintf(msg, sizeof(msg), fmt, ap);
+    va_end(ap);
+
+    size = mbstowcs(NULL, msg, 0) + 1;
+    wmsg = ckd_calloc(size, sizeof(*wmsg));
+    mbstowcs(wmsg, msg, size);
+
+    OutputDebugStringW(wmsg);
+    ckd_free(wmsg);
+}
+#else
+void
+err_logfp_cb(void *user_data, err_lvl_t lvl, const char *fmt, ...)
+{
+
+    FILE *fp = err_get_logfp();
+    if (!fp)
+        return;
+    
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(fp, fmt, ap);
+    va_end(ap);
+}
+#endif
+
+int
+err_set_logfile(const char *path)
+{
+    FILE *newfp, *oldfp;
+
+    if ((newfp = fopen(path, "a")) == NULL)
+        return -1;
+    oldfp = err_get_logfp();
+    err_set_logfp(newfp);
+    if (oldfp != NULL && oldfp != stdout && oldfp != stderr)
+        fclose(oldfp);
+    return 0;
+}
+
+void
+err_set_logfp(FILE *stream)
+{
+    if (stream == NULL) {
+	logfp_disabled = TRUE;
+	logfp = NULL;
+	return;
+    }    
+    logfp_disabled = FALSE;
+    logfp = stream;
+    return;
+}
+
+FILE *
+err_get_logfp(void)
+{
+    if (logfp_disabled)
+	return NULL;
+    if (logfp == NULL)
+	return stderr;
+
+    return logfp;
+}
+
 int
 err_set_debug_level(int level)
 {
@@ -58,313 +203,16 @@ err_set_debug_level(int level)
     sphinx_debug_level = level;
     return prev;
 }
+
 int
 err_get_debug_level(void)
 {
     return sphinx_debug_level;
 }
-#else
-int
-err_set_debug_level(int level)
-{
-    return 0;
-}
-
-int
-err_get_debug_level(void)
-{
-    return 0;
-}
-#endif
-
-#if defined(HAVE_PTHREAD_H)
-#include <pthread.h>
-static pthread_key_t logfp_index;
-static pthread_once_t logfp_index_once = PTHREAD_ONCE_INIT;
 
 void
-logfp_index_alloc(void)
+err_set_callback(err_cb_f cb, void* user_data)
 {
-    pthread_key_create(&logfp_index, NULL);
-}
-
-FILE *
-err_get_logfp(void)
-{
-    FILE *logfp;
-
-    pthread_once(&logfp_index_once, logfp_index_alloc);
-    logfp = (FILE *)pthread_getspecific(logfp_index);
-
-    if (logfp == NULL)
-        return stderr;
-    else if (logfp == (FILE*) -1)
-	return NULL;
-    else
-        return logfp;
-}
-
-static void
-internal_set_logfp(FILE *fh)
-{
-    if (fh == NULL)
-	fh = (FILE*) -1;
-
-    pthread_setspecific(logfp_index, (void *)fh);
-}
-
-#elif defined(_WIN32) || defined(__CYGWIN__) /* Use Windows TLS on Cygwin */
-#include <windows.h>
-static DWORD logfp_index; /** TLS index for log file */
-static LONG logfp_index_once = 0; /** True if we have initialized TLS */
-
-void
-logfp_index_alloc(void)
-{
-    logfp_index = TlsAlloc();
-}
-
-FILE *
-err_get_logfp(void)
-{
-    FILE *logfp;
-
-    if (InterlockedExchange(&logfp_index_once, 1) == 0)
-        logfp_index_alloc();
-    logfp = (FILE *)TlsGetValue(logfp_index);
-
-    if (logfp == NULL)
-        return stderr;
-    else if (logfp == (FILE*) -1)
-	return NULL;
-    else
-        return logfp;
-}
-
-static void
-internal_set_logfp(FILE *fh)
-{
-    if (fh == NULL)
-	fh = (FILE*) -1;
-
-    TlsSetValue(logfp_index, (void *)fh);
-}
-
-#else
-FILE *logfp = NULL;
-
-FILE *
-err_get_logfp(void)
-{
-    if (logfp == NULL)
-        return stderr;
-    else if (logfp == (FILE*) -1)
-	return NULL;
-    else
-        return logfp;
-}
-
-static void
-internal_set_logfp(FILE *fh)
-{
-    if (fh == NULL)
-	fh = (FILE*) -1;
-
-    logfp = fh;
-}
-
-#endif
- 
-FILE *
-err_set_logfp(FILE *newfp)
-{
-    FILE *oldfp;
-
-    oldfp = err_get_logfp();
-    internal_set_logfp(newfp);
-
-    return oldfp;
-}
-
-int
-err_set_logfile(char const *file)
-{
-    FILE *newfp, *oldfp;
-
-    if ((newfp = fopen(file, "a")) == NULL)
-        return -1;
-    oldfp = err_get_logfp();
-    internal_set_logfp(newfp);
-    if (oldfp != NULL && oldfp != stdout && oldfp != stderr)
-        fclose(oldfp);
-    return 0;
-}
-
-
-void
-_E__pr_info_header_wofn(char const *msg)
-{
-    FILE *logfp;
-
-    logfp = err_get_logfp();
-    if (logfp == NULL)
-        return;
-    /* make different format so as not to be parsed by emacs compile */
-    fprintf(logfp, "%s:\t", msg);
-    fflush(logfp);
-}
-
-void
-_E__pr_header(char const *f, long ln, char const *msg)
-{
-    char const *fname;
-    FILE *logfp;
-
-    logfp = err_get_logfp();
-    if (logfp == NULL)
-        return;
-    fname = strrchr(f,'\\');
-    if (fname == NULL)
-        fname = strrchr(f,'/');
-    fprintf(logfp, "%s: \"%s\", line %ld: ", msg, fname == NULL ? f : fname + 1, ln);
-    fflush(logfp);
-}
-
-void
-_E__pr_info_header(char const *f, long ln, char const *msg)
-{
-    char const *fname;
-    FILE *logfp;
-
-    logfp = err_get_logfp();
-    if (logfp == NULL)
-        return;
-    fname = strrchr(f,'\\');
-    if (fname == NULL)
-        fname = strrchr(f,'/');
-    /* make different format so as not to be parsed by emacs compile */
-    fprintf(logfp, "%s: %s(%ld): ", msg, fname == NULL ? f : fname + 1, ln);
-    fflush(logfp);
-}
-
-void
-_E__pr_warn(char const *fmt, ...)
-{
-    va_list pvar;
-    FILE *logfp;
-
-    logfp = err_get_logfp();
-    if (logfp == NULL)
-        return;
-    va_start(pvar, fmt);
-    vfprintf(logfp, fmt, pvar);
-    va_end(pvar);
-
-    fflush(logfp);
-}
-
-void
-_E__pr_info(char const *fmt, ...)
-{
-    va_list pvar;
-    FILE *logfp;
-
-    logfp = err_get_logfp();
-    if (logfp == NULL)
-        return;
-    va_start(pvar, fmt);
-    vfprintf(logfp, fmt, pvar);
-    va_end(pvar);
-
-    fflush(logfp);
-}
-
-void
-_E__die_error(char const *fmt, ...)
-{
-    va_list pvar;
-    FILE *logfp;
-
-    logfp = err_get_logfp();
-    if (logfp) {
-        va_start(pvar, fmt);
-        vfprintf(logfp, fmt, pvar);
-        va_end(pvar);
-        fflush(logfp);
-    }
-
-#if defined(__ADSPBLACKFIN__) && !defined(__linux__)
-    while(1);
-#else 
-	exit(-1);
-#endif
-}
-
-void
-_E__fatal_sys_error(char const *fmt, ...)
-{
-    va_list pvar;
-    FILE *logfp;
-    int local_errno = errno;
-
-    logfp = err_get_logfp();
-    if (logfp) {
-        va_start(pvar, fmt);
-        vfprintf(logfp, fmt, pvar);
-        va_end(pvar);
-
-        fprintf(logfp, ": %s\n", strerror(local_errno));
-        fflush(logfp);
-    }
-
-
-#if defined(__ADSPBLACKFIN__) && !defined(__linux__)
-    while(1);
-#else 
-	exit(-1);
-#endif
-
-}
-
-void
-_E__sys_error(char const *fmt, ...)
-{
-    va_list pvar;
-    FILE *logfp;
-    int local_errno = errno;
-
-    logfp = err_get_logfp();
-    if (logfp == NULL)
-        return;
-
-    va_start(pvar, fmt);
-    vfprintf(logfp, fmt, pvar);
-    va_end(pvar);
-
-    fprintf(logfp, ": %s\n", strerror(local_errno));
-    fflush(logfp);
-}
-
-void
-_E__abort_error(char const *fmt, ...)
-{
-    va_list pvar;
-    FILE *logfp;
-
-    logfp = err_get_logfp();
-    if (logfp) {
-        va_start(pvar, fmt);
-        vfprintf(logfp, fmt, pvar);
-        va_end(pvar);
-        fflush(logfp);
-    }
-
-#if defined(__ADSPBLACKFIN__) && !defined(__linux__)
-while(1);
-#elif defined(_WIN32_WCE)
-exit(-1);
-#else
-abort();
-#endif
-
+    err_cb = cb;
+    err_user_data= user_data;
 }

@@ -112,6 +112,7 @@ fe_parse_general_params(cmd_ln_t *config, fe_t * fe)
     }
 
     fe->remove_dc = cmd_ln_boolean_r(config, "-remove_dc");
+    fe->remove_noise = cmd_ln_boolean_r(config, "-remove_noise");
 
     if (0 == strcmp(cmd_ln_str_r(config, "-transform"), "dct"))
         fe->transform = DCT_II;
@@ -212,7 +213,7 @@ fe_init_auto_r(cmd_ln_t *config)
 {
     fe_t *fe;
 
-    fe = ckd_calloc(1, sizeof(*fe));
+    fe = (fe_t*)ckd_calloc(1, sizeof(*fe));
     fe->refcount = 1;
 
     /* transfer params to front end */
@@ -256,7 +257,10 @@ fe_init_auto_r(cmd_ln_t *config)
     /* transfer params to mel fb */
     fe_parse_melfb_params(config, fe, fe->mel_fb);
     fe_build_melfilters(fe->mel_fb);
+
     fe_compute_melcosine(fe->mel_fb);
+    if (fe->remove_noise)
+	fe->noise_stats = fe_init_noisestats(fe->mel_fb->num_filters);
 
     /* Create temporary FFT, spectrum and mel-spectrum buffers. */
     /* FIXME: Gosh there are a lot of these. */
@@ -316,6 +320,10 @@ fe_start_utt(fe_t * fe)
     memset(fe->overflow_samps, 0, fe->frame_size * sizeof(int16));
     fe->start_flag = 1;
     fe->prior = 0;
+
+    if (fe->remove_noise)
+	fe_reset_noisestats(fe->noise_stats);
+
     return 0;
 }
 
@@ -566,6 +574,10 @@ fe_free(fe_t * fe)
     ckd_free(fe->mfspec);
     ckd_free(fe->overflow_samps);
     ckd_free(fe->hamming_window);
+
+    if (fe->remove_noise)
+    	fe_free_noisestats(fe->noise_stats);
+
     cmd_ln_free_r(fe->config);
     ckd_free(fe);
 

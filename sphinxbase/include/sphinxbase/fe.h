@@ -213,6 +213,11 @@ extern "C" {
     "no", \
     "Remove DC offset from each frame" }, \
                                           \
+  { "-remove_noise", \
+    ARG_BOOLEAN, \
+    "yes", \
+    "Remove noise with spectral subtraction in mel-energies" }, \
+                                                                              \
   { "-verbose", \
     ARG_BOOLEAN, \
     "no", \

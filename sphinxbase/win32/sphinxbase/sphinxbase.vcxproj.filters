@@ -179,6 +179,9 @@
     <ClCompile Include="..\..\src\libsphinxbase\fe\yin.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\libsphinxbase\fe\fe_noise.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\ad.h">
@@ -364,5 +367,11 @@
     <ClInclude Include="..\..\include\yin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\libsphinxbase\fe\fe_noise.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
 </Project>

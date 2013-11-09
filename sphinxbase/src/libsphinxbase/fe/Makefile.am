@@ -2,6 +2,7 @@ noinst_LTLIBRARIES = libsphinxfe.la
 
 libsphinxfe_la_SOURCES =			\
 	fe_interface.c				\
+	fe_noise.c				\
 	fe_sigproc.c				\
 	fe_warp_affine.c			\
 	fe_warp.c				\
@@ -12,6 +13,8 @@ libsphinxfe_la_SOURCES =			\
 
 noinst_HEADERS =				\
 	fe_internal.h				\
+	fe_noise.h				\
+	fe_type.h				\
 	fe_warp_affine.h			\
 	fe_warp.h				\
 	fe_warp_inverse_linear.h		\

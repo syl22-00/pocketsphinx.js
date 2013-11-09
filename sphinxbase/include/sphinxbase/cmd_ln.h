@@ -391,12 +391,12 @@ int cmd_ln_exists_r(cmd_ln_t *cmdln, char const *name);
 /**
  * Print a help message listing the valid argument names, and the associated
  * attributes as given in defn.
+ *
+ * @param fp   output stream
+ * @param defn Array of argument name definitions.
  */
 SPHINXBASE_EXPORT
-void cmd_ln_print_help_r (cmd_ln_t *cmdln,
-                          FILE *fp,	   /**< In: File to which to print */
-			  const arg_t *defn /**< In: Array of argument name definitions */
-	);
+void cmd_ln_print_help_r (cmd_ln_t *cmdln, FILE *fp, const arg_t *defn);
 
 /**
  * Non-reentrant version of cmd_ln_parse().

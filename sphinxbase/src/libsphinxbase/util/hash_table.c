@@ -584,38 +584,38 @@ hash_table_display(hash_table_t * h, int32 showdisplay)
     int i, j;
     j = 0;
 
-    E_INFOCONT("Hash with chaining representation of the hash table\n");
+    printf("Hash with chaining representation of the hash table\n");
 
     for (i = 0; i < h->size; i++) {
         e = &(h->table[i]);
         if (e->key != NULL) {
-            E_INFOCONT("|key:");
+            printf("|key:");
             if (showdisplay)
-                E_INFOCONT("%s", e->key);
+                printf("%s", e->key);
             else
-                E_INFOCONT("%p", e->key);
+                printf("%p", e->key);
 
-            E_INFOCONT("|len:%d|val=%ld|->", e->len, (long)e->val);
+            printf("|len:%d|val=%ld|->", e->len, (long)e->val);
             if (e->next == NULL) {
-                E_INFOCONT("NULL\n");
+                printf("NULL\n");
             }
             j++;
 
             for (e = e->next; e; e = e->next) {
-                E_INFOCONT("|key:");
+                printf("|key:");
                 if (showdisplay)
-                    E_INFOCONT("%s", e->key);
+                    printf("%s", e->key);
 
-                E_INFOCONT("|len:%d|val=%ld|->", e->len, (long)e->val);
+                printf("|len:%d|val=%ld|->", e->len, (long)e->val);
                 if (e->next == NULL) {
-                    E_INFOCONT("NULL\n");
+                    printf("NULL\n");
                 }
                 j++;
             }
         }
     }
 
-    E_INFOCONT("The total number of keys =%d\n", j);
+    printf("The total number of keys =%d\n", j);
 }
 
 

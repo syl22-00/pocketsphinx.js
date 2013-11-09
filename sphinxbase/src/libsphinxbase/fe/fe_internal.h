@@ -45,6 +45,9 @@
 #include "sphinxbase/fe.h"
 #include "sphinxbase/fixpoint.h"
 
+#include "fe_noise.h"
+#include "fe_type.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -52,24 +55,6 @@ extern "C" {
 /* Fool Emacs. */
 }
 #endif
-
-#ifdef FIXED16
-/* Q15 format */
-typedef int16 frame_t;
-typedef int16 window_t;
-typedef int32 powspec_t;
-typedef struct { int16 r, i; } complex;
-#elif defined(FIXED_POINT)
-typedef fixed32 frame_t;
-typedef int32 powspec_t;
-typedef fixed32 window_t;
-typedef struct { fixed32 r, i; } complex;
-#else /* FIXED_POINT */
-typedef float64 frame_t;
-typedef float64 powspec_t;
-typedef float64 window_t;
-typedef struct { float64 r, i; } complex;
-#endif /* FIXED_POINT */
 
 /* Values for the 'logspec' field. */
 enum {
@@ -117,6 +102,15 @@ struct melfb_s {
     int32 round_filters;
 };
 
+typedef struct ringbuf_s {
+	powspec_t** bufs;
+	int16 buf_num;
+	int32 buf_len;
+	int16 start;
+	int16 end;
+	int32 recs;
+} ringbuf_t;
+
 /* sqrt(1/2), also used for unitary DCT-II/DCT-III */
 #define SQRT_HALF FLOAT2MFCC(0.707106781186548)
 
@@ -141,6 +135,7 @@ struct fe_s {
     uint8 swap;
     uint8 dither;
     uint8 transform;
+    uint8 remove_noise;
 
     float32 pre_emphasis_alpha;
     int32 seed;
@@ -155,6 +150,8 @@ struct fe_s {
     melfb_t *mel_fb;
     /* Half of a Hamming Window. */
     window_t *hamming_window;
+    /* Storage for noise removal  */
+    noise_stats_t *noise_stats;
 
     /* Temporary buffers for processing. */
     /* FIXME: too many of these. */

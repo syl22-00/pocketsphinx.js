@@ -148,6 +148,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="..\..\src\libsphinxbase\fe\fe_noise.c" />
     <ClCompile Include="..\..\src\libsphinxbase\util\bio.c">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -396,6 +397,7 @@
     <ClInclude Include="..\..\include\f2c.h" />
     <ClInclude Include="..\..\include\fe.h" />
     <ClInclude Include="..\..\src\libsphinxbase\fe\fe_internal.h" />
+    <ClInclude Include="..\..\src\libsphinxbase\fe\fe_noise.h" />
     <ClInclude Include="..\..\src\libsphinxbase\fe\fe_warp.h" />
     <ClInclude Include="..\..\src\libsphinxbase\fe\fe_warp_affine.h" />
     <ClInclude Include="..\..\src\libsphinxbase\fe\fe_warp_inverse_linear.h" />
@@ -441,6 +443,9 @@
     <ClInclude Include="..\..\include\strfuncs.h" />
     <ClInclude Include="..\..\include\unlimit.h" />
     <ClInclude Include="..\..\include\yin.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

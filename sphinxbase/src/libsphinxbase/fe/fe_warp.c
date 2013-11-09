@@ -43,7 +43,7 @@
  *********************************************************************/
 
 /* static char rcsid[] = "@(#)$Id: fe_warp.c,v 1.2 2006/02/17 00:31:34 egouvea Exp $";*/
-
+
 #include "fe_warp_inverse_linear.h"
 #include "fe_warp_affine.h"
 #include "fe_warp_piecewise_linear.h"
@@ -72,7 +72,7 @@ static char *name2id[] = {
     "piecewise_linear",
     NULL
 };
-
+
 static fe_warp_conf_t fe_warp_conf[FE_WARP_ID_MAX + 1] = {
     {fe_warp_inverse_linear_set_parameters,
      fe_warp_inverse_linear_doc,
@@ -130,7 +130,7 @@ fe_warp_set(melfb_t *mel, const char *id_name)
 
     return FE_SUCCESS;
 }
-
+
 void
 fe_warp_set_parameters(melfb_t *mel, char const *param_str, float sampling_rate)
 {
@@ -146,7 +146,7 @@ fe_warp_set_parameters(melfb_t *mel, char const *param_str, float sampling_rate)
              mel->warp_id);
     }
 }
-
+
 const char *
 fe_warp_doc(melfb_t *mel)
 {
@@ -164,7 +164,7 @@ fe_warp_doc(melfb_t *mel)
 
     return NULL;
 }
-
+
 uint32
 fe_warp_id(melfb_t *mel)
 {
@@ -180,7 +180,7 @@ fe_warp_id(melfb_t *mel)
 
     return FE_WARP_ID_NONE;
 }
-
+
 uint32
 fe_warp_n_param(melfb_t *mel)
 {
@@ -198,7 +198,7 @@ fe_warp_n_param(melfb_t *mel)
 
     return 0;
 }
-
+
 float
 fe_warp_warped_to_unwarped(melfb_t *mel, float nonlinear)
 {
@@ -216,7 +216,7 @@ fe_warp_warped_to_unwarped(melfb_t *mel, float nonlinear)
 
     return 0;
 }
-
+
 float
 fe_warp_unwarped_to_warped(melfb_t *mel,float linear)
 {
@@ -234,7 +234,7 @@ fe_warp_unwarped_to_warped(melfb_t *mel,float linear)
 
     return 0;
 }
-
+
 void
 fe_warp_print(melfb_t *mel, const char *label)
 {
@@ -250,7 +250,7 @@ fe_warp_print(melfb_t *mel, const char *label)
              mel->warp_id);
     }
 }
-
+
 /*
  * Log record.  Maintained by RCS.
  *

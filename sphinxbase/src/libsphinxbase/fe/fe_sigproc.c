@@ -53,8 +53,8 @@
  * Windows math.h does not contain M_PI
  */
 #ifndef M_PI
-#define M_PI		3.14159265358979323846	/* pi */
-#endif // M_PI
+#define M_PI		3.14159265358979323846  /* pi */
+#endif                          // M_PI
 
 #include "sphinxbase/prim_type.h"
 #include "sphinxbase/ckd_alloc.h"
@@ -90,168 +90,170 @@
  *    when x > y, z = x + logadd_table[-(y-x)]
  */
 static const unsigned char fe_logadd_table[] = {
-177, 177, 176, 176, 175, 175, 174, 174, 173, 173,
-172, 172, 172, 171, 171, 170, 170, 169, 169, 168,
-168, 167, 167, 166, 166, 165, 165, 164, 164, 163,
-163, 162, 162, 161, 161, 161, 160, 160, 159, 159,
-158, 158, 157, 157, 156, 156, 155, 155, 155, 154,
-154, 153, 153, 152, 152, 151, 151, 151, 150, 150,
-149, 149, 148, 148, 147, 147, 147, 146, 146, 145,
-145, 144, 144, 144, 143, 143, 142, 142, 141, 141,
-141, 140, 140, 139, 139, 138, 138, 138, 137, 137,
-136, 136, 136, 135, 135, 134, 134, 134, 133, 133,
-132, 132, 131, 131, 131, 130, 130, 129, 129, 129,
-128, 128, 128, 127, 127, 126, 126, 126, 125, 125,
-124, 124, 124, 123, 123, 123, 122, 122, 121, 121,
-121, 120, 120, 119, 119, 119, 118, 118, 118, 117,
-117, 117, 116, 116, 115, 115, 115, 114, 114, 114,
-113, 113, 113, 112, 112, 112, 111, 111, 110, 110,
-110, 109, 109, 109, 108, 108, 108, 107, 107, 107,
-106, 106, 106, 105, 105, 105, 104, 104, 104, 103,
-103, 103, 102, 102, 102, 101, 101, 101, 100, 100,
-100, 99, 99, 99, 98, 98, 98, 97, 97, 97,
-96, 96, 96, 96, 95, 95, 95, 94, 94, 94,
-93, 93, 93, 92, 92, 92, 92, 91, 91, 91,
-90, 90, 90, 89, 89, 89, 89, 88, 88, 88,
-87, 87, 87, 87, 86, 86, 86, 85, 85, 85,
-85, 84, 84, 84, 83, 83, 83, 83, 82, 82,
-82, 82, 81, 81, 81, 80, 80, 80, 80, 79,
-79, 79, 79, 78, 78, 78, 78, 77, 77, 77,
-77, 76, 76, 76, 75, 75, 75, 75, 74, 74,
-74, 74, 73, 73, 73, 73, 72, 72, 72, 72,
-71, 71, 71, 71, 71, 70, 70, 70, 70, 69,
-69, 69, 69, 68, 68, 68, 68, 67, 67, 67,
-67, 67, 66, 66, 66, 66, 65, 65, 65, 65,
-64, 64, 64, 64, 64, 63, 63, 63, 63, 63,
-62, 62, 62, 62, 61, 61, 61, 61, 61, 60,
-60, 60, 60, 60, 59, 59, 59, 59, 59, 58,
-58, 58, 58, 58, 57, 57, 57, 57, 57, 56,
-56, 56, 56, 56, 55, 55, 55, 55, 55, 54,
-54, 54, 54, 54, 53, 53, 53, 53, 53, 52,
-52, 52, 52, 52, 52, 51, 51, 51, 51, 51,
-50, 50, 50, 50, 50, 50, 49, 49, 49, 49,
-49, 49, 48, 48, 48, 48, 48, 48, 47, 47,
-47, 47, 47, 47, 46, 46, 46, 46, 46, 46,
-45, 45, 45, 45, 45, 45, 44, 44, 44, 44,
-44, 44, 43, 43, 43, 43, 43, 43, 43, 42,
-42, 42, 42, 42, 42, 41, 41, 41, 41, 41,
-41, 41, 40, 40, 40, 40, 40, 40, 40, 39,
-39, 39, 39, 39, 39, 39, 38, 38, 38, 38,
-38, 38, 38, 37, 37, 37, 37, 37, 37, 37,
-37, 36, 36, 36, 36, 36, 36, 36, 35, 35,
-35, 35, 35, 35, 35, 35, 34, 34, 34, 34,
-34, 34, 34, 34, 33, 33, 33, 33, 33, 33,
-33, 33, 32, 32, 32, 32, 32, 32, 32, 32,
-32, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-30, 30, 30, 30, 30, 30, 30, 30, 30, 29,
-29, 29, 29, 29, 29, 29, 29, 29, 28, 28,
-28, 28, 28, 28, 28, 28, 28, 28, 27, 27,
-27, 27, 27, 27, 27, 27, 27, 27, 26, 26,
-26, 26, 26, 26, 26, 26, 26, 26, 25, 25,
-25, 25, 25, 25, 25, 25, 25, 25, 25, 24,
-24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
-23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
-23, 23, 22, 22, 22, 22, 22, 22, 22, 22,
-22, 22, 22, 22, 21, 21, 21, 21, 21, 21,
-21, 21, 21, 21, 21, 21, 21, 20, 20, 20,
-20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
-19, 19, 19, 19, 18, 18, 18, 18, 18, 18,
-18, 18, 18, 18, 18, 18, 18, 18, 18, 17,
-17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-17, 17, 17, 17, 16, 16, 16, 16, 16, 16,
-16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-16, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-15, 15, 15, 15, 15, 15, 15, 15, 14, 14,
-14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
-14, 14, 14, 14, 14, 14, 14, 13, 13, 13,
-13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-13, 13, 13, 13, 13, 13, 13, 12, 12, 12,
-12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
-12, 12, 12, 12, 12, 12, 12, 12, 12, 11,
-11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-11, 11, 11, 10, 10, 10, 10, 10, 10, 10,
-10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-10, 10, 10, 10, 10, 10, 10, 10, 10, 9,
-9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
-9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
-9, 9, 9, 9, 9, 9, 9, 9, 8, 8,
-8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-7, 7, 7, 7, 7, 7, 7, 7, 6, 6,
-6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-6, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-5, 5, 5, 4, 4, 4, 4, 4, 4, 4,
-4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-4, 4, 4, 4, 4, 4, 4, 4, 3, 3,
-3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-3, 3, 3, 3, 2, 2, 2, 2, 2, 2,
-2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-2, 2, 2, 2, 2, 2, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-1, 1, 1, 1, 1, 1, 1, 0
+    177, 177, 176, 176, 175, 175, 174, 174, 173, 173,
+    172, 172, 172, 171, 171, 170, 170, 169, 169, 168,
+    168, 167, 167, 166, 166, 165, 165, 164, 164, 163,
+    163, 162, 162, 161, 161, 161, 160, 160, 159, 159,
+    158, 158, 157, 157, 156, 156, 155, 155, 155, 154,
+    154, 153, 153, 152, 152, 151, 151, 151, 150, 150,
+    149, 149, 148, 148, 147, 147, 147, 146, 146, 145,
+    145, 144, 144, 144, 143, 143, 142, 142, 141, 141,
+    141, 140, 140, 139, 139, 138, 138, 138, 137, 137,
+    136, 136, 136, 135, 135, 134, 134, 134, 133, 133,
+    132, 132, 131, 131, 131, 130, 130, 129, 129, 129,
+    128, 128, 128, 127, 127, 126, 126, 126, 125, 125,
+    124, 124, 124, 123, 123, 123, 122, 122, 121, 121,
+    121, 120, 120, 119, 119, 119, 118, 118, 118, 117,
+    117, 117, 116, 116, 115, 115, 115, 114, 114, 114,
+    113, 113, 113, 112, 112, 112, 111, 111, 110, 110,
+    110, 109, 109, 109, 108, 108, 108, 107, 107, 107,
+    106, 106, 106, 105, 105, 105, 104, 104, 104, 103,
+    103, 103, 102, 102, 102, 101, 101, 101, 100, 100,
+    100, 99, 99, 99, 98, 98, 98, 97, 97, 97,
+    96, 96, 96, 96, 95, 95, 95, 94, 94, 94,
+    93, 93, 93, 92, 92, 92, 92, 91, 91, 91,
+    90, 90, 90, 89, 89, 89, 89, 88, 88, 88,
+    87, 87, 87, 87, 86, 86, 86, 85, 85, 85,
+    85, 84, 84, 84, 83, 83, 83, 83, 82, 82,
+    82, 82, 81, 81, 81, 80, 80, 80, 80, 79,
+    79, 79, 79, 78, 78, 78, 78, 77, 77, 77,
+    77, 76, 76, 76, 75, 75, 75, 75, 74, 74,
+    74, 74, 73, 73, 73, 73, 72, 72, 72, 72,
+    71, 71, 71, 71, 71, 70, 70, 70, 70, 69,
+    69, 69, 69, 68, 68, 68, 68, 67, 67, 67,
+    67, 67, 66, 66, 66, 66, 65, 65, 65, 65,
+    64, 64, 64, 64, 64, 63, 63, 63, 63, 63,
+    62, 62, 62, 62, 61, 61, 61, 61, 61, 60,
+    60, 60, 60, 60, 59, 59, 59, 59, 59, 58,
+    58, 58, 58, 58, 57, 57, 57, 57, 57, 56,
+    56, 56, 56, 56, 55, 55, 55, 55, 55, 54,
+    54, 54, 54, 54, 53, 53, 53, 53, 53, 52,
+    52, 52, 52, 52, 52, 51, 51, 51, 51, 51,
+    50, 50, 50, 50, 50, 50, 49, 49, 49, 49,
+    49, 49, 48, 48, 48, 48, 48, 48, 47, 47,
+    47, 47, 47, 47, 46, 46, 46, 46, 46, 46,
+    45, 45, 45, 45, 45, 45, 44, 44, 44, 44,
+    44, 44, 43, 43, 43, 43, 43, 43, 43, 42,
+    42, 42, 42, 42, 42, 41, 41, 41, 41, 41,
+    41, 41, 40, 40, 40, 40, 40, 40, 40, 39,
+    39, 39, 39, 39, 39, 39, 38, 38, 38, 38,
+    38, 38, 38, 37, 37, 37, 37, 37, 37, 37,
+    37, 36, 36, 36, 36, 36, 36, 36, 35, 35,
+    35, 35, 35, 35, 35, 35, 34, 34, 34, 34,
+    34, 34, 34, 34, 33, 33, 33, 33, 33, 33,
+    33, 33, 32, 32, 32, 32, 32, 32, 32, 32,
+    32, 31, 31, 31, 31, 31, 31, 31, 31, 31,
+    30, 30, 30, 30, 30, 30, 30, 30, 30, 29,
+    29, 29, 29, 29, 29, 29, 29, 29, 28, 28,
+    28, 28, 28, 28, 28, 28, 28, 28, 27, 27,
+    27, 27, 27, 27, 27, 27, 27, 27, 26, 26,
+    26, 26, 26, 26, 26, 26, 26, 26, 25, 25,
+    25, 25, 25, 25, 25, 25, 25, 25, 25, 24,
+    24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
+    23, 23, 23, 23, 23, 23, 23, 23, 23, 23,
+    23, 23, 22, 22, 22, 22, 22, 22, 22, 22,
+    22, 22, 22, 22, 21, 21, 21, 21, 21, 21,
+    21, 21, 21, 21, 21, 21, 21, 20, 20, 20,
+    20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
+    19, 19, 19, 19, 19, 19, 19, 19, 19, 19,
+    19, 19, 19, 19, 18, 18, 18, 18, 18, 18,
+    18, 18, 18, 18, 18, 18, 18, 18, 18, 17,
+    17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
+    17, 17, 17, 17, 16, 16, 16, 16, 16, 16,
+    16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+    16, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+    15, 15, 15, 15, 15, 15, 15, 15, 14, 14,
+    14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
+    14, 14, 14, 14, 14, 14, 14, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+    13, 13, 13, 13, 13, 13, 13, 12, 12, 12,
+    12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+    12, 12, 12, 12, 12, 12, 12, 12, 12, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
+    11, 11, 11, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
+    10, 10, 10, 10, 10, 10, 10, 10, 10, 9,
+    9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+    9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+    9, 9, 9, 9, 9, 9, 9, 9, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+    7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+    7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+    7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+    7, 7, 7, 7, 7, 7, 7, 7, 6, 6,
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+    6, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+    5, 5, 5, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    3, 3, 3, 3, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 0
 };
-static const int fe_logadd_table_size = sizeof(fe_logadd_table) / sizeof(fe_logadd_table[0]);
+
+static const int fe_logadd_table_size =
+    sizeof(fe_logadd_table) / sizeof(fe_logadd_table[0]);
 
 static fixed32
 fe_log_add(fixed32 x, fixed32 y)
@@ -269,7 +271,7 @@ fe_log_add(fixed32 x, fixed32 y)
     if (d > fe_logadd_table_size - 1)
         return r;
     else {
-        r += ((fixed32)fe_logadd_table[d] << (DEFAULT_RADIX - 8));
+        r += ((fixed32) fe_logadd_table[d] << (DEFAULT_RADIX - 8));
 /*
         printf("%d + %d = %d | %f + %f = %f | %f + %f = %f\n",
                x, y, r, FIX2FLOAT(x), FIX2FLOAT(y), FIX2FLOAT(r),
@@ -292,7 +294,7 @@ fe_log(float32 x)
 #endif
 
 static float32
-fe_mel(melfb_t *mel, float32 x)
+fe_mel(melfb_t * mel, float32 x)
 {
     float32 warped = fe_warp_unwarped_to_warped(mel, x);
 
@@ -300,22 +302,26 @@ fe_mel(melfb_t *mel, float32 x)
 }
 
 static float32
-fe_melinv(melfb_t *mel, float32 x)
+fe_melinv(melfb_t * mel, float32 x)
 {
     float32 warped = (float32) (700.0 * (pow(10.0, x / 2595.0) - 1.0));
     return fe_warp_warped_to_unwarped(mel, warped);
 }
 
 int32
-fe_build_melfilters(melfb_t *mel_fb)
+fe_build_melfilters(melfb_t * mel_fb)
 {
     float32 melmin, melmax, melbw, fftfreq;
     int n_coeffs, i, j;
 
+
     /* Filter coefficient matrix, in flattened form. */
-    mel_fb->spec_start = ckd_malloc(mel_fb->num_filters * sizeof(*mel_fb->spec_start));
-    mel_fb->filt_start = ckd_malloc(mel_fb->num_filters * sizeof(*mel_fb->filt_start));
-    mel_fb->filt_width = ckd_malloc(mel_fb->num_filters * sizeof(*mel_fb->filt_width));
+    mel_fb->spec_start =
+        ckd_malloc(mel_fb->num_filters * sizeof(*mel_fb->spec_start));
+    mel_fb->filt_start =
+        ckd_malloc(mel_fb->num_filters * sizeof(*mel_fb->filt_start));
+    mel_fb->filt_width =
+        ckd_malloc(mel_fb->num_filters * sizeof(*mel_fb->filt_width));
 
     /* First calculate the widths of each filter. */
     /* Minimum and maximum frequencies in mel scale. */
@@ -355,17 +361,17 @@ fe_build_melfilters(melfb_t *mel_fb)
                 freqs[j] = fe_melinv(mel_fb, (i + j) * melbw + melmin);
             /* Round them to DFT points if requested */
             if (mel_fb->round_filters)
-                freqs[j] = ((int)(freqs[j] / fftfreq + 0.5)) * fftfreq;
+                freqs[j] = ((int) (freqs[j] / fftfreq + 0.5)) * fftfreq;
         }
 
         /* spec_start is the start of this filter in the power spectrum. */
         mel_fb->spec_start[i] = -1;
         /* There must be a better way... */
-        for (j = 0; j < mel_fb->fft_size/2+1; ++j) {
+        for (j = 0; j < mel_fb->fft_size / 2 + 1; ++j) {
             float32 hz = j * fftfreq;
             if (hz < freqs[0])
                 continue;
-            else if (hz > freqs[2] || j == mel_fb->fft_size/2) {
+            else if (hz > freqs[2] || j == mel_fb->fft_size / 2) {
                 /* filt_width is the width in DFT points of this filter. */
                 mel_fb->filt_width[i] = j - mel_fb->spec_start[i];
                 /* filt_start is the start of this filter in the filt_coeffs array. */
@@ -379,7 +385,8 @@ fe_build_melfilters(melfb_t *mel_fb)
     }
 
     /* Now go back and allocate the coefficient array. */
-    mel_fb->filt_coeffs = ckd_malloc(n_coeffs * sizeof(*mel_fb->filt_coeffs));
+    mel_fb->filt_coeffs =
+        ckd_malloc(n_coeffs * sizeof(*mel_fb->filt_coeffs));
 
     /* And now generate the coefficients. */
     n_coeffs = 0;
@@ -394,7 +401,7 @@ fe_build_melfilters(melfb_t *mel_fb)
                 freqs[j] = fe_melinv(mel_fb, (i + j) * melbw + melmin);
             /* Round them to DFT points if requested */
             if (mel_fb->round_filters)
-                freqs[j] = ((int)(freqs[j] / fftfreq + 0.5)) * fftfreq;
+                freqs[j] = ((int) (freqs[j] / fftfreq + 0.5)) * fftfreq;
         }
 
         for (j = 0; j < mel_fb->filt_width[i]; ++j) {
@@ -402,8 +409,11 @@ fe_build_melfilters(melfb_t *mel_fb)
 
             hz = (mel_fb->spec_start[i] + j) * fftfreq;
             if (hz < freqs[0] || hz > freqs[2]) {
-                E_FATAL("Failed to create filterbank, frequency range does not match. "
-                        "Sample rate %f, FFT size %d, lowerf %f < freq %f > upperf %f.\n", mel_fb->sampling_rate, mel_fb->fft_size, freqs[2], hz, freqs[0]);
+                E_FATAL
+                    ("Failed to create filterbank, frequency range does not match. "
+                     "Sample rate %f, FFT size %d, lowerf %f < freq %f > upperf %f.\n",
+                     mel_fb->sampling_rate, mel_fb->fft_size, freqs[2], hz,
+                     freqs[0]);
             }
             loslope = (hz - freqs[0]) / (freqs[1] - freqs[0]);
             hislope = (freqs[2] - hz) / (freqs[2] - freqs[1]);
@@ -428,7 +438,6 @@ fe_build_melfilters(melfb_t *mel_fb)
             ++n_coeffs;
         }
     }
-    
 
     return FE_SUCCESS;
 }
@@ -442,8 +451,7 @@ fe_compute_melcosine(melfb_t * mel_fb)
 
     mel_fb->mel_cosine =
         (mfcc_t **) ckd_calloc_2d(mel_fb->num_cepstra,
-                                  mel_fb->num_filters,
-                                  sizeof(mfcc_t));
+                                  mel_fb->num_filters, sizeof(mfcc_t));
 
     freqstep = M_PI / mel_fb->num_filters;
     /* NOTE: The first row vector is actually unnecessary but we leave
@@ -463,10 +471,12 @@ fe_compute_melcosine(melfb_t * mel_fb)
 
     /* And liftering weights */
     if (mel_fb->lifter_val) {
-        mel_fb->lifter = calloc(mel_fb->num_cepstra, sizeof(*mel_fb->lifter));
+        mel_fb->lifter =
+            calloc(mel_fb->num_cepstra, sizeof(*mel_fb->lifter));
         for (i = 0; i < mel_fb->num_cepstra; ++i) {
             mel_fb->lifter[i] = FLOAT2MFCC(1 + mel_fb->lifter_val / 2
-                                           * sin(i * M_PI / mel_fb->lifter_val));
+                                           * sin(i * M_PI /
+                                                 mel_fb->lifter_val));
         }
     }
 
@@ -480,27 +490,27 @@ fe_pre_emphasis(int16 const *in, frame_t * out, int32 len,
     int i;
 
 #if defined(FIXED16)
-    int16 fxd_alpha = (int16)(factor * 0x8000);
+    int16 fxd_alpha = (int16) (factor * 0x8000);
     int32 tmp1, tmp2;
 
-    tmp1 = (int32)in[0] << 15;
-    tmp2 = (int32)prior * fxd_alpha;
-    out[0] = (int16)((tmp1 - tmp2) >> 15);
+    tmp1 = (int32) in[0] << 15;
+    tmp2 = (int32) prior *fxd_alpha;
+    out[0] = (int16) ((tmp1 - tmp2) >> 15);
     for (i = 1; i < len; ++i) {
-        tmp1 = (int32)in[i] << 15;
-        tmp2 = (int32)in[i-1] * fxd_alpha;
-        out[i] = (int16)((tmp1 - tmp2) >> 15);
+        tmp1 = (int32) in[i] << 15;
+        tmp2 = (int32) in[i - 1] * fxd_alpha;
+        out[i] = (int16) ((tmp1 - tmp2) >> 15);
     }
 #elif defined(FIXED_POINT)
     fixed32 fxd_alpha = FLOAT2FIX(factor);
-    out[0] = ((fixed32)in[0] << DEFAULT_RADIX) - (prior * fxd_alpha);
+    out[0] = ((fixed32) in[0] << DEFAULT_RADIX) - (prior * fxd_alpha);
     for (i = 1; i < len; ++i)
-        out[i] = ((fixed32)in[i] << DEFAULT_RADIX)
-            - (fixed32)in[i-1] * fxd_alpha;
+        out[i] = ((fixed32) in[i] << DEFAULT_RADIX)
+            - (fixed32) in[i - 1] * fxd_alpha;
 #else
-    out[0] = (frame_t) in[0] - (frame_t) prior * factor;
+    out[0] = (frame_t) in[0] - (frame_t) prior *factor;
     for (i = 1; i < len; i++)
-        out[i] = (frame_t) in[i] - (frame_t) in[i-1] * factor;
+        out[i] = (frame_t) in[i] - (frame_t) in[i - 1] * factor;
 #endif
 }
 
@@ -528,10 +538,10 @@ fe_create_hamming(window_t * in, int32 in_len)
     /* Symmetric, so we only create the first half of it. */
     for (i = 0; i < in_len / 2; i++) {
         float64 hamm;
-        hamm  = (0.54 - 0.46 * cos(2 * M_PI * i /
-                                   ((float64) in_len - 1.0)));
+        hamm = (0.54 - 0.46 * cos(2 * M_PI * i /
+                                  ((float64) in_len - 1.0)));
 #ifdef FIXED16
-        in[i] = (int16)(hamm * 0x8000);
+        in[i] = (int16) (hamm * 0x8000);
 #else
         in[i] = FLOAT2COS(hamm);
 #endif
@@ -539,13 +549,14 @@ fe_create_hamming(window_t * in, int32 in_len)
 }
 
 static void
-fe_hamming_window(frame_t * in, window_t * window, int32 in_len, int32 remove_dc)
+fe_hamming_window(frame_t * in, window_t * window, int32 in_len,
+                  int32 remove_dc)
 {
     int i;
 
     if (remove_dc) {
 #ifdef FIXED16
-        int32 mean = 0; /* Use int32 to avoid possibility of overflow */
+        int32 mean = 0;         /* Use int32 to avoid possibility of overflow */
 #else
         frame_t mean = 0;
 #endif
@@ -554,28 +565,28 @@ fe_hamming_window(frame_t * in, window_t * window, int32 in_len, int32 remove_dc
             mean += in[i];
         mean /= in_len;
         for (i = 0; i < in_len; i++)
-            in[i] -= (frame_t)mean;
+            in[i] -= (frame_t) mean;
     }
 
 #ifdef FIXED16
-    for (i = 0; i < in_len/2; i++) {
+    for (i = 0; i < in_len / 2; i++) {
         int32 tmp1, tmp2;
 
-        tmp1 = (int32)in[i] * window[i];
-        tmp2 = (int32)in[in_len-1-i] * window[i];
-        in[i] = (int16)(tmp1 >> 15);
-        in[in_len-1-i] = (int16)(tmp2 >> 15);
+        tmp1 = (int32) in[i] * window[i];
+        tmp2 = (int32) in[in_len - 1 - i] * window[i];
+        in[i] = (int16) (tmp1 >> 15);
+        in[in_len - 1 - i] = (int16) (tmp2 >> 15);
     }
 #else
-    for (i = 0; i < in_len/2; i++) {
+    for (i = 0; i < in_len / 2; i++) {
         in[i] = COSMUL(in[i], window[i]);
-        in[in_len-1-i] = COSMUL(in[in_len-1-i], window[i]);
+        in[in_len - 1 - i] = COSMUL(in[in_len - 1 - i], window[i]);
     }
 #endif
 }
 
 static int
-fe_spch_to_frame(fe_t *fe, int len)
+fe_spch_to_frame(fe_t * fe, int len)
 {
     /* Copy to the frame buffer. */
     if (fe->pre_emphasis_alpha != 0.0) {
@@ -590,8 +601,7 @@ fe_spch_to_frame(fe_t *fe, int len)
         fe_short_to_frame(fe->spch, fe->frame, len);
 
     /* Zero pad up to FFT size. */
-    memset(fe->frame + len, 0,
-           (fe->fft_size - len) * sizeof(*fe->frame));
+    memset(fe->frame + len, 0, (fe->fft_size - len) * sizeof(*fe->frame));
 
     /* Window. */
     fe_hamming_window(fe->frame, fe->hamming_window, fe->frame_size,
@@ -601,7 +611,7 @@ fe_spch_to_frame(fe_t *fe, int len)
 }
 
 int
-fe_read_frame(fe_t *fe, int16 const *in, int32 len)
+fe_read_frame(fe_t * fe, int16 const *in, int32 len)
 {
     int i;
 
@@ -622,7 +632,7 @@ fe_read_frame(fe_t *fe, int16 const *in, int32 len)
 }
 
 int
-fe_shift_frame(fe_t *fe, int16 const *in, int32 len)
+fe_shift_frame(fe_t * fe, int16 const *in, int32 len)
 {
     int offset, i;
 
@@ -642,7 +652,7 @@ fe_shift_frame(fe_t *fe, int16 const *in, int32 len)
         for (i = 0; i < len; ++i)
             fe->spch[offset + i]
                 += (int16) ((!(s3_rand_int31() % 4)) ? 1 : 0);
-    
+
     return fe_spch_to_frame(fe, offset + len);
 }
 
@@ -650,15 +660,15 @@ fe_shift_frame(fe_t *fe, int16 const *in, int32 len)
  * Create arrays of twiddle factors.
  */
 void
-fe_create_twiddle(fe_t *fe)
+fe_create_twiddle(fe_t * fe)
 {
     int i;
 
     for (i = 0; i < fe->fft_size / 4; ++i) {
         float64 a = 2 * M_PI * i / fe->fft_size;
 #ifdef FIXED16
-        fe->ccc[i] = (int16)(cos(a) * 0x8000);
-        fe->sss[i] = (int16)(sin(a) * 0x8000);
+        fe->ccc[i] = (int16) (cos(a) * 0x8000);
+        fe->sss[i] = (int16) (sin(a) * 0x8000);
 #elif defined(FIXED_POINT)
         fe->ccc[i] = FLOAT2COS(cos(a));
         fe->sss[i] = FLOAT2COS(sin(a));
@@ -669,6 +679,7 @@ fe_create_twiddle(fe_t *fe)
     }
 }
 
+
 /* Translated from the FORTRAN (obviously) from "Real-Valued Fast
  * Fourier Transform Algorithms" by Henrik V. Sorensen et al., IEEE
  * Transactions on Acoustics, Speech, and Signal Processing, vol. 35,
@@ -677,7 +688,7 @@ fe_create_twiddle(fe_t *fe)
  */
 #if defined(FIXED16)
 static int
-fe_fft_real(fe_t *fe)
+fe_fft_real(fe_t * fe)
 {
     int i, j, k, m, n, lz;
     frame_t *x, xt, max;
@@ -710,7 +721,7 @@ fe_fft_real(fe_t *fe)
      * by M bits minus the number of leading zeroes in the input's
      * range in order to avoid overflows.  */
     for (lz = 0; lz < m; ++lz)
-        if (max & (1 << (15-lz)))
+        if (max & (1 << (15 - lz)))
             break;
 
     /* Basic butterflies (2-point FFT, real twiddle factors):
@@ -723,7 +734,7 @@ fe_fft_real(fe_t *fe)
     for (i = 0; i < n; i += 2) {
         int atten = (lz == 0);
         xt = x[i] >> atten;
-        x[i]     = xt + (x[i + 1] >> atten);
+        x[i] = xt + (x[i + 1] >> atten);
         x[i + 1] = xt - (x[i + 1] >> atten);
     }
 
@@ -743,7 +754,7 @@ fe_fft_real(fe_t *fe)
              * x[i + (1<<k)] = x[i] + -1 * x[i + (1<<k)]
              */
             xt = x[i] >> atten;
-            x[i]             = xt + (x[i + (1 << n2)] >> atten);
+            x[i] = xt + (x[i + (1 << n2)] >> atten);
             x[i + (1 << n2)] = xt - (x[i + (1 << n2)] >> atten);
 
             /* The other ones with real twiddle factors:
@@ -752,9 +763,10 @@ fe_fft_real(fe_t *fe)
              * x[i + (1<<(k-1))]
              *   = 1 * x[i + (1<<k-1)] +  0 * x[i + (1<<k) + (1<<k-1)]
              */
-            x[i + (1 << n2) + (1 << n4)] = -x[i + (1 << n2) + (1 << n4)] >> atten;
-            x[i + (1 << n4)]             =  x[i + (1 << n4)] >> atten;
-            
+            x[i + (1 << n2) + (1 << n4)] =
+                -x[i + (1 << n2) + (1 << n4)] >> atten;
+            x[i + (1 << n4)] = x[i + (1 << n4)] >> atten;
+
             /* Butterflies with complex twiddle factors.
              * There are (1<<k-1) of them.
              */
@@ -778,10 +790,10 @@ fe_fft_real(fe_t *fe)
                  * to get away with only four multiplications here. */
                 {
                     int32 tmp1, tmp2;
-                    tmp1 = (int32)x[i3] * cc + (int32)x[i4] * ss;
-                    tmp2 = (int32)x[i3] * ss - (int32)x[i4] * cc;
-                    t1 = (int16)(tmp1 >> 15) >> atten;
-                    t2 = (int16)(tmp2 >> 15) >> atten;
+                    tmp1 = (int32) x[i3] * cc + (int32) x[i4] * ss;
+                    tmp2 = (int32) x[i3] * ss - (int32) x[i4] * cc;
+                    t1 = (int16) (tmp1 >> 15) >> atten;
+                    t2 = (int16) (tmp2 >> 15) >> atten;
                 }
 
                 x[i4] = (x[i2] >> atten) - t2;
@@ -795,9 +807,9 @@ fe_fft_real(fe_t *fe)
     /* Return the residual scaling factor. */
     return lz;
 }
-#else /* !FIXED16 */
+#else                           /* !FIXED16 */
 static int
-fe_fft_real(fe_t *fe)
+fe_fft_real(fe_t * fe)
 {
     int i, j, k, m, n;
     frame_t *x, xt;
@@ -828,7 +840,7 @@ fe_fft_real(fe_t *fe)
      */
     for (i = 0; i < n; i += 2) {
         xt = x[i];
-        x[i]     = (xt + x[i + 1]);
+        x[i] = (xt + x[i + 1]);
         x[i + 1] = (xt - x[i + 1]);
     }
 
@@ -846,7 +858,7 @@ fe_fft_real(fe_t *fe)
              * x[i + (1<<k)] = x[i] + -1 * x[i + (1<<k)]
              */
             xt = x[i];
-            x[i]             = (xt + x[i + (1 << n2)]);
+            x[i] = (xt + x[i + (1 << n2)]);
             x[i + (1 << n2)] = (xt - x[i + (1 << n2)]);
 
             /* The other ones with real twiddle factors:
@@ -856,8 +868,8 @@ fe_fft_real(fe_t *fe)
              *   = 1 * x[i + (1<<k-1)] +  0 * x[i + (1<<k) + (1<<k-1)]
              */
             x[i + (1 << n2) + (1 << n4)] = -x[i + (1 << n2) + (1 << n4)];
-            x[i + (1 << n4)]             =  x[i + (1 << n4)];
-            
+            x[i + (1 << n4)] = x[i + (1 << n4)];
+
             /* Butterflies with complex twiddle factors.
              * There are (1<<k-1) of them.
              */
@@ -893,10 +905,10 @@ fe_fft_real(fe_t *fe)
     /* This isn't used, but return it for completeness. */
     return m;
 }
-#endif /* !FIXED16 */
+#endif                          /* !FIXED16 */
 
 static void
-fe_spec_magnitude(fe_t *fe)
+fe_spec_magnitude(fe_t * fe)
 {
     frame_t *fft;
     powspec_t *spec;
@@ -949,7 +961,6 @@ fe_mel_spec(fe_t * fe)
     /* Convenience poitners. */
     spec = fe->spec;
     mfspec = fe->mfspec;
-
     for (whichfilt = 0; whichfilt < fe->mel_fb->num_filters; whichfilt++) {
         int spec_start, filt_start, i;
 
@@ -957,23 +968,29 @@ fe_mel_spec(fe_t * fe)
         filt_start = fe->mel_fb->filt_start[whichfilt];
 
 #ifdef FIXED_POINT
-        mfspec[whichfilt] = spec[spec_start] + fe->mel_fb->filt_coeffs[filt_start];
+        mfspec[whichfilt] =
+            spec[spec_start] + fe->mel_fb->filt_coeffs[filt_start];
         for (i = 1; i < fe->mel_fb->filt_width[whichfilt]; i++) {
             mfspec[whichfilt] = fe_log_add(mfspec[whichfilt],
                                            spec[spec_start + i] +
-                                           fe->mel_fb->filt_coeffs[filt_start + i]);
+                                           fe->mel_fb->
+                                           filt_coeffs[filt_start + i]);
         }
 #else                           /* !FIXED_POINT */
         mfspec[whichfilt] = 0;
         for (i = 0; i < fe->mel_fb->filt_width[whichfilt]; i++)
             mfspec[whichfilt] +=
-                spec[spec_start + i] * fe->mel_fb->filt_coeffs[filt_start + i];
+                spec[spec_start + i] * fe->mel_fb->filt_coeffs[filt_start +
+                                                               i];
 #endif                          /* !FIXED_POINT */
     }
+
 }
 
+#define LOG_FLOOR 1e-4
+
 static void
-fe_mel_cep(fe_t * fe, mfcc_t *mfcep)
+fe_mel_cep(fe_t * fe, mfcc_t * mfcep)
 {
     int32 i;
     powspec_t *mfspec;
@@ -982,15 +999,8 @@ fe_mel_cep(fe_t * fe, mfcc_t *mfcep)
     mfspec = fe->mfspec;
 
     for (i = 0; i < fe->mel_fb->num_filters; ++i) {
-#ifndef FIXED_POINT /* It's already in log domain for fixed point */
-        if (mfspec[i] > 0)
-            mfspec[i] = log(mfspec[i]);
-        else                    /* This number should be smaller than anything
-                                 * else, but not too small, so as to avoid
-                                 * infinities in the inverse transform (this is
-                                 * the frequency-domain equivalent of
-                                 * dithering) */
-            mfspec[i] = -10.0;
+#ifndef FIXED_POINT             /* It's already in log domain for fixed point */
+        mfspec[i] = log(mfspec[i] + LOG_FLOOR);
 #endif                          /* !FIXED_POINT */
     }
 
@@ -1026,9 +1036,9 @@ fe_spec2cep(fe_t * fe, const powspec_t * mflogspec, mfcc_t * mfcep)
 
     /* Compute C0 separately (its basis vector is 1) to avoid
      * costly multiplications. */
-    mfcep[0] = mflogspec[0] / 2; /* beta = 0.5 */
+    mfcep[0] = mflogspec[0] / 2;        /* beta = 0.5 */
     for (j = 1; j < fe->mel_fb->num_filters; j++)
-	mfcep[0] += mflogspec[j]; /* beta = 1.0 */
+        mfcep[0] += mflogspec[j];       /* beta = 1.0 */
     mfcep[0] /= (frame_t) fe->mel_fb->num_filters;
 
     for (i = 1; i < fe->num_cepstra; ++i) {
@@ -1041,9 +1051,9 @@ fe_spec2cep(fe_t * fe, const powspec_t * mflogspec, mfcc_t * mfcep)
             mfcep[i] += COSMUL(mflogspec[j],
                                fe->mel_fb->mel_cosine[i][j]) * beta;
         }
-	/* Note that this actually normalizes by num_filters, like the
-	 * original Sphinx front-end, due to the doubled 'beta' factor
-	 * above.  */
+        /* Note that this actually normalizes by num_filters, like the
+         * original Sphinx front-end, due to the doubled 'beta' factor
+         * above.  */
         mfcep[i] /= (frame_t) fe->mel_fb->num_filters * 2;
     }
 }
@@ -1057,24 +1067,23 @@ fe_dct2(fe_t * fe, const powspec_t * mflogspec, mfcc_t * mfcep, int htk)
      * costly multiplications. */
     mfcep[0] = mflogspec[0];
     for (j = 1; j < fe->mel_fb->num_filters; j++)
-	mfcep[0] += mflogspec[j];
+        mfcep[0] += mflogspec[j];
     if (htk)
         mfcep[0] = COSMUL(mfcep[0], fe->mel_fb->sqrt_inv_2n);
-    else /* sqrt(1/N) = sqrt(2/N) * 1/sqrt(2) */
+    else                        /* sqrt(1/N) = sqrt(2/N) * 1/sqrt(2) */
         mfcep[0] = COSMUL(mfcep[0], fe->mel_fb->sqrt_inv_n);
 
     for (i = 1; i < fe->num_cepstra; ++i) {
         mfcep[i] = 0;
         for (j = 0; j < fe->mel_fb->num_filters; j++) {
-	    mfcep[i] += COSMUL(mflogspec[j],
-				fe->mel_fb->mel_cosine[i][j]);
+            mfcep[i] += COSMUL(mflogspec[j], fe->mel_fb->mel_cosine[i][j]);
         }
         mfcep[i] = COSMUL(mfcep[i], fe->mel_fb->sqrt_inv_2n);
     }
 }
 
 void
-fe_lifter(fe_t *fe, mfcc_t *mfcep)
+fe_lifter(fe_t * fe, mfcc_t * mfcep)
 {
     int32 i;
 
@@ -1094,8 +1103,7 @@ fe_dct3(fe_t * fe, const mfcc_t * mfcep, powspec_t * mflogspec)
     for (i = 0; i < fe->mel_fb->num_filters; ++i) {
         mflogspec[i] = COSMUL(mfcep[0], SQRT_HALF);
         for (j = 1; j < fe->num_cepstra; j++) {
-            mflogspec[i] += COSMUL(mfcep[j],
-                                    fe->mel_fb->mel_cosine[j][i]);
+            mflogspec[i] += COSMUL(mfcep[j], fe->mel_fb->mel_cosine[j][i]);
         }
         mflogspec[i] = COSMUL(mflogspec[i], fe->mel_fb->sqrt_inv_2n);
     }
@@ -1106,6 +1114,8 @@ fe_write_frame(fe_t * fe, mfcc_t * fea)
 {
     fe_spec_magnitude(fe);
     fe_mel_spec(fe);
+    if (fe->remove_noise)
+        fe_remove_noise(fe->noise_stats, fe->mfspec);
     fe_mel_cep(fe, fea);
     fe_lifter(fe, fea);
 
@@ -1115,11 +1125,11 @@ fe_write_frame(fe_t * fe, mfcc_t * fea)
 void *
 fe_create_2d(int32 d1, int32 d2, int32 elem_size)
 {
-    return (void *)ckd_calloc_2d(d1, d2, elem_size);
+    return (void *) ckd_calloc_2d(d1, d2, elem_size);
 }
 
 void
 fe_free_2d(void *arr)
 {
-    ckd_free_2d((void **)arr);
+    ckd_free_2d((void **) arr);
 }

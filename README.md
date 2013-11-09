@@ -30,7 +30,7 @@ This project includes several components that can be used independently:
 * `audioRecorder.js`, an audio recording library, based on [Recorderjs](https://github.com/mattdiamond/Recorderjs). It converts the recorded samples to the proper sample rate and passes them to the recognizer.
 * `callbackManager.js`, a small utility to interact with Web Workers with calls and callbacks rather than message passing.
 
-The file `webapp/live.html` illustrates how these work together in a real application, that is a good starting point. Make sure you load it through a web server or start Chrome with `--disable-web-security`.
+The file `webapp/live.html` illustrates how these work together in a real application, that is a good starting point. Make sure you load it through a web server or start Chrome with `--disable-web-security`. For instance, you can start a small web server with `python -m SimpleHTTPServer` in the base directory and open `http://localhost:8000/webapp/live.html` in your browser.
 
 # 2. Compilation of `pocketsphinx.js`
 

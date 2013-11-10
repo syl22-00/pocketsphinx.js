@@ -74,7 +74,7 @@
         var audioRecorderConfig = {errorCallback: function(x) {updateStatus("Error from recorder: " + x);}};
         recorder = new AudioRecorder(input, audioRecorderConfig);
         // If a recognizer is ready, we pass it to the recorder
-        if (recognizer) recorder.recognizer = recognizer;
+        if (recognizer) recorder.consumers = [recognizer];
         recorderReady = true;
         updateUI();
         updateStatus("Audio recorder ready");
@@ -139,7 +139,7 @@
           // You can pass parameters to the recognizer, such as : {command: 'initialize', data: [["-hmm", "my_model"], ["-fwdflat", "no"]]}
           postRecognizerJob({command: 'initialize'},
                             function() {
-                                        if (recorder) recorder.recognizer = recognizer;
+                                        if (recorder) recorder.consumers = [recognizer];
                                         feedWords(wordList);});
       };
 

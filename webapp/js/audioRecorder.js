@@ -1,13 +1,13 @@
-(function(window){
+(function(window) {
     var AUDIO_RECORDER_WORKER = 'js/audioRecorderWorker.js';
     var AudioRecorder = function(source, cfg) {
-	this.recognizer = null;
+	this.consumers = [];
 	var config = cfg || {};
 	var errorCallback = config.errorCallback || function() {};
-	var bufferLen = config.bufferLen || 4096;
+	var inputBufferLength = config.inputBufferLength || 4096;
 	var outputBufferLength = config.outputBufferLength || 4000;
 	this.context = source.context;
-	this.node = this.context.createScriptProcessor(bufferLen);
+	this.node = this.context.createScriptProcessor(inputBufferLength);
 	var worker = new Worker(config.worker || AUDIO_RECORDER_WORKER);
 	worker.postMessage({
 	    command: 'init',
@@ -29,16 +29,19 @@
 	    });
 	};
 	this.start = function(data) {
-	    if (this.recognizer) {
-                recognizer.postMessage({ command: 'start', data: data });
+	    this.consumers.forEach(function(consumer, y, z) {
+                consumer.postMessage({ command: 'start', data: data });
 		recording = true;
 		return true;
-	    }
-	    return false;
+	    });
+	    recording = true;
+	    return (this.consumers.length > 0);
 	};
 	this.stop = function() {
-	    if (recording && this.recognizer) {
-                recognizer.postMessage({ command: 'stop' });
+	    if (recording) {
+		this.consumers.forEach(function(consumer, y, z) {
+                    consumer.postMessage({ command: 'stop' });
+		});
 		recording = false;
 	    }
 	    worker.postMessage({ command: 'clear' });
@@ -50,7 +53,9 @@
 	worker.onmessage = function(e) {
 	    if (e.data.error && (e.data.error == "silent")) errorCallback("silent");
 	    if ((e.data.command == 'newBuffer') && recording) {
-                myClosure.recognizer.postMessage({ command: 'process', data: e.data.data });
+		myClosure.consumers.forEach(function(consumer, y, z) {
+                    consumer.postMessage({ command: 'process', data: e.data.data });
+		});
 	    }
 	};
 	source.connect(this.node);

@@ -1,7 +1,7 @@
 Audio Recorder
 ==============
 
-The audio recorder is a small JavaScript library that captures audio from the microphone, resamples it at a the desired sample rate, and feeds it to any desired voice processing application (such as `pocketsphinx.js`). It makes use of the web audio API, WebRTC and web workers and it is derived from [Recorderjs](https://github.com/mattdiamond/Recorderjs). It works on Chrome and Firefox (25+). To know more about audio capture and playback on the web, you could have a look at this [overview of audio on the Web](https://github.com/syl22-00/TechDocs/blob/master/AudioInBrowser.md).
+The audio recorder is a small JavaScript library that captures audio from the microphone, resamples it at a the desired sample rate, and feeds it to any desired audio application (such as `pocketsphinx.js`). It makes use of the web audio API, WebRTC and web workers and it is derived from [Recorderjs](https://github.com/mattdiamond/Recorderjs). It works on Chrome and Firefox (25+). To know more about audio capture and playback on the web, you can have a look at this [overview of audio on the Web](https://github.com/syl22-00/TechDocs/blob/master/AudioInBrowser.md).
 
 # 1. Files
 
@@ -11,7 +11,7 @@ You need to include both `audioRecorder.js` and `audioRecorderWorker.js` in your
 
 In your HTML, include `audioRecorder.js`:
 
-```javascript
+```html
 <script src="js/audioRecorder.js"></script>
 ```
 
@@ -53,16 +53,15 @@ function startUserMedia(stream) {
 if (navigator.getUserMedia)
     navigator.getUserMedia({audio: true},
                            startUserMedia,
-                           function(e) {
-                               console.log("No live audio input in this browser");
-    });
+                           function(e) {console.log("No live audio input in this browser");}
+                          );
 else console.log("No web audio support in this browser");
 ```
 
 
 # 3. Parameters
 
-In the previous section, we keep the default values of the parameters, but a config object can be used at initialization time:
+In the previous section, we kept the default values of the parameters, but a config object can be used at initialization time:
 
 ````javascript
 recorder = new AudioRecorder(input, config);
@@ -74,7 +73,7 @@ where `config` can have the following fields:
 * `inputBufferLength`: Sets the length of buffer to use for audio input (defaults to 4096, no matter the input sample rate).
 * `outputBufferLength`: Sets the length of buffer to send to consumers (defaults to 4000, no matter the output sample rate).
 * `outputSampleRate`: Sets the output sample rate for the data to be sent to the consumers (defaults to 16000Hz). The output sample rate should not be greater than the input sample rate (which depends on the audio hardware, usually 44.1kHz or 48kHz).
-* `worker`: Location of the `audioRecorderWorker.js` file, starting from the HTML file that loads `audioRecorder.js` (defaults to 'js/audioRecorderWorker.js').
+* `worker`: Location of the `audioRecorderWorker.js` file, starting from the HTML file that loads `audioRecorder.js` (defaults to `js/audioRecorderWorker.js`).
 
 # 4. API
 
@@ -82,7 +81,7 @@ In this section, we assume we have an `AudioRecorder` instance called `recorder`
 
 ## 4.a Start, Stop, Cancel
 
-* To start recording, call `recorder.start(data)`, where data is anything you want to send to the consumers when recording starts. For instance if your consumer is a speech recognizer, you might want to pass the language model to use. 
+* To start recording, call `recorder.start(data)`, where `data` is anything you want to send to the consumers when recording starts. For instance if your consumer is a speech recognizer, you might want to pass the language model to use. 
 * To stop, use `recorder.stop()` or `recorder.cancel()`.
 
 ## 4.b Consumers
@@ -96,8 +95,8 @@ recorder.consumers = [recognizer, visualizer];
 Consumers should be web workers that understand the following messages:
 
 * `{command: 'start', data: data}`, posted when `recorder.start(data)` is called. `data` can be anything useful to the consumer. For instance it can indicate which language model to use to a speech recognizer.
-* `{ command: 'stop'}`, posted when `recorder.stop()` is called.
-* `{ command: 'process', data: audioSamples}`, posted every time an audio buffer is available, the buffer is stored in `data`.
+* `{command: 'stop'}`, posted when `recorder.stop()` is called.
+* `{command: 'process', data: audioSamples}`, posted every time an audio buffer is available, the buffer is stored in `data`.
 
 
 # 5. License

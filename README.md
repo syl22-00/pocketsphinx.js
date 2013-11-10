@@ -184,7 +184,8 @@ var words = new Module.VectorWords();
 words.push_back(["HELLO", "HH AH L OW"]);
 words.push_back(["WORLD", "W ER L D"]);
 if (recognizer.addWords(words) != Module.ReturnType.SUCCESS)
-    alert("Error while adding words"); // Probably because of bad format used for pronunciation
+    // Probably bad format used for pronunciation
+    alert("Error while adding words");
 words.delete()
 ```
 
@@ -433,7 +434,8 @@ When you post a message to the recognizer worker and want to associate a callbac
 ```javascript
 recognizer.postMessage({command: 'addWords',
                         data: words,
-                        callbackId: callbackManager.add(function() {alert("Words added");})
+                        callbackId: callbackManager.add(
+                           function() {alert("Words added");})
                        });
 ```
 

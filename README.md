@@ -134,20 +134,24 @@ According to `embind`'s documentation, all objects created with the `new` operat
 
 The entry point of `pocketsphinx.js` is the recognizer object. You can create as many instances as you want, but you probably don't need to and want so save memory. When a new instance is created, an optional `Config` object can be given which will be used to set parameters used to initialize Pocketsphinx. Refer to Pocketsphinx documentation to learn about the possible parameters. A `Config` object is basically an array of key-value pairs:
 
-    $ var config = new Module.Config();
-    $ config.push_back(["-fwdflat", "no"]);
-    $ var recognizer = new Module.recognizer(config);
-    $ config.delete();
-    ...
-    $ recognizer.delete();
+```javascript
+var config = new Module.Config();
+config.push_back(["-fwdflat", "no"]);
+var recognizer = new Module.recognizer(config);
+config.delete();
+/* ... */
+recognizer.delete();
+```
 
 This will initialize a recognizer with `"-fwdflat"` set to `"no"`.
 
 If you have included several acoustic models when compiling `pocketsphinx.js`, you can select which one should be used by setting the `"-hmm"` parameter. Say you have two models, one for English, one for French, and you have compiled the library with `-DHMM_FOLDERS="english;french"`, you can initialize the recognizer with the French model by setting the correct value in the `Config` object:
 
-    $ var config = new Module.Config();
-    $ config.push_back(["-hmm", "french"]);
-    $ var recognizer = new Module.recognizer(config);
+```javascript
+var config = new Module.Config();
+config.push_back(["-hmm", "french"]);
+var recognizer = new Module.recognizer(config);
+```
 
 If you do not give the `"-hmm"` parameter, or give it an invalid value, the first model in the list will be used (here, `english`).
 
@@ -155,15 +159,16 @@ Similarly, you should use recognizer config parameters to load a statistical lan
 
 In addition, a recognizer object can be re-initialized with new parameters after the instance was created, with a call to `reInit`, for instance:
 
-    $ var config_english = new Module.Config();
-    $ config_english.push_back(["-hmm", "english"]);
-    $ var config_french = new Module.Config();
-    $ config_french.push_back(["-hmm", "french"]);
-    $ var recognizer = new Module.recognizer(config_english);
-    ...
-    $ if (recognizer.reInit(config_french) != Module.ReturnType.SUCCESS)
-          alert("Error while recognizer is re-initialized");
-
+```javascript
+var config_english = new Module.Config();
+config_english.push_back(["-hmm", "english"]);
+var config_french = new Module.Config();
+config_french.push_back(["-hmm", "french"]);
+var recognizer = new Module.recognizer(config_english);
+/* ... */
+if (recognizer.reInit(config_french) != Module.ReturnType.SUCCESS)
+    alert("Error while recognizer is re-initialized");
+```
 
 ## 3.3 Adding words and grammars
 
@@ -173,36 +178,48 @@ Dictionary and language model files can be packaged at compile time as explained
 
 All words used in grammars must be present in the pronunciation dictionary. Refer to the [CMU Pronunciation Dictionary site](http://www.speech.cs.cmu.edu/cgi-bin/cmudict) if you are not familiar with it. Words can be added as a vector of pairs word-pronunciation:
 
-    $ var recognizer = new Module.Recognizer();
-    $ var words = new Module.VectorWords();
-    $ words.push_back(["HELLO", "HH AH L OW"]);
-    $ words.push_back(["WORLD", "W ER L D"]);
-    $ if (recognizer.addWords(words) != Module.ReturnType.SUCCESS)
-          alert("Error while adding words"); // Probably because of bad format used for pronunciation
-    $ words.delete()
+```javascript
+var recognizer = new Module.Recognizer();
+var words = new Module.VectorWords();
+words.push_back(["HELLO", "HH AH L OW"]);
+words.push_back(["WORLD", "W ER L D"]);
+if (recognizer.addWords(words) != Module.ReturnType.SUCCESS)
+    alert("Error while adding words"); // Probably because of bad format used for pronunciation
+words.delete()
+```
 
 Note that PocketSphinx allows you to input several pronunciation alternatives for a word, by adding suffixes to it (`(2)`, `(3)`, etc.). However, adding a word with a suffix before the word without suffix will fail when calling `addWords`:
 
-    $ words.push_back(["HELLO", "HH AH L OW"], ["HELLO(2)", "HH EH L OW"]); // OK
-    ...
-    $ words.push_back(["HELLO", "HH AH L OW"], ["HELLO", "HH EH L OW"]); // Invalid
-    ...
-    $ words.push_back(["HELLO(2)", "HH AH L OW"], ["HELLO", "HH EH L OW"]); // Invalid
+```javascript
+words.push_back(["HELLO", "HH AH L OW"], ["HELLO(2)", "HH EH L OW"]); // OK
+/* ... */
+words.push_back(["HELLO", "HH AH L OW"], ["HELLO", "HH EH L OW"]); // Invalid
+/* ... */
+words.push_back(["HELLO(2)", "HH AH L OW"], ["HELLO", "HH EH L OW"]); // Invalid
+```
 
 ### b. Adding grammars
 
 A FSG is a structure that includes an initial state, a last state as well as a set of transitions between these states. Again, make sure all words used in transitions are in the dictionary (either loaded through a packaged dictionary file or added at runtime using `addWords`). Here is an example of inputing one grammar:
 
-    $ var transitions = new Module.VectorTransitions();
-    $ transitions.push_back({from: 0, to: 1, logp: 0, word: "HELLO"}); // log-probability is 0 (i.e. probability is 1.0)
-    $ transitions.push_back({from: 1, to: 2, logp: 0, word: "WORLD"});
-    $ transitions.push_back({from: 1, to: 2, logp: 0, word: ""}); // null-transition
-    $ var ids = new Module.Integers();
-    $ if (recognizer.addGrammar(ids, {start: 1, end: 2, numStates: 3, transitions: transitions}) != Module.ReturnType.SUCCESS)
-           alert("Error while adding grammar"); // Meaning that the grammar has issues
-    $ transitions.delete();
-    $ var id = ids.get(0); // This is the id assigned to the grammar
-    $ ids.delete();
+```javascript
+var transitions = new Module.VectorTransitions();
+// log-probability is 0 (i.e. probability is 1.0):
+transitions.push_back({from: 0, to: 1, logp: 0, word: "HELLO"});
+transitions.push_back({from: 1, to: 2, logp: 0, word: "WORLD"});
+// null-transition:
+transitions.push_back({from: 1, to: 2, logp: 0, word: ""});
+var ids = new Module.Integers();
+if (recognizer.addGrammar(ids,
+                          {start: 1,
+                           end: 2,
+                           numStates: 3,
+                           transitions: transitions}) != Module.ReturnType.SUCCESS)
+     alert("Error while adding grammar"); // Meaning that the grammar has issues
+transitions.delete();
+var id = ids.get(0); // This is the id assigned to the grammar
+ids.delete();
+```
 
 Notice the `Integers` object that is used to return an id back to the app to refer to the grammar. This id is then used to switch the recognizer to using that specific grammar. You will note that `new Module.Integers()` actually returns a vector object that is then passed as a reference to `addGrammar`. If the call is successful, the first element of the array is the id assigned to the grammar.
 
@@ -210,9 +227,11 @@ Notice the `Integers` object that is used to return an id back to the app to ref
 
 A recognizer object can have any number of grammars but only one active grammar at a time. The active grammar is the one used when there is a call to `start()`, described later in this document. To switch to a specific grammar, you must use the id that was given during the call to `addGrammar`.
 
-    $ if (recognizer.switchGrammar(id) != Module.ReturnType.SUCCESS) // id is the first element of the ids vector after call to addGrammar
-           alert("Error while switching grammar"); // The id is probably wrong
-
+```javascript
+// id is the first element of the ids vector after call to addGrammar:
+if (recognizer.switchGrammar(id) != Module.ReturnType.SUCCESS)
+     alert("Error while switching grammar"); // The id is probably wrong
+```
 
 
 ## 3.4 Recognizing audio
@@ -229,22 +248,25 @@ Calls to process must include audio buffers in the form of an `AudioBuffer` obje
 
 Here is an example:
 
-    $ var array = ... // array that contains an audio buffer
-    $ var buffer = new Module.AudioBuffer();
-    $ for (var i = 0 ; i < array.length ; i++)
-          buffer.push_back(array[i]); // Feed the array with audio data
-    $ var output = recognizer.start(); // Starts recognition on current language model
-    $ output = recognizer.process(buffer); // Processes the buffer
-    $ var hyp = recognizer.getHyp(); // Gets the current recognized string (hypothesis)
-    ...
-    $ for (var i = 0 ; i < array.length ; i++)
-          buffer.set(i, array[i]); // Feed buffer with new data
-    $ output = recognizer.process(buffer);
-    $ hyp = recognizer.getHyp();
-    ...
-    $ output = recognizer.stop();
-    $ var final_hyp = recognizer.getHyp(); // Gets the final recognized string
-    $ buffer.delete();
+```javascript
+var array = ... // array that contains an audio buffer
+var buffer = new Module.AudioBuffer();
+for (var i = 0 ; i < array.length ; i++)
+    buffer.push_back(array[i]); // Feed the array with audio data
+var output = recognizer.start(); // Starts recognition on current language model
+output = recognizer.process(buffer); // Processes the buffer
+var hyp = recognizer.getHyp(); // Gets the current recognized string (hypothesis)
+/* ... */
+for (var i = 0 ; i < array.length ; i++)
+    buffer.set(i, array[i]); // Feed buffer with new data
+output = recognizer.process(buffer);
+hyp = recognizer.getHyp();
+/* ... */
+output = recognizer.stop();
+// Gets the final recognized string:
+var final_hyp = recognizer.getHyp();
+buffer.delete();
+```
 
 Remember to check the return values of the different calls and compare them to `Module.ReturnType....`.
 
@@ -257,7 +279,9 @@ In most cases you probably don't need to do that, but to free the memory used by
 
 Using `recognizer.js`, `pocketsphinx.js` is downloaded and executed inside a Web worker. The file is located in `webapp/js/`, both `recognizer.js` and `pocketsphinx.js` must be in the same folder at runtime. It is intended to be loaded as a new Web worker object:
 
-    $ var recognizer = new Worker("js/recognizer.js");
+```javascript
+var recognizer = new Worker("js/recognizer.js");
+```
 
 You can then interact with it using messages.
 
@@ -298,8 +322,11 @@ The error codes returned in messages posted back from the worker can be:
 
 Once the worker is created, the recognizer must be initialized:
 
-    $ var id = 0; // This value will be given in the message received after the action completes
-    $ recognizer.postMessage({command: 'initialize', callbackId: id});
+```javascript
+// This value will be given in the message received after the action completes:
+var id = 0;
+recognizer.postMessage({command: 'initialize', callbackId: id});
+```
 
 Once it is done, the recognizer will post a message back, for instance:
 
@@ -308,7 +335,15 @@ Once it is done, the recognizer will post a message back, for instance:
 
 Recognizer parameters to be passed to `PocketSphinx` can be given in the call to `initialize`. For instance:
 
-    $ recognizer.postMessage({command: 'initialize', callbackId: id, data: [["-hmm", "french"], ["-fwdflat", "no"], ["-dict", "french.dic"], ["-lm", "french.DMP"]]});
+```javascript
+recognizer.postMessage({command: 'initialize',
+                        callbackId: id,
+                        data: [["-hmm", "french"],
+                               ["-fwdflat", "no"],
+                               ["-dict", "french.dic"],
+                               ["-lm", "french.DMP"]]
+                       });
+```
 
 This will set the `pocketsphinx` command-line parameter `-fwdflat` to `no` and initialize the recognizer with the acoustic model `french`, the language model `french.DMP` and the dictionary `french.dic`, assuming `pocketsphinx.js` was compiled with such models.
 
@@ -318,8 +353,11 @@ Note that once it is initialized, the recognizer can be re-initialized with diff
 
 Words to be recognized must be added to the recognizer before they can be used in grammars. See previous sections to know more about the format of dictionary items. Words can be added at any time after the recognizer is initialized, and several words can be added at once:
 
-    $ var words = [["ONE", "W AH N"], ["TWO", "T UW"], ["THREE", "TH R IY"]]; // An array of pairs [word, pronunciation]
-    $ recognizer.postMessage({command: 'addWords', data: words, callbackId: id});
+```javascript
+// An array of pairs [word, pronunciation]:
+var words = [["ONE", "W AH N"], ["TWO", "T UW"], ["THREE", "TH R IY"]];
+recognizer.postMessage({command: 'addWords', data: words, callbackId: id});
+```
 
 The message back could be:
 
@@ -332,8 +370,16 @@ Note that words can have several pronunciation alternatives as explained in Sect
 
 As described previously, any number of grammars can be added. The recognizer can then switch between them. A grammar can be added at once using a JavaScript object that contains the number of states, the first and last states, and an array of transitions, for instance:
 
-    $ var grammar = {numStates: 3, start: 0, end: 2, transitions: [{from: 0, to: 1, word: "HELLO"}, {from: 1, to: 2, logp: 0, word: "WORLD"}, {from: 1, to: 2}]};
-    $ recognizer.postMessage({command: 'addGrammar', data: grammar, callbackId: id});
+```javascript
+var grammar = {numStates: 3,
+               start: 0,
+               end: 2,
+               transitions: [{from: 0, to: 1, word: "HELLO"},
+                             {from: 1, to: 2, logp: 0, word: "WORLD"},
+                             {from: 1, to: 2}]
+              };
+recognizer.postMessage({command: 'addGrammar', data: grammar, callbackId: id});
+```
 
 All words must have been added previously using the `addWords` command.
 
@@ -345,14 +391,19 @@ In the message back, the grammar id assigned to the grammar is given. It can be 
 
 The message to start recognition should include the id of the grammar to be used:
 
-    $ recognizer.postMessage({command: 'start', data: id}); // where id is the id of a previously added grammar.
+```javascript
+// id is the id of a previously added grammar:
+recognizer.postMessage({command: 'start', data: id});
+```
 
 ### f. Processing data
 
 Audio samples should be sent to the recognizer using the `process` command:
 
-    $ recognizer.postMessage({command: 'process', data: array}); // array is an array of audio samples
-
+```javascript
+// array is an array of audio samples:
+recognizer.postMessage({command: 'process', data: array});
+```
 Audio samples should be 2-byte integers, at 16 kHz.
 
 While data are processed, hypothesis will be sent back in a message in the form `{hyp: "RECOGNIZED STRING"}`.
@@ -361,7 +412,9 @@ While data are processed, hypothesis will be sent back in a message in the form 
 
 Recognition can be simply stopped using the `stop` command: 
 
-    $ recognizer.postMessage({command: 'stop'});
+```javascript
+recognizer.postMessage({command: 'stop'});
+```
 
 It will then send a last message with the hypothesis, marked as final (which means that it is more accurate as it comes after a second pass that was triggered by the `stop` command). It would look like: `{hyp: "FINAL RECOGNIZED STRING", final: true}`.
 
@@ -371,27 +424,36 @@ In order to facilitate the interaction with the recognizer worker, we have made 
 
 To use it, first create a new instance of CallbackManager:
 
-    $ var callbackManager = new CallbackManager();
+```javascript
+var callbackManager = new CallbackManager();
+```
 
 When you post a message to the recognizer worker and want to associate a callback function to it, you first add your callback function to the manager, which gives you a callback id in return:
 
-    $ recognizer.postMessage({command: 'addWords', data: words, callbackId: callbackManager.add(function() {alert("Words added");})});
+```javascript
+recognizer.postMessage({command: 'addWords',
+                        data: words,
+                        callbackId: callbackManager.add(function() {alert("Words added");})
+                       });
+```
 
 In the `onmessage` function of your worker, use the callback manager to check and trigger callback functions:
 
-    recognizer.onmessage = function(e) {
-        if (e.data.hasOwnProperty('id')) {
-            // If the message has an id field, it
-            // means that we might have a callback associated
-            var clb = callbackManager.get(e.data['id']);
-            var data = {};
-            // As mentioned previously, additional data can be passed to the callback
-            // such as the id of a newly added grammar
-            if(e.data.hasOwnProperty('data')) data = e.data.data;
-            if(clb) clb(data);
-        }
-        // Check for other message types here
-    };
+```javascript
+recognizer.onmessage = function(e) {
+    if (e.data.hasOwnProperty('id')) {
+        // If the message has an id field, it
+        // means that we might have a callback associated
+        var clb = callbackManager.get(e.data['id']);
+        var data = {};
+        // As mentioned previously, additional data can be passed to the callback
+        // such as the id of a newly added grammar
+        if(e.data.hasOwnProperty('data')) data = e.data.data;
+        if(clb) clb(data);
+    }
+    // Check for other message types here
+};
+```
 
 Check `live.html` in `webapp` for more examples.
 
@@ -400,42 +462,48 @@ Check `live.html` in `webapp` for more examples.
 
 When a new worker is instantiated, it immediately returns a worker object, but the actual download of the JavaScript files might take some time, especially in our case where `pocketsphinx.js` is fairly large. One way of detecting whether the files are fully downloaded and loaded is to post a first message right after it is instantiated and wait for a message back from the worker.
 
-    var recognizer;
-    function spawnWorker(workerurl, onReady) {
-        recognizer = new Worker(workerurl);
-        recognizer.onmessage = function(event) {
-            // onReady will be called when there is a message
-            // back
-            onReady(recognizer);
-        };
-        recognizer.postMessage({});
+````javascript
+var recognizer;
+function spawnWorker(workerurl, onReady) {
+    recognizer = new Worker(workerurl);
+    recognizer.onmessage = function(event) {
+        // onReady will be called when there is a message
+        // back
+        onReady(recognizer);
     };
+    recognizer.postMessage({});
+};
+```
 
 Then, after the first message back was received, propers listening to onmessage can be added:
 
-    spawnWorker("js/recognizer.js", function(worker) {
-        worker.onmessage = function(e) {
-        // Add what you want to do with messages back from the worker
-        };
-        // Here is a good place to send the 'initialize' command to the recognizer
-     });
+```javascript
+spawnWorker("js/recognizer.js", function(worker) {
+    worker.onmessage = function(e) {
+    // Add what you want to do with messages back from the worker
+    };
+    // Here is a good place to send the 'initialize' command to the recognizer
+});
+```
 
 Of course, the worker must be able to respond to the first message, as we did in `recognizer.js`:
 
-    function startup(onMessage) {
-        self.onmessage = function(event) {
-            self.onmessage = onMessage;
-            self.postMessage({});
-        }
-    };
-    // This function is called first, it triggers
-    // a first postmessage, then adds the proper respond to
-    // commands: 
-    startup(function(event) {
-        switch(event.data.command){
-            //We deal with commands properly
-        }
-    });
+```javascript
+function startup(onMessage) {
+    self.onmessage = function(event) {
+        self.onmessage = onMessage;
+        self.postMessage({});
+    }
+};
+// This function is called first, it triggers
+// a first postmessage, then adds the proper respond to
+// commands: 
+startup(function(event) {
+    switch(event.data.command){
+        //We deal with commands properly
+    }
+});
+```
 
 All these are illustrated in `webapp/live.html` and `recognizer.js`.
 
@@ -446,43 +514,46 @@ We include an audio recording library based on the Web Audio API that accesses t
 Include `audioRecorder.js` in the HTML file and make sure `audioRecorderWorker.js` is in the same folder. To use it, create a new instance of `AudioRecorder` giving it as argument a `MediaStreamSource`. As of Today, the Google Chrome and Firefox (25+) implement it. You also need to set the recognizer attribute to a Recognizer worker, as described above.
 
 ```javascript
-    // Deal with prefixed APIs
-    window.AudioContext = window.AudioContext || window.webkitAudioContext;
-    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-    
-    // Instantiating AudioContext
-    try {
-        var audioContext = new AudioContext();
-    } catch (e) {
-        console.log("Error initializing Web Audio");
-    }
+// Deal with prefixed APIs
+window.AudioContext = window.AudioContext || window.webkitAudioContext;
+navigator.getUserMedia = navigator.getUserMedia ||
+                         navigator.webkitGetUserMedia ||
+                         navigator.mozGetUserMedia;
 
-    var recorder;
-    // Callback once the user authorizes access to the microphone:
-    function startUserMedia(stream) {
-        var input = audioContext.createMediaStreamSource(stream);
-        recorder = new AudioRecorder(input);
-        // We can, for instance, add a recognizer as consumer
-        if (recognizer) recorder.consumers.push(recognizer);
-      };
-    
-    // Actually call getUserMedia
-    if (navigator.getUserMedia) navigator.getUserMedia({audio: true},
-                                                       startUserMedia,
-                                                       function(e) {
-                                                           console.log("No live audio input in this browser");
-                                                       });
-    else console.log("No web audio support in this browser");
+// Instantiating AudioContext
+try {
+    var audioContext = new AudioContext();
+} catch (e) {
+    console.log("Error initializing Web Audio");
+}
+
+var recorder;
+// Callback once the user authorizes access to the microphone:
+function startUserMedia(stream) {
+    var input = audioContext.createMediaStreamSource(stream);
+    recorder = new AudioRecorder(input);
+    // We can, for instance, add a recognizer as consumer
+    if (recognizer) recorder.consumers.push(recognizer);
+  };
+
+// Actually call getUserMedia
+if (navigator.getUserMedia)
+    navigator.getUserMedia({audio: true},
+                            startUserMedia,
+                            function(e) {
+                                console.log("No live audio input in this browser");
+                            });
+else console.log("No web audio support in this browser");
 ```
 
 Once the recorder is up and running, you can start and stop recording and recognition with:
 
 ```javascript
-    // To start recording:
-    recorder.start();
-    // The hypothesis is periodically sent by the recognizer, as described previously
-    // To stop recording:
-    recorder.stop();  // The final hypothesis is sent
+// To start recording:
+recorder.start();
+// The hypothesis is periodically sent by the recognizer, as described previously
+// To stop recording:
+recorder.stop();  // The final hypothesis is sent
 ```
 
 The constructor for AudioRecorder can take an optional config object. This config can include a callback function which is executed when there is an error during recording. As of today, the only possible error is when the input samples are silent. It can also include the output sample rate, which you might need to set if you use an acoustic model of 8kHz audio.

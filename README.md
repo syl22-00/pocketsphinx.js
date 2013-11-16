@@ -478,11 +478,26 @@ function spawnWorker(workerurl, onReady) {
         // back
         onReady(recognizer);
     };
-    recognizer.postMessage({});
+    recognizer.postMessage('');
 };
 ```
 
-Then, after the first message back was received, propers listening to onmessage can be added:
+The first message posted to the recognizer can include the name of the PocketSphinx JavaScript file to load. This is handy if you want to build an application with several different models, you can keep the same `recognizer.js` file for different parts of your application and load any PocketSphinx JavaScript file that you want. By default, it will load `pocketsphinx.js`, but if you want your application to load a file called `pocketsphinx_chinese.js`, you can just add it as parameter to the first posted message:
+
+````javascript
+var recognizer;
+function spawnWorker(workerurl, onReady) {
+    recognizer = new Worker(workerurl);
+    recognizer.onmessage = function(event) {
+        // onReady will be called when there is a message
+        // back
+        onReady(recognizer);
+    };
+    recognizer.postMessage('pocketsphinx_chinese.js');
+};
+```
+
+After the first message back was received, propers listening to onmessage can be added:
 
 ```javascript
 spawnWorker("js/recognizer.js", function(worker) {

@@ -114,9 +114,21 @@ if(LM_BASE AND LM_FILES)
   endforeach()
 endif()
 
+# Set this if your acoustic model has more than 64 phones
+if(LARGE_PHONESET)
+  set(FSG_PNODE_CTXT_BVSZ 4)
+endif()
+
+# Set it to 1 if packaged files are larged, the console will warn you to do so if necessary
+if(ALLOW_MEMORY_GROWTH)
+  set(ALLOW_MEMORY_GROWTH 1)
+else()
+  set(ALLOW_MEMORY_GROWTH 0)
+endif()
+
 # Adding custom target for the JavaScript library. Note -O2 -s ASM_JS=0, which seems to be necessary with bind
 add_custom_target(${ps_lib_js} ALL
-  COMMAND ${CMAKE_C_COMPILER} -O2 -s ASM_JS=0 --bind ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
+  COMMAND ${CMAKE_C_COMPILER} -O2 -s ASM_JS=0 -s ALLOW_MEMORY_GROWTH=${ALLOW_MEMORY_GROWTH} --bind ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
   DEPENDS ${ps_lib}
   )
 

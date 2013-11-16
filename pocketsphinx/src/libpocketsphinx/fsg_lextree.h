@@ -91,7 +91,12 @@
  * bitvector fsg_pnode_t.fsg_pnode_ctxt_t.bv.  (See below.)
  * But it makes memory allocation simpler and more efficient.
  */
+
+#include "pocketsphinxjs-config.h"
+
+#ifndef FSG_PNODE_CTXT_BVSZ
 #define FSG_PNODE_CTXT_BVSZ	2
+#endif
 
 typedef struct {
     uint32 bv[FSG_PNODE_CTXT_BVSZ];

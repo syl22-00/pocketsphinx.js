@@ -6,4 +6,6 @@
 #cmakedefine DICT_FILES "@DICT_FILES@"
 #cmakedefine LM_FILES "@LM_FILES@"
 
+#cmakedefine FSG_PNODE_CTXT_BVSZ @FSG_PNODE_CTXT_BVSZ@
+
 #endif /* _POCKETSPHINXJS_CONFIG_H_ */

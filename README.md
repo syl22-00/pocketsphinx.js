@@ -81,6 +81,11 @@ You can do the same thing with statistical language models and dictionary files,
 * Statistical language models: `LM_BASE` and `LM_FILES`.
 * Dictionary files: `DICT_BASE` and `DICT_FILES`.
 
+There are other options that you might need to set depending on the models you package:
+
+* If your acoustic model has more than 64 phones, such as for the Chinese model packaged with PocketSphinx, you need to set `-DLARGE_PHONESET=1` when invoking `cmake`.
+* If you package large files (acoustic model, language model, dictionary), you'll probably need to allow the memory to grow beyond the default value by setting `-DALLOW_MEMORY_GROWTH=1` when invoking `cmake`.
+
 Please note that:
 
 * If you want to package files, you need to set both `..._BASE` and `..._FOLDERS` or `..._FILES`.

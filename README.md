@@ -32,6 +32,8 @@ This project includes several components that can be used independently:
 
 The file `webapp/live.html` illustrates how these work together in a real application, that is a good starting point. Make sure you load it through a web server or start Chrome with `--disable-web-security`. For instance, you can start a small web server with `python -m SimpleHTTPServer` in the base directory and open `http://localhost:8000/webapp/live.html` in your browser.
 
+There is also a live demo for Chinese. To try it, open `http://localhost:8000/webapp/live_zh.html` in your browser.
+
 # 2. Compilation of `pocketsphinx.js`
 
 A prebuilt version of `pocketsphinx.js` is available in `webapp/js`, or you can build it yourself. Below is the procedure on Linux (and Mac OS X). On Windows, refer to the emscripten manual.
@@ -84,7 +86,7 @@ You can do the same thing with statistical language models and dictionary files,
 There are other options that you might need to set depending on the models you package:
 
 * If your acoustic model has more than 64 phones, such as for the Chinese model packaged with PocketSphinx, you need to set `-DLARGE_PHONESET=1` when invoking `cmake`.
-* If you package large files (acoustic model, language model, dictionary), you'll probably need to allow the memory to grow beyond the default value by setting `-DALLOW_MEMORY_GROWTH=1` when invoking `cmake`.
+* If you package large files (acoustic model, language model, dictionary), you'll probably need to allow the memory to grow beyond the default value by setting `-DALLOW_MEMORY_GROWTH=1` when invoking `cmake`. Look at `live_zh.html` and `pocketsphinx_zh.ps` later in this document for an example with a Chinese acoustic model.
 
 Please note that:
 

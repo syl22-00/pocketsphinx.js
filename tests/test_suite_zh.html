@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Pocketsphinx.js test suite with Chinese acoustic model</title>
+    <link rel="stylesheet" href="qunit-1.12.0.css">
+  </head>
+  <body>
+    <h3>Pocketsphinx.js test suite with Chinese acoustic model</h3>
+    <p>This test suite uses one acoustic model for Chinese packaged with PocketSphinx on the subversion directory. The JavaScript file can be compiled with:</p>
+    <pre>
+ $ cmake .. -DEMSCRIPTEN=1 \
+   -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Platform/Emscripten.cmake \
+   -DHMM_BASE=path_to_pocketsphinx/model/hmm/zh \
+   -DHMM_FOLDERS=tdt_sc_8k -DLARGE_PHONESET=1 \
+   -DALLOW_MEMORY_GROWTH=1
+    </pre>
+    <p>It uses the file <code>../webapp/js/pocketsphinx_zh.js</code>.</p>
+    <p>A pronunciation dictionary for Chinese based on this phone set can be found in PocketSphinx on the subversion directory in <code>model/lm/zh_CN/mandarin_notone.dic</code>.
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+    <script src="js/qunit-1.12.0.js"></script>
+    <script src="../build/pocketsphinx_zh.js"></script>
+    <script src="js/tests_zh.js"></script>
+  </body>
+</html>

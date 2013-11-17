@@ -1,5 +1,5 @@
 var recBuffers = [],
-    outSampleRate = 16000,
+    outputSampleRate = 16000,
     inSampleRate;
 
 this.onmessage = function(e){
@@ -19,6 +19,7 @@ this.onmessage = function(e){
 function init(config){
     inSampleRate = config.sampleRate;
     outputBufferLength = config.outputBufferLength;
+    outputSampleRate = config.outputSampleRate || outputSampleRate;
 }
 
 function record(inputBuffer){
@@ -26,7 +27,7 @@ function record(inputBuffer){
     for (var i = 0 ; i < inputBuffer[0].length ; i++) {
 	recBuffers.push((inputBuffer[0][i] + inputBuffer[1][i]) * 16383.0);
     }
-    while(recBuffers.length * outSampleRate / inSampleRate > outputBufferLength) {
+    while(recBuffers.length * outputSampleRate / inSampleRate > outputBufferLength) {
 	var result = new Int16Array(outputBufferLength);
 	var bin = 0,
 	num = 0,
@@ -35,7 +36,7 @@ function record(inputBuffer){
 	while(indexIn < outputBufferLength) {
 	    bin = 0;
 	    num = 0;
-	    while(indexOut < Math.min(recBuffers.length, (indexIn + 1) * inSampleRate / outSampleRate)) {
+	    while(indexOut < Math.min(recBuffers.length, (indexIn + 1) * inSampleRate / outputSampleRate)) {
 		bin += recBuffers[indexOut];
 		num += 1;
 		indexOut++;

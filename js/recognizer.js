@@ -1,5 +1,7 @@
 function startup(onMessage) {
     self.onmessage = function(event) {
+	var pocketsphinxJS = (event.data && event.data.length && (event.data.length > 0)) ? event.data : 'pocketsphinx.js';
+	importScripts(pocketsphinxJS);
 	self.onmessage = onMessage;
 	self.postMessage({});
     }
@@ -28,18 +30,17 @@ startup(function(event) {
     }
 });
 
-importScripts('pocketsphinx.js');
-
 var mySelf = this;
 var post = function(message) {
     mySelf.postMessage(message);
 };
 
 var recognizer = undefined;
-var buffer = new Module.AudioBuffer();
+var buffer = undefined;
 
 function initialize(data, clbId) {
     var config = new Module.Config();
+    buffer = new Module.AudioBuffer();
     if (data) {
 	while (data.length > 0) {
 	    var p = data.pop();

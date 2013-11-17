@@ -73,9 +73,6 @@
     </div>
     <script>
 
-
-
-
       var recognizer, recorder, callbackManager, audio_context;
       var recorderReady = recognizerReady = false;
       function postRecognizerJob(message, callback) {
@@ -89,7 +86,7 @@
           recognizer.onmessage = function(event) {
             onReady(recognizer);
           };
-          recognizer.postMessage({});
+          recognizer.postMessage('');
       };
 
       function updateHyp(hyp) {
@@ -111,8 +108,10 @@
 
       function startUserMedia(stream) {
         var input = audio_context.createMediaStreamSource(stream);
-        recorder = new AudioRecorder(input);
-        if (recognizer) recorder.recognizer = recognizer;
+        var audioRecorderConfig = {errorCallback: function(x) {updateStatus("Error from recorder: " + x);}};
+        recorder = new AudioRecorder(input, audioRecorderConfig);
+        // If a recognizer is ready, we pass it to the recorder
+        if (recognizer) recorder.consumers = [recognizer];
         recorderReady = true;
         updateUI();
         updateStatus("Audio recorder ready");
@@ -165,7 +164,7 @@
       var initRecognizer = function() {
           postRecognizerJob({command: 'initialize'},
                             function() {
-                                        if (recorder) recorder.recognizer = recognizer;
+                                        if (recorder) recorder.consumers = [recognizer];
                                         feedWords(wordList);});
       };
 

@@ -87,198 +87,6 @@ static ps_searchfuncs_t fsg_funcs = {
     /* seg_iter: */ fsg_search_seg_iter,
 };
 
-ps_search_t *
-fsg_search_init(cmd_ln_t *config,
-                acmod_t *acmod,
-                dict_t *dict,
-                dict2pid_t *d2p)
-{
-    fsg_search_t *fsgs;
-    char const *path;
-
-    fsgs = ckd_calloc(1, sizeof(*fsgs));
-    ps_search_init(ps_search_base(fsgs), &fsg_funcs, config, acmod, dict, d2p);
-
-    /* Initialize HMM context. */
-    fsgs->hmmctx = hmm_context_init(bin_mdef_n_emit_state(acmod->mdef),
-                                    acmod->tmat->tp, NULL, acmod->mdef->sseq);
-    if (fsgs->hmmctx == NULL) {
-        ps_search_free(ps_search_base(fsgs));
-        return NULL;
-    }
-
-    /* Intialize the search history object */
-    fsgs->history = fsg_history_init(NULL, dict);
-    fsgs->frame = -1;
-
-    /* Initialize FSG table. */
-    fsgs->fsgs = hash_table_new(5, HASH_CASE_YES);
-
-    /* Get search pruning parameters */
-    fsgs->beam_factor = 1.0f;
-    fsgs->beam = fsgs->beam_orig
-        = (int32) logmath_log(acmod->lmath, cmd_ln_float64_r(config, "-beam"))
-        >> SENSCR_SHIFT;
-    fsgs->pbeam = fsgs->pbeam_orig
-        = (int32) logmath_log(acmod->lmath, cmd_ln_float64_r(config, "-pbeam"))
-        >> SENSCR_SHIFT;
-    fsgs->wbeam = fsgs->wbeam_orig
-        = (int32) logmath_log(acmod->lmath, cmd_ln_float64_r(config, "-wbeam"))
-        >> SENSCR_SHIFT;
-
-    /* LM related weights/penalties */
-    fsgs->lw = cmd_ln_float32_r(config, "-lw");
-    fsgs->pip = (int32) (logmath_log(acmod->lmath, cmd_ln_float32_r(config, "-pip"))
-                           * fsgs->lw)
-        >> SENSCR_SHIFT;
-    fsgs->wip = (int32) (logmath_log(acmod->lmath, cmd_ln_float32_r(config, "-wip"))
-                           * fsgs->lw)
-        >> SENSCR_SHIFT;
-
-    /* Best path search (and confidence annotation)? */
-    if (cmd_ln_boolean_r(config, "-bestpath"))
-        fsgs->bestpath = TRUE;
-
-    /* Acoustic score scale for posterior probabilities. */
-    fsgs->ascale = 1.0 / cmd_ln_float32_r(config, "-ascale");
-
-    E_INFO("FSG(beam: %d, pbeam: %d, wbeam: %d; wip: %d, pip: %d)\n",
-           fsgs->beam_orig, fsgs->pbeam_orig, fsgs->wbeam_orig,
-           fsgs->wip, fsgs->pip);
-
-    /* Load an FSG if one was specified in config */
-    if ((path = cmd_ln_str_r(config, "-fsg"))) {
-        fsg_model_t *fsg;
-
-        if ((fsg = fsg_model_readfile(path, acmod->lmath, fsgs->lw)) == NULL)
-            goto error_out;
-        if (fsg_set_add(fsgs, fsg_model_name(fsg), fsg) != fsg) {
-            fsg_model_free(fsg);
-            goto error_out;
-        }
-        if (fsg_set_select(fsgs, fsg_model_name(fsg)) == NULL)
-            goto error_out;
-        if (fsg_search_reinit(ps_search_base(fsgs),
-                              ps_search_dict(fsgs),
-                              ps_search_dict2pid(fsgs)) < 0)
-            goto error_out;
-    }
-    /* Or load a JSGF grammar */
-    else if ((path = cmd_ln_str_r(config, "-jsgf"))) {
-        fsg_model_t *fsg;
-        jsgf_rule_t *rule;
-        char const *toprule;
-
-        if ((fsgs->jsgf = jsgf_parse_file(path, NULL)) == NULL)
-            goto error_out;
-
-        rule = NULL;
-        /* Take the -toprule if specified. */
-        if ((toprule = cmd_ln_str_r(config, "-toprule"))) {
-            char *anglerule;
-            anglerule = string_join("<", toprule, ">", NULL);
-            rule = jsgf_get_rule(fsgs->jsgf, anglerule);
-            ckd_free(anglerule);
-            if (rule == NULL) {
-                E_ERROR("Start rule %s not found\n", toprule);
-                goto error_out;
-            }
-        }
-        /* Otherwise, take the first public rule. */
-        else {
-            jsgf_rule_iter_t *itor;
-
-            for (itor = jsgf_rule_iter(fsgs->jsgf); itor;
-                 itor = jsgf_rule_iter_next(itor)) {
-                rule = jsgf_rule_iter_rule(itor);
-                if (jsgf_rule_public(rule)) {
-            	    jsgf_rule_iter_free(itor);
-                    break;
-                }
-            }
-            if (rule == NULL) {
-                E_ERROR("No public rules found in %s\n", path);
-                goto error_out;
-            }
-        }
-        fsg = jsgf_build_fsg(fsgs->jsgf, rule, acmod->lmath, fsgs->lw);
-        if (fsg_set_add(fsgs, fsg_model_name(fsg), fsg) != fsg) {
-            fsg_model_free(fsg);
-            goto error_out;
-        }
-        if (fsg_set_select(fsgs, fsg_model_name(fsg)) == NULL)
-            goto error_out;
-        if (fsg_search_reinit(ps_search_base(fsgs),
-                              ps_search_dict(fsgs),
-                              ps_search_dict2pid(fsgs)) < 0)
-            goto error_out;
-    }
-
-    return ps_search_base(fsgs);
-
-error_out:
-    fsg_search_free(ps_search_base(fsgs));
-    return NULL;
-}
-
-void
-fsg_search_free(ps_search_t *search)
-{
-    fsg_search_t *fsgs = (fsg_search_t *)search;
-    hash_iter_t *itor;
-
-    ps_search_deinit(search);
-    if (fsgs->jsgf)
-        jsgf_grammar_free(fsgs->jsgf);
-    fsg_lextree_free(fsgs->lextree);
-    if (fsgs->history) {
-        fsg_history_reset(fsgs->history);
-        fsg_history_set_fsg(fsgs->history, NULL, NULL);
-        fsg_history_free(fsgs->history);
-    }
-    if (fsgs->fsgs) {
-        for (itor = hash_table_iter(fsgs->fsgs);
-             itor; itor = hash_table_iter_next(itor)) {
-            fsg_model_t *fsg = (fsg_model_t *) hash_entry_val(itor->ent);
-            fsg_model_free(fsg);
-        }
-        hash_table_free(fsgs->fsgs);
-    }
-    hmm_context_free(fsgs->hmmctx);
-    ckd_free(fsgs);
-}
-
-int
-fsg_search_reinit(ps_search_t *search, dict_t *dict, dict2pid_t *d2p)
-{
-    fsg_search_t *fsgs = (fsg_search_t *)search;
-
-    /* Free the old lextree */
-    if (fsgs->lextree)
-        fsg_lextree_free(fsgs->lextree);
-
-    /* Free old dict2pid, dict */
-    ps_search_base_reinit(search, dict, d2p);
-    
-    /* Nothing to update */
-    if (fsgs->fsg == NULL)
-	return 0;
-
-    /* Update the number of words (not used by this module though). */
-    search->n_words = dict_size(dict);
-
-    /* Allocate new lextree for the given FSG */
-    fsgs->lextree = fsg_lextree_init(fsgs->fsg, dict, d2p,
-                                     ps_search_acmod(fsgs)->mdef,
-                                     fsgs->hmmctx, fsgs->wip, fsgs->pip);
-
-    /* Inform the history module of the new fsg */
-    fsg_history_set_fsg(fsgs->history, fsgs->fsg, dict);
-
-    return 0;
-}
-
-
 static int
 fsg_search_add_silences(fsg_search_t *fsgs, fsg_model_t *fsg)
 {
@@ -367,127 +175,128 @@ fsg_search_add_altpron(fsg_search_t *fsgs, fsg_model_t *fsg)
     return n_alt;
 }
 
-fsg_model_t *
-fsg_set_get_fsg(fsg_search_t *fsgs, const char *name)
+ps_search_t *
+fsg_search_init(fsg_model_t *fsg,
+                cmd_ln_t *config,
+                acmod_t *acmod,
+                dict_t *dict,
+                dict2pid_t *d2p)
 {
-    void *val;
+    fsg_search_t *fsgs = ckd_calloc(1, sizeof(*fsgs));
+    ps_search_init(ps_search_base(fsgs), &fsg_funcs, config, acmod, dict, d2p);
 
-    if (hash_table_lookup(fsgs->fsgs, name, &val) < 0)
+    fsgs->fsg = fsg_model_retain(fsg);
+    /* Initialize HMM context. */
+    fsgs->hmmctx = hmm_context_init(bin_mdef_n_emit_state(acmod->mdef),
+                                    acmod->tmat->tp, NULL, acmod->mdef->sseq);
+    if (fsgs->hmmctx == NULL) {
+        ps_search_free(ps_search_base(fsgs));
         return NULL;
-    return (fsg_model_t *)val;
-}
+    }
 
-fsg_model_t *
-fsg_set_add(fsg_search_t *fsgs, char const *name, fsg_model_t *fsg)
-{
-    if (name == NULL)
-        name = fsg_model_name(fsg);
+    /* Intialize the search history object */
+    fsgs->history = fsg_history_init(NULL, dict);
+    fsgs->frame = -1;
 
-    if (!fsg_search_check_dict(fsgs, fsg))
-	return NULL;
+    /* Get search pruning parameters */
+    fsgs->beam_factor = 1.0f;
+    fsgs->beam = fsgs->beam_orig
+        = (int32) logmath_log(acmod->lmath, cmd_ln_float64_r(config, "-beam"))
+        >> SENSCR_SHIFT;
+    fsgs->pbeam = fsgs->pbeam_orig
+        = (int32) logmath_log(acmod->lmath, cmd_ln_float64_r(config, "-pbeam"))
+        >> SENSCR_SHIFT;
+    fsgs->wbeam = fsgs->wbeam_orig
+        = (int32) logmath_log(acmod->lmath, cmd_ln_float64_r(config, "-wbeam"))
+        >> SENSCR_SHIFT;
 
-    /* Add silence transitions and alternate words. */
-    if (cmd_ln_boolean_r(ps_search_config(fsgs), "-fsgusefiller")
-        && !fsg_model_has_sil(fsg))
+    /* LM related weights/penalties */
+    fsgs->lw = cmd_ln_float32_r(config, "-lw");
+    fsgs->pip = (int32) (logmath_log(acmod->lmath, cmd_ln_float32_r(config, "-pip"))
+                           * fsgs->lw)
+        >> SENSCR_SHIFT;
+    fsgs->wip = (int32) (logmath_log(acmod->lmath, cmd_ln_float32_r(config, "-wip"))
+                           * fsgs->lw)
+        >> SENSCR_SHIFT;
+
+    /* Best path search (and confidence annotation)? */
+    if (cmd_ln_boolean_r(config, "-bestpath"))
+        fsgs->bestpath = TRUE;
+
+    /* Acoustic score scale for posterior probabilities. */
+    fsgs->ascale = 1.0 / cmd_ln_float32_r(config, "-ascale");
+
+    E_INFO("FSG(beam: %d, pbeam: %d, wbeam: %d; wip: %d, pip: %d)\n",
+           fsgs->beam_orig, fsgs->pbeam_orig, fsgs->wbeam_orig,
+           fsgs->wip, fsgs->pip);
+
+    if (!fsg_search_check_dict(fsgs, fsg)) {
+        fsg_search_free(ps_search_base(fsgs));
+        return NULL;
+    }
+
+    if (cmd_ln_boolean_r(config, "-fsgusefiller") &&
+        !fsg_model_has_sil(fsg))
         fsg_search_add_silences(fsgs, fsg);
-    if (cmd_ln_boolean_r(ps_search_config(fsgs), "-fsgusealtpron")
-        && !fsg_model_has_alt(fsg))
+
+    if (cmd_ln_boolean_r(config, "-fsgusealtpron") &&
+        !fsg_model_has_alt(fsg))
         fsg_search_add_altpron(fsgs, fsg);
 
-    return (fsg_model_t *)hash_table_enter(fsgs->fsgs, name, fsg);
-}
-
-
-fsg_model_t *
-fsg_set_remove_byname(fsg_search_t *fsgs, char const *key)
-{
-    fsg_model_t *oldfsg;
-    void *val;
-
-    /* Look for the matching FSG. */
-    if (hash_table_lookup(fsgs->fsgs, key, &val) < 0) {
-        E_ERROR("FSG `%s' to be deleted not found\n", key);
+    if (fsg_search_reinit(ps_search_base(fsgs),
+                          ps_search_dict(fsgs),
+                          ps_search_dict2pid(fsgs)) < 0)
+    {
+        ps_search_free(ps_search_base(fsgs));
         return NULL;
     }
-    oldfsg = val;
-
-    /* Remove it from the FSG table. */
-    hash_table_delete(fsgs->fsgs, key);
-    /* If this was the currently active FSG, also delete other stuff */
-    if (fsgs->fsg == oldfsg) {
-        fsg_lextree_free(fsgs->lextree);
-        fsgs->lextree = NULL;
-        fsg_history_set_fsg(fsgs->history, NULL, NULL);
-        fsgs->fsg = NULL;
-    }
-    return oldfsg;
-}
-
-
-fsg_model_t *
-fsg_set_remove(fsg_search_t *fsgs, fsg_model_t *fsg)
-{
-    char const *key;
-    hash_iter_t *itor;
-
-    key = NULL;
-    for (itor = hash_table_iter(fsgs->fsgs);
-         itor; itor = hash_table_iter_next(itor)) {
-        fsg_model_t *oldfsg;
-
-        oldfsg = (fsg_model_t *) hash_entry_val(itor->ent);
-        if (oldfsg == fsg) {
-            key = hash_entry_key(itor->ent);
-            hash_table_iter_free(itor);
-            break;
-        }
-    }
-    if (key == NULL) {
-        E_WARN("FSG '%s' to be deleted not found\n", fsg_model_name(fsg));
-        return NULL;
-    }
-    else
-        return fsg_set_remove_byname(fsgs, key);
-}
-
-
-fsg_model_t *
-fsg_set_select(fsg_search_t *fsgs, const char *name)
-{
-    fsg_model_t *fsg;
-
-    fsg = fsg_set_get_fsg(fsgs, name);
-    if (fsg == NULL) {
-        E_ERROR("FSG '%s' not known; cannot make it current\n", name);
-        return NULL;
-    }
-    fsgs->fsg = fsg;
-    return fsg;
-}
-
-fsg_set_iter_t *
-fsg_set_iter(fsg_set_t *fsgs)
-{
-    return hash_table_iter(fsgs->fsgs);
-}
-
-fsg_set_iter_t *
-fsg_set_iter_next(fsg_set_iter_t *itor)
-{
-    return hash_table_iter_next(itor);
-}
-
-fsg_model_t *
-fsg_set_iter_fsg(fsg_set_iter_t *itor)
-{
-    return ((fsg_model_t *)itor->ent->val);
+        
+    return ps_search_base(fsgs);
 }
 
 void
-fsg_set_iter_free(fsg_set_iter_t *itor)
+fsg_search_free(ps_search_t *search)
 {
-    hash_table_iter_free(itor);
+    fsg_search_t *fsgs = (fsg_search_t *)search;
+
+    ps_search_deinit(search);
+    fsg_lextree_free(fsgs->lextree);
+    if (fsgs->history) {
+        fsg_history_reset(fsgs->history);
+        fsg_history_set_fsg(fsgs->history, NULL, NULL);
+        fsg_history_free(fsgs->history);
+    }
+    hmm_context_free(fsgs->hmmctx);
+    fsg_model_free(fsgs->fsg);
+    ckd_free(fsgs);
 }
+
+int
+fsg_search_reinit(ps_search_t *search, dict_t *dict, dict2pid_t *d2p)
+{
+    fsg_search_t *fsgs = (fsg_search_t *)search;
+
+    /* Free the old lextree */
+    if (fsgs->lextree)
+        fsg_lextree_free(fsgs->lextree);
+
+    /* Free old dict2pid, dict */
+    ps_search_base_reinit(search, dict, d2p);
+    
+    /* Update the number of words (not used by this module though). */
+    search->n_words = dict_size(dict);
+
+    /* Allocate new lextree for the given FSG */
+    fsgs->lextree = fsg_lextree_init(fsgs->fsg, dict, d2p,
+                                     ps_search_acmod(fsgs)->mdef,
+                                     fsgs->hmmctx, fsgs->wip, fsgs->pip);
+
+    /* Inform the history module of the new fsg */
+    fsg_history_set_fsg(fsgs->history, fsgs->fsg, dict);
+
+    return 0;
+}
+
 
 static void
 fsg_search_sen_active(fsg_search_t *fsgs)
@@ -1723,3 +1532,5 @@ error_out:
     return NULL;
 
 }
+
+/* vim: set ts=4 sw=4: */

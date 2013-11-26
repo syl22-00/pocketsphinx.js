@@ -79,7 +79,6 @@ namespace pocketsphinxjs {
     char const * sentence_id;
     fsg_model_t * current_grammar;
     ps_decoder_t * decoder;
-    fsg_set_t * grammar_set;
     logmath_t * logmath;
     StringsSetType acoustic_models;
     std::string default_acoustic_model;

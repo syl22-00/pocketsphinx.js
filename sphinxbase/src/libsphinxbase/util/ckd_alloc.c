@@ -240,11 +240,11 @@ __ckd_calloc_2d__(size_t d1, size_t d2, size_t elemsize,
 void
 ckd_free(void *ptr)
 {
-    if (ptr)
 #if defined(__ADSPBLACKFIN__) && !defined(__linux__)
+    if (ptr)
         heap_free(0,ptr);
 #else
-		free(ptr);
+    free(ptr);
 #endif
 }
 
@@ -420,3 +420,5 @@ __ckd_alloc_2d_ptr(size_t d1,
 
     return out;
 }
+
+/* vim: set ts=4 sw=4: */

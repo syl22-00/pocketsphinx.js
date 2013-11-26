@@ -44,11 +44,18 @@
 #ifndef __POCKETSPHINX_INTERNAL_H__
 #define __POCKETSPHINX_INTERNAL_H__
 
+#if defined __unix__
+#include <unistd.h>
+#elif defined _WIN32 || defined _WIN32_WCE
+#include <io.h>
+#endif
+
 /* SphinxBase headers. */
 #include <sphinxbase/cmd_ln.h>
-#include <sphinxbase/logmath.h>
 #include <sphinxbase/fe.h>
 #include <sphinxbase/feat.h>
+#include <sphinxbase/hash_table.h>
+#include <sphinxbase/logmath.h>
 #include <sphinxbase/profile.h>
 
 /* Local headers. */
@@ -56,6 +63,18 @@
 #include "acmod.h"
 #include "dict.h"
 #include "dict2pid.h"
+
+/* Re-define system calls for Win32 to confrom to POSIX */
+#if (defined(_WIN32) || defined(_WIN32_WCE)) && \
+    !defined(__MINGW32__) &&                    \
+    !defined(__CYGWIN__) &&                     \
+    !defined(__WINSCW__) &&                     \
+    !defined(__SYMBIAN32__)
+#define stat    _stat
+#define access  _access
+
+#define S_ISDIR _S_ISDIR
+#endif
 
 /**
  * Search algorithm structure.
@@ -191,7 +210,7 @@ struct ps_decoder_s {
     logmath_t *lmath;  /**< Log math computation. */
 
     /* Search modules. */
-    glist_t searches;        /**< List of search modules. */
+    hash_table_t *searches;        /**< Set of search modules. */
     /* TODO: Convert this to a stack of searches each with their own
      * lookahead value. */
     ps_search_t *search;     /**< Currently active search module. */
@@ -209,3 +228,5 @@ struct ps_decoder_s {
 };
 
 #endif /* __POCKETSPHINX_INTERNAL_H__ */
+
+/* vim: set ts=4 sw=4: */

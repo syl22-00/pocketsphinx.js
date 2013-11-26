@@ -237,12 +237,12 @@ read_riff_header(FILE *infh)
     }
     /* Length of 'fmt ' chunk */
     TRY_FREAD(&intval, 4, 1, infh);
-    if (WORDS_BIGENDIAN) SWAP_INT32(&intval);
+    SWAP_INT32(&intval);
     header_len = intval;
 
     /* Data format. */
     TRY_FREAD(&shortval, 2, 1, infh);
-    if (WORDS_BIGENDIAN) SWAP_INT16(&shortval);
+    SWAP_INT16(&shortval);
     if (shortval != 1) { /* PCM */
         E_ERROR("WAVE file is not in PCM format\n");
         goto error_out;
@@ -250,7 +250,7 @@ read_riff_header(FILE *infh)
 
     /* Number of channels. */
     TRY_FREAD(&shortval, 2, 1, infh);
-    if (WORDS_BIGENDIAN) SWAP_INT16(&shortval);
+    SWAP_INT16(&shortval);
     if (shortval != 1) { /* PCM */
         E_ERROR("WAVE file is not single channel\n");
         goto error_out;
@@ -258,7 +258,7 @@ read_riff_header(FILE *infh)
 
     /* Sampling rate (finally!) */
     TRY_FREAD(&intval, 4, 1, infh);
-    if (WORDS_BIGENDIAN) SWAP_INT32(&intval);
+    SWAP_INT32(&intval);
     if (cmd_ln_int32("-samprate") == 0)
         cmd_ln_set_int32("-samprate", intval);
     else if (cmd_ln_int32("-samprate") != intval) {
@@ -274,7 +274,7 @@ read_riff_header(FILE *infh)
 
     /* Bits per sample (must be 16) */
     TRY_FREAD(&shortval, 2, 1, infh);
-    if (WORDS_BIGENDIAN) SWAP_INT16(&shortval);
+    SWAP_INT16(&shortval);
     if (shortval != 16) {
         E_ERROR("WAVE file is not 16-bit\n");
         goto error_out;
@@ -296,7 +296,7 @@ read_riff_header(FILE *infh)
             /* Some other stuff... */
             /* Number of bytes of ... whatever */
             TRY_FREAD(&intval, 4, 1, infh);
-            if (WORDS_BIGENDIAN) SWAP_INT32(&intval);
+            SWAP_INT32(&intval);
             fseek(infh, intval, SEEK_CUR);
         }
     }

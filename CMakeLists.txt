@@ -77,6 +77,7 @@ message("HMM_BASE is ${HMM_BASE}")
 message("HMM_FOLDERS is ${HMM_FOLDERS}")
 
 # We are using the C++ binding utility of emscripten, this needs to be added to the compilation command
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMODELDIR=\"\"")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --bind")
 
 # Add include dir in build tree as we'll place config header files there
@@ -112,11 +113,6 @@ if(LM_BASE AND LM_FILES)
     file(COPY ${LM_BASE}/${lm} DESTINATION ${CMAKE_BINARY_DIR})
     set(EMBED "${EMBED}" "--embed-file" "${lm}" " ")
   endforeach()
-endif()
-
-# Set this if your acoustic model has more than 64 phones
-if(LARGE_PHONESET)
-  set(FSG_PNODE_CTXT_BVSZ 4)
 endif()
 
 # Set it to 1 if packaged files are larged, the console will warn you to do so if necessary

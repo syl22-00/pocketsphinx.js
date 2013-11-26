@@ -330,8 +330,7 @@ module( "With living recognizer", {
 	words = new Module.VectorWords();
 	transitions = new Module.VectorTransitions();
 	ids = new Module.Integers();
-	ok( recognizer != undefined, "Recognizer instantiated successfully" );
-	ok( true, "one extra assert per test" );
+	ok(recognizer != undefined, "Recognizer instantiated successfully");
     }, teardown: function() {
 	recognizer.delete();
 	buffer.delete();
@@ -347,7 +346,7 @@ test( "Recognizing silence", function() {
     words.push_back(["AH", "AH"]);
     recognizer.addWords(words);
     transitions.push_back({from: 0, to: 0, logp: 0, word: "AH"});
-    recognizer.addGrammar(ids, {numStates: 1, start: 0, end: 0, transitions: transitions});
+    equal(Module.ReturnType.SUCCESS, recognizer.addGrammar(ids, {numStates: 1, start: 0, end: 0, transitions: transitions}), "Grammar should be added successfully");
     equal(recognizer.start(), Module.ReturnType.SUCCESS, "Recognizer should start successfully");
     var num_buffers = 64;
     for (var j = 0 ; j < num_buffers ; j++) {

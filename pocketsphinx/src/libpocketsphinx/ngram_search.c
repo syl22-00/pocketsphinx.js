@@ -8,27 +8,27 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * This work was supported in part by funding from the Defense Advanced 
- * Research Projects Agency and the National Science Foundation of the 
+ * This work was supported in part by funding from the Defense Advanced
+ * Research Projects Agency and the National Science Foundation of the
  * United States of America, and the CMU Sphinx Speech Consortium.
  *
- * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
- * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
  * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ====================================================================
@@ -75,6 +75,8 @@ static ps_searchfuncs_t ngram_funcs = {
     /* prob: */     ngram_search_prob,
     /* seg_iter: */ ngram_search_seg_iter,
 };
+
+static ngram_model_t *default_lm;
 
 static void
 ngram_search_update_widmap(ngram_search_t *ngs)
@@ -136,14 +138,13 @@ ngram_search_calc_beams(ngram_search_t *ngs)
 }
 
 ps_search_t *
-ngram_search_init(cmd_ln_t *config,
+ngram_search_init(ngram_model_t *lm,
+                  cmd_ln_t *config,
                   acmod_t *acmod,
                   dict_t *dict,
                   dict2pid_t *d2p)
 {
     ngram_search_t *ngs;
-    const char *path;
-
     /* Make the acmod's feature buffer growable if we are doing two-pass
      * search. */
     acmod_set_grow(acmod, cmd_ln_boolean_r(config, "-fwdflat") &&
@@ -191,36 +192,16 @@ ngram_search_init(cmd_ln_t *config,
     ngs->active_word_list = ckd_calloc_2d(2, dict_size(dict),
                                           sizeof(**ngs->active_word_list));
 
-    /* Load language model(s) */
-    if ((path = cmd_ln_str_r(config, "-lmctl"))) {
-        ngs->lmset = ngram_model_set_read(config, path, acmod->lmath);
-        if (ngs->lmset == NULL) {
-            E_ERROR("Failed to read language model control file: %s\n",
-                    path);
-            goto error_out;
-        }
-        /* Set the default language model if needed. */
-        if ((path = cmd_ln_str_r(config, "-lmname"))) {
-            ngram_model_set_select(ngs->lmset, path);
-        }
-    }
-    else if ((path = cmd_ln_str_r(config, "-lm"))) {
-        static const char *name = "default";
-        ngram_model_t *lm;
+    static char *lmname = "default";
+    ngs->lmset = ngram_model_set_init(config, &lm, &lmname, NULL, 1);
+    if (!ngs->lmset)
+        goto error_out;
 
-        lm = ngram_model_read(config, path, NGRAM_AUTO, acmod->lmath);
-        if (lm == NULL)
-            goto error_out;
-
-        ngs->lmset = ngram_model_set_init(config,
-                                          &lm, (char **)&name,
-                                          NULL, 1);
-        if (ngs->lmset == NULL)
-            goto error_out;
-    }
-    if (ngs->lmset != NULL
-        && ngram_wid(ngs->lmset, S3_FINISH_WORD) == ngram_unknown_wid(ngs->lmset)) {
-        E_ERROR("Language model/set does not contain </s>, recognition will fail\n");
+    if (ngram_wid(ngs->lmset, S3_FINISH_WORD) ==
+        ngram_unknown_wid(ngs->lmset))
+    {
+        E_ERROR("Language model/set does not contain </s>, "
+                "recognition will fail\n");
         goto error_out;
     }
 
@@ -279,9 +260,9 @@ ngram_search_reinit(ps_search_t *search, dict_t *dict, dict2pid_t *d2p)
 
     /* Free old dict2pid, dict */
     ps_search_base_reinit(search, dict, d2p);
-    
+
     if (ngs->lmset == NULL)
-	return 0;
+        return 0;
 
     /* Update beam widths. */
     ngram_search_calc_beams(ngs);
@@ -954,7 +935,7 @@ static void
 ngram_bp_seg_free(ps_seg_t *seg)
 {
     bptbl_seg_t *itor = (bptbl_seg_t *)seg;
-    
+
     ckd_free(itor->bpidx);
     ckd_free(itor);
 }
@@ -1420,3 +1401,10 @@ error_out:
     ps_lattice_free(dag);
     return NULL;
 }
+
+void ngram_search_set_lm(ngram_model_t *lm)
+{
+    default_lm = ngram_model_retain(lm);
+}
+
+/* vim: set ts=4 sw=4: */

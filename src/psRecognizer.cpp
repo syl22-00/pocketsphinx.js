@@ -53,18 +53,17 @@ namespace pocketsphinxjs {
 	fsg_model_trans_add(current_grammar, grammar.transitions.at(i).from, grammar.transitions.at(i).to, grammar.transitions.at(i).logp, fsg_model_word_add(current_grammar, grammar.transitions.at(i).word.c_str()));
     }
     fsg_model_add_silence(current_grammar, "<sil>", -1, 1.0);
-    if (current_grammar != fsg_set_add(grammar_set, grammar_names.back().c_str(), current_grammar)) {
+
+    if(ps_set_fsg(decoder, grammar_names.back().c_str(), current_grammar)) {
       return RUNTIME_ERROR;
     }
     if (id.size() == 0) id.push_back(grammar_index);
     else id.at(0) = grammar_index;
     grammar_index++;
-    ps_update_fsgset(decoder);
-    fsg_model_t * fsg = fsg_set_select(grammar_set, grammar_names.back().c_str());
-    if (fsg == NULL)
+    // We switch to the newly added grammar right away
+    if (ps_set_search(decoder, grammar_names.back().c_str())) {
       return RUNTIME_ERROR;
-    if (ps_update_fsgset(decoder) == NULL)
-      return RUNTIME_ERROR;
+    }
     return SUCCESS;
   }
 
@@ -72,11 +71,9 @@ namespace pocketsphinxjs {
     if (decoder == NULL) return BAD_STATE;
     std::ostringstream grammar_name;
     grammar_name << id;
-    fsg_model_t * fsg = fsg_set_select(grammar_set, grammar_name.str().c_str());
-    if (fsg == NULL)
+    if(ps_set_search(decoder, grammar_name.str().c_str())) {
       return RUNTIME_ERROR;
-    if (ps_update_fsgset(decoder) == NULL)
-      return RUNTIME_ERROR;
+    }
     return SUCCESS;
   }
 
@@ -123,7 +120,6 @@ namespace pocketsphinxjs {
     if (decoder) ps_free(decoder);
     if (logmath) logmath_free(logmath);
     decoder = NULL;
-    grammar_set = NULL;
     logmath = NULL;
   }
 
@@ -188,12 +184,6 @@ namespace pocketsphinxjs {
     delete [] argv;
     if (decoder == NULL) {
       return RUNTIME_ERROR;
-    }
-    if (is_fsg) {
-      grammar_set = ps_update_fsgset(decoder);
-      if (grammar_set == NULL) {
-	return RUNTIME_ERROR;
-      }
     }
     logmath = logmath_init(1.0001, 0, 0);
     if (logmath == NULL) {

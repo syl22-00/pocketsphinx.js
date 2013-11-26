@@ -40,6 +40,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #ifndef _WIN32_WCE
 #include <errno.h>
 #endif
@@ -72,6 +73,8 @@ extern "C" {
 }
 #endif
 
+#define E_SYSCALL(stmt, ...)  if (stmt) E_FATAL_SYSTEM(__VA_ARGS__);
+
 #define FILELINE  __FILE__ , __LINE__
 
 /**
@@ -80,36 +83,36 @@ extern "C" {
 #define E_FATAL(...)                               \
     do {                                           \
         err_msg(ERR_FATAL, FILELINE, __VA_ARGS__); \
-        exit(-1);                                  \
+        exit(EXIT_FAILURE);                        \
     } while (0)
 
 /**
  * Print error text; Call perror(""); exit(errno);
  */
-#define E_FATAL_SYSTEM(fmt, ...)                                           \
-    do {                                                                   \
-        int local_errno = errno;                                           \
+#define E_FATAL_SYSTEM(fmt, ...)                                             \
+    do {                                                                     \
+        int local_errno = errno;                                             \
         char *err_fmt = (char *) malloc(strlen(": %s\n") + strlen(fmt) + 1); \
-        strcpy(err_fmt, fmt);						   \
-        strcat(err_fmt, ": %s\n");                                        \
-        err_msg(ERR_FATAL, FILELINE, err_fmt,                              \
-                ##__VA_ARGS__, strerror(local_errno));                     \
-        free(err_fmt);                                                     \
-        exit(local_errno);                                                 \
+        strcpy(err_fmt, fmt);                                                \
+        strcat(err_fmt, ": %s\n");                                           \
+        err_msg(ERR_FATAL, FILELINE, err_fmt,                                \
+                ##__VA_ARGS__, strerror(local_errno));                       \
+        free(err_fmt);                                                       \
+        exit(local_errno);                                                   \
     } while (0)
 
 /**
  * Print error text; Call perror("");
  */
-#define E_ERROR_SYSTEM(fmt, ...)                                           \
-    do {                                                                   \
-        int local_errno = errno;                                           \
+#define E_ERROR_SYSTEM(fmt, ...)                                             \
+    do {                                                                     \
+        int local_errno = errno;                                             \
         char *err_fmt = (char *) malloc(strlen(": %s\n") + strlen(fmt) + 1); \
-        strcpy(err_fmt, fmt);						   \
-        strcat(err_fmt, ": %s\n");                                        \
-        err_msg(ERR_ERROR, FILELINE, err_fmt,                              \
-                ##__VA_ARGS__, strerror(local_errno));                     \
-	free(err_fmt);							   \
+        strcpy(err_fmt, fmt);                                                \
+        strcat(err_fmt, ": %s\n");                                           \
+        err_msg(ERR_ERROR, FILELINE, err_fmt,                                \
+                ##__VA_ARGS__, strerror(local_errno));                       \
+        free(err_fmt);                                                       \
     } while (0)
 
 /**
@@ -181,7 +184,7 @@ typedef void (*err_cb_f)(void* user_data, err_lvl_t, const char *, ...);
  * Sets function to output error messages. Use it to redirect the logging
  * to your application. By default the handler which dumps messages to
  * stderr is set.
- * 
+ *
  * @param - callback to pass messages too.
  */
 SPHINXBASE_EXPORT void

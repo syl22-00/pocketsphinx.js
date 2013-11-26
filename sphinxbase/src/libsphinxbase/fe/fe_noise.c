@@ -128,7 +128,7 @@ fe_weight_smooth(powspec_t * buf, powspec_t * coefs, int32 num_filt)
 {
     int i, j;
     int l1, l2;
-    float32 coef;
+    powspec_t coef;
 
     for (i = 0; i < num_filt; i++) {
         l1 = ((i - SMOOTH_WINDOW) > 0) ? (i - SMOOTH_WINDOW) : 0;

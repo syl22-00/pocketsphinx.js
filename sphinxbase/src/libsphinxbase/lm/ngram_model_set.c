@@ -162,7 +162,7 @@ ngram_model_set_init(cmd_ln_t *config,
 
     n = 0;
     for (i = 0; i < n_models; ++i) {
-        model->lms[i] = models[i];
+        model->lms[i] = ngram_model_retain(models[i]);
         model->names[i] = ckd_salloc(names[i]);
         if (weights)
             model->lweights[i] = logmath_log(lmath, weights[i]);

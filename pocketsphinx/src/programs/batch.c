@@ -274,64 +274,56 @@ process_mllrctl_line(ps_decoder_t *ps, cmd_ln_t *config, char const *file)
 }
 
 static int
-process_fsgctl_line(ps_decoder_t *ps, cmd_ln_t *config, char const *file)
+process_fsgctl_line(ps_decoder_t *ps, cmd_ln_t *config, char const *fname)
 {
-    fsg_set_t *fsgset = ps_get_fsgset(ps);
-    fsg_model_t *fsg;
-    char const *fsgdir, *fsgext;
-    char *infile = NULL;
-    static char *lastfile;
-
-    if (file == NULL)
+    if (fname == NULL)
         return 0;
 
-    if (lastfile && 0 == strcmp(file, lastfile))
-        return 0;
+    char *path = NULL;
+    const char *fsgdir = cmd_ln_str_r(config, "-fsgdir");
+    const char *fsgext = cmd_ln_str_r(config, "-fsgext");
 
-    fsgext = cmd_ln_str_r(config, "-fsgext");
-    if ((fsgdir = cmd_ln_str_r(config, "-fsgdir")))
-        infile = string_join(fsgdir, "/", file,
-                             fsgext ? fsgext : "", NULL);
+    if (fsgdir)
+        path = string_join(fsgdir, "/", fname, fsgext ? fsgext : "", NULL);
     else if (fsgext)
-        infile = string_join(file, fsgext, NULL);
+        path = string_join(fname, fsgext, NULL);
     else
-        infile = ckd_salloc(file);
+        path = ckd_salloc(fname);
 
-    if ((fsg = fsg_model_readfile(infile, ps_get_logmath(ps),
-                                  cmd_ln_float32_r(config, "-lw"))) == NULL)
+    fsg_model_t *fsg = fsg_model_readfile(path, ps_get_logmath(ps),
+                                          cmd_ln_float32_r(config, "-lw"));
+    int err = 0;
+    if (!fsg) {
+        err = -1;
         goto error_out;
+    }
+    if (ps_set_fsg(ps, fname, fsg)) {
+        err = -1;
+        goto error_out;
+    }
 
-    if (fsgset == NULL)
-        fsgset = ps_update_fsgset(ps);
-    if (lastfile)
-        fsg_set_remove_byname(fsgset, lastfile);
+    E_INFO("Using FSG: %s\n", fname);
+    if (ps_set_search(ps, fname))
+        err = -1;
 
-    ckd_free(lastfile);
-    lastfile = ckd_salloc(file);
-
-    E_INFO("Using FSG: %s\n", lastfile);
-    fsg_set_add(fsgset, lastfile, fsg);
-    fsg_set_select(fsgset, lastfile);
-
-    ps_update_fsgset(ps);
 error_out:
-    ckd_free(infile);
-    return 0;
+    fsg_model_free(fsg);
+    ckd_free(path);
+
+    return err;
 }
 
 static int
 process_lmnamectl_line(ps_decoder_t *ps, cmd_ln_t *config, char const *lmname)
 {
-    ngram_model_t *lmset = ps_get_lmset(ps);
-
-    if (lmname == NULL)
+    if (!lmname)
         return 0;
+
     E_INFO("Using language model: %s\n", lmname);
-    if (ngram_model_set_select(lmset, lmname) == NULL) {
+    if (ps_set_search(ps, lmname)) {
         E_ERROR("No such language model: %s\n", lmname);
         return -1;
     }
-    ps_update_lmset(ps, lmset);
     return 0;
 }
 
@@ -506,7 +498,6 @@ write_hypseg(FILE *fh, ps_decoder_t *ps, char const *uttid)
 {
     int32 score, lscr, sf, ef;
     ps_seg_t *itor = ps_seg_iter(ps, &score);
-    ngram_model_t *lm = ps_get_lmset(ps);
 
     /* Accumulate language model scores. */
     lscr = 0;
@@ -527,11 +518,7 @@ write_hypseg(FILE *fh, ps_decoder_t *ps, char const *uttid)
 
         ps_seg_prob(itor, &ascr, &wlscr, NULL);
         ps_seg_frames(itor, &sf, &ef);
-        fprintf(fh, " %d %d %d %s",
-                sf, ascr,
-                /* FIXME: This is inconsistent with the total lm
-                   score, but that's the way it's done in S3... */
-                lm ? ngram_score_to_prob(lm, wlscr) : wlscr, w);
+        fprintf(fh, " %d %d %d %s", sf, ascr, wlscr, w);
         itor = ps_seg_next(itor);
     }
     fprintf(fh, " %d\n", ef);
@@ -817,10 +804,10 @@ main(int32 argc, char *argv[])
     if ((ctlfh = fopen(ctl, "r")) == NULL) {
         E_FATAL_SYSTEM("Failed to open control file '%s'", ctl);
     }
-    ps = ps_init(config);
-    if (ps == NULL) {
+
+    ps_default_search_args(config);
+    if (!(ps = ps_init(config)))
         E_FATAL("PocketSphinx decoder init failed\n");
-    }
 
     process_ctl(ps, config, ctlfh);
 
@@ -853,3 +840,5 @@ int wmain(int32 argc, wchar_t *wargv[]) {
     return main(argc, argv);
 }
 #endif
+
+/* vim: set ts=4 sw=4: */

@@ -214,14 +214,21 @@ fsg_model_null_trans_closure(fsg_model_t * fsg, glist_t nulls)
 
     E_INFO("Computing transitive closure for null transitions\n");
 
+    /* If our caller didn't give us a list of null-transitions,
+       make such a list. Just loop through all the FSG states, 
+       and all the null-transitions in that state (which are kept in
+       their own hash table). */
     if (nulls == NULL) {
-        fsg_link_t *null;
-        int i, j;
-
+        int i;
         for (i = 0; i < fsg->n_state; ++i) {
-            for (j = 0; j < fsg->n_state; ++j) {
-                if ((null = fsg_model_null_trans(fsg, i, j)))
-                    nulls = glist_add_ptr(nulls, null);
+            hash_iter_t *itor;
+            hash_table_t *null_trans = fsg->trans[i].null_trans;
+            if (null_trans == NULL)
+                continue;
+            for (itor = hash_table_iter(null_trans);
+                 itor != NULL;
+                 itor = hash_table_iter_next(itor)) {
+                nulls = glist_add_ptr(nulls, hash_entry_val(itor->ent));
             }
         }
     }

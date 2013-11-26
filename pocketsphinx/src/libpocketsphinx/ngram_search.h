@@ -360,7 +360,8 @@ typedef struct ngram_search_s ngram_search_t;
 /**
  * Initialize the N-Gram search module.
  */
-ps_search_t *ngram_search_init(cmd_ln_t *config,
+ps_search_t *ngram_search_init(ngram_model_t *lm,
+                               cmd_ln_t *config,
                                acmod_t *acmod,
                                dict_t *dict,
                                dict2pid_t *d2p);
@@ -421,5 +422,12 @@ ps_lattice_t *ngram_search_lattice(ps_search_t *search);
  * Get the exit score for a backpointer entry with a given right context.
  */
 int32 ngram_search_exit_score(ngram_search_t *ngs, bptbl_t *pbe, int rcphone);
+
+/**
+ * Sets the global language model.
+ *
+ * Sets the language model to use if nothing was passed in configuration
+ */
+void ngram_search_set_lm(ngram_model_t *lm);
 
 #endif /* __NGRAM_SEARCH_H__ */

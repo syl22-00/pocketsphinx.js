@@ -8,27 +8,27 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * This work was supported in part by funding from the Defense Advanced 
- * Research Projects Agency and the National Science Foundation of the 
+ * This work was supported in part by funding from the Defense Advanced
+ * Research Projects Agency and the National Science Foundation of the
  * United States of America, and the CMU Sphinx Speech Consortium.
  *
- * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
- * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
  * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ====================================================================
@@ -44,9 +44,11 @@
 #include <sphinxbase/strfuncs.h>
 #include <sphinxbase/filename.h>
 #include <sphinxbase/pio.h>
+#include <sphinxbase/jsgf.h>
 
 /* Local headers. */
 #include "cmdln_macro.h"
+#include "pocketsphinx.h"
 #include "pocketsphinx_internal.h"
 #include "ps_lattice_internal.h"
 #include "phone_loop_search.h"
@@ -60,27 +62,13 @@ static const arg_t ps_args_def[] = {
     CMDLN_EMPTY_OPTION
 };
 
-/* I'm not sure what the portable way to do this is. */
 static int
-file_exists(const char *path)
+dir_exists(const char *path)
 {
-    FILE *tmp;
+    struct stat sb;
 
-    tmp = fopen(path, "rb");
-    if (tmp) fclose(tmp);
-    return (tmp != NULL);
-}
-
-static int
-hmmdir_exists(const char *path)
-{
-    FILE *tmp;
-    char *mdef = string_join(path, "/mdef", NULL);
-
-    tmp = fopen(mdef, "rb");
-    if (tmp) fclose(tmp);
-    ckd_free(mdef);
-    return (tmp != NULL);
+    E_SYSCALL(stat(path, &sb), "cannot stat `%s'", path);
+    return S_ISDIR(sb.st_mode);
 }
 
 static void
@@ -89,7 +77,7 @@ ps_add_file(ps_decoder_t *ps, const char *arg,
 {
     char *tmp = string_join(hmmdir, "/", file, NULL);
 
-    if (cmd_ln_str_r(ps->config, arg) == NULL && file_exists(tmp))
+    if (cmd_ln_str_r(ps->config, arg) == NULL && !access(tmp, F_OK))
         cmd_ln_set_str_r(ps->config, arg, tmp);
     ckd_free(tmp);
 }
@@ -97,56 +85,13 @@ ps_add_file(ps_decoder_t *ps, const char *arg,
 static void
 ps_init_defaults(ps_decoder_t *ps)
 {
-    char const *hmmdir, *lmfile, *dictfile;
-
     /* Disable memory mapping on Blackfin (FIXME: should be uClinux in general). */
 #ifdef __ADSPBLACKFIN__
     E_INFO("Will not use mmap() on uClinux/Blackfin.");
     cmd_ln_set_boolean_r(ps->config, "-mmap", FALSE);
 #endif
 
-#ifdef MODELDIR
-    /* Set default acoustic and language models. */
-    hmmdir = cmd_ln_str_r(ps->config, "-hmm");
-    lmfile = cmd_ln_str_r(ps->config, "-lm");
-    dictfile = cmd_ln_str_r(ps->config, "-dict");
-    if (hmmdir == NULL && hmmdir_exists(MODELDIR "/hmm/en_US/hub4wsj_sc_8k")) {
-        hmmdir = MODELDIR "/hmm/en_US/hub4wsj_sc_8k";
-        cmd_ln_set_str_r(ps->config, "-hmm", hmmdir);
-    }
-    if (lmfile == NULL && !cmd_ln_str_r(ps->config, "-fsg")
-        && !cmd_ln_str_r(ps->config, "-jsgf")
-        && file_exists(MODELDIR "/lm/en_US/hub4.5000.DMP")) {
-        lmfile = MODELDIR "/lm/en_US/hub4.5000.DMP";
-        cmd_ln_set_str_r(ps->config, "-lm", lmfile);
-    }
-    if (dictfile == NULL && file_exists(MODELDIR "/lm/en_US/cmu07a.dic")) {
-        dictfile = MODELDIR "/lm/en_US/cmu07a.dic";
-        cmd_ln_set_str_r(ps->config, "-dict", dictfile);
-    }
-
-    /* Expand acoustic and language model filenames relative to installation path. */
-    if (hmmdir && !path_is_absolute(hmmdir) && !hmmdir_exists(hmmdir)) {
-        char *tmphmm = string_join(MODELDIR "/hmm/", hmmdir, NULL);
-        if (hmmdir_exists(tmphmm)) {
-    	    cmd_ln_set_str_r(ps->config, "-hmm", tmphmm);
-    	} else {
-    	    E_ERROR("Failed to find mdef file inside the model folder specified with -hmm '%s'\n", hmmdir);
-    	}
-        ckd_free(tmphmm);
-    }
-    if (lmfile && !path_is_absolute(lmfile) && !file_exists(lmfile)) {
-        char *tmplm = string_join(MODELDIR "/lm/", lmfile, NULL);
-        cmd_ln_set_str_r(ps->config, "-lm", tmplm);
-        ckd_free(tmplm);
-    }
-    if (dictfile && !path_is_absolute(dictfile) && !file_exists(dictfile)) {
-        char *tmpdict = string_join(MODELDIR "/lm/", dictfile, NULL);
-        cmd_ln_set_str_r(ps->config, "-dict", tmpdict);
-        ckd_free(tmpdict);
-    }
-#endif
-
+    char const *hmmdir;
     /* Get acoustic model filenames and add them to the command-line */
     if ((hmmdir = cmd_ln_str_r(ps->config, "-hmm")) != NULL) {
         ps_add_file(ps, "-mdef", hmmdir, "mdef");
@@ -165,14 +110,16 @@ ps_init_defaults(ps_decoder_t *ps)
 static void
 ps_free_searches(ps_decoder_t *ps)
 {
-    gnode_t *gn;
+    if (ps->searches) {
+        /* Release keys manually as we used ckd_salloc to add them. */
+        hash_iter_t *search_it = hash_table_iter(ps->searches);
+        for (; search_it; search_it = hash_table_iter_next(search_it))
+            ckd_free((char *) hash_entry_key(search_it->ent));
 
-    if (ps->searches == NULL)
-        return;
+        hash_table_empty(ps->searches);
+        hash_table_free(ps->searches);
+    }
 
-    for (gn = ps->searches; gn; gn = gnode_next(gn))
-        ps_search_free(gnode_ptr(gn));
-    glist_free(ps->searches);
     ps->searches = NULL;
     ps->search = NULL;
 }
@@ -180,20 +127,64 @@ ps_free_searches(ps_decoder_t *ps)
 static ps_search_t *
 ps_find_search(ps_decoder_t *ps, char const *name)
 {
-    gnode_t *gn;
+    void *search = NULL;
+    hash_table_lookup(ps->searches, name, &search);
 
-    for (gn = ps->searches; gn; gn = gnode_next(gn)) {
-        if (0 == strcmp(ps_search_name(gnode_ptr(gn)), name))
-            return (ps_search_t *)gnode_ptr(gn);
+    return (ps_search_t *) search;
+}
+
+void
+ps_default_search_args(cmd_ln_t *config)
+{
+    /* Set default acoustic and language models. */
+    const char *hmmdir = cmd_ln_str_r(config, "-hmm");
+    if (hmmdir == NULL && dir_exists(MODELDIR "/hmm/en_US/hub4wsj_sc_8k")) {
+        hmmdir = MODELDIR "/hmm/en_US/hub4wsj_sc_8k";
+        cmd_ln_set_str_r(config, "-hmm", hmmdir);
     }
-    return NULL;
+
+    const char *lmfile = cmd_ln_str_r(config, "-lm");
+    if (lmfile == NULL && !cmd_ln_str_r(config, "-fsg")
+        && !cmd_ln_str_r(config, "-jsgf")
+        && !access(MODELDIR "/lm/en_US/hub4.5000.DMP", F_OK))
+    {
+        lmfile = MODELDIR "/lm/en_US/hub4.5000.DMP";
+        cmd_ln_set_str_r(config, "-lm", lmfile);
+    }
+
+    const char *dictfile = cmd_ln_str_r(config, "-dict");
+    if (dictfile == NULL && !access(MODELDIR "/lm/en_US/cmu07a.dic", F_OK)) {
+        dictfile = MODELDIR "/lm/en_US/cmu07a.dic";
+        cmd_ln_set_str_r(config, "-dict", dictfile);
+    }
+
+    /* Expand acoustic and language model filenames relative to installation
+     * path. */
+    if (hmmdir && !path_is_absolute(hmmdir) && !dir_exists(hmmdir)) {
+        char *tmphmm = string_join(MODELDIR "/hmm/", hmmdir, NULL);
+        if (dir_exists(tmphmm)) {
+            cmd_ln_set_str_r(config, "-hmm", tmphmm);
+        } else {
+            E_ERROR("Failed to find mdef file inside the model folder "
+                    "specified with -hmm `%s'\n", hmmdir);
+        }
+        ckd_free(tmphmm);
+    }
+    if (lmfile && !path_is_absolute(lmfile) && access(lmfile, F_OK)) {
+        char *tmplm = string_join(MODELDIR "/lm/", lmfile, NULL);
+        cmd_ln_set_str_r(config, "-lm", tmplm);
+        ckd_free(tmplm);
+    }
+    if (dictfile && !path_is_absolute(dictfile) && access(dictfile, F_OK)) {
+        char *tmpdict = string_join(MODELDIR "/lm/", dictfile, NULL);
+        cmd_ln_set_str_r(config, "-dict", tmpdict);
+        ckd_free(tmpdict);
+    }
 }
 
 int
 ps_reinit(ps_decoder_t *ps, cmd_ln_t *config)
 {
-    char const *lmfile, *lmctl = NULL;
-
     if (config && config != ps->config) {
         cmd_ln_free_r(ps->config);
         ps->config = cmd_ln_retain(config);
@@ -209,6 +200,7 @@ ps_reinit(ps_decoder_t *ps, cmd_ln_t *config)
 
     /* Free old searches (do this before other reinit) */
     ps_free_searches(ps);
+    ps->searches = hash_table_new(2, HASH_CASE_YES);
 
     /* Free old acmod. */
     acmod_free(ps->acmod);
@@ -217,14 +209,14 @@ ps_reinit(ps_decoder_t *ps, cmd_ln_t *config)
     /* Free old dictionary (must be done after the two things above) */
     dict_free(ps->dict);
     ps->dict = NULL;
-    
+
     /* Free d2p */
     dict2pid_free(ps->d2p);
     ps->d2p = NULL;
 
     /* Logmath computation (used in acmod and search) */
     if (ps->lmath == NULL
-        || (logmath_get_base(ps->lmath) != 
+        || (logmath_get_base(ps->lmath) !=
             (float64)cmd_ln_float32_r(ps->config, "-logbase"))) {
         if (ps->lmath)
             logmath_free(ps->lmath);
@@ -241,46 +233,119 @@ ps_reinit(ps_decoder_t *ps, cmd_ln_t *config)
     if ((ps->pl_window = cmd_ln_int32_r(ps->config, "-pl_window"))) {
         /* Initialize an auxiliary phone loop search, which will run in
          * "parallel" with FSG or N-Gram search. */
-        if ((ps->phone_loop = phone_loop_search_init(ps->config,
-                                                     ps->acmod, ps->dict)) == NULL)
+        if ((ps->phone_loop =
+             phone_loop_search_init(ps->config, ps->acmod, ps->dict)) == NULL)
             return -1;
-        ps->searches = glist_add_ptr(ps->searches, ps->phone_loop);
+        hash_table_enter(ps->searches,
+                         ckd_salloc(ps_search_name(ps->phone_loop)),
+                         ps->phone_loop);
     }
 
     /* Dictionary and triphone mappings (depends on acmod). */
     /* FIXME: pass config, change arguments, implement LTS, etc. */
     if ((ps->dict = dict_init(ps->config, ps->acmod->mdef)) == NULL)
         return -1;
+    if ((ps->d2p = dict2pid_build(ps->acmod->mdef, ps->dict)) == NULL)
+        return -1;
 
-    /* Determine whether we are starting out in FSG or N-Gram search mode. */
-    if (cmd_ln_str_r(ps->config, "-fsg") || cmd_ln_str_r(ps->config, "-jsgf")) {
-        ps_search_t *fsgs;
-
-        if ((ps->d2p = dict2pid_build(ps->acmod->mdef, ps->dict)) == NULL)
+    // Determine whether we are starting out in FSG or N-Gram search mode.
+    // If neither is used skip search initialization.
+    const char *path;
+    int32 lw = cmd_ln_float32_r(config, "-lw");
+    /* Load an FSG if one was specified in config */
+    if ((path = cmd_ln_str_r(config, "-fsg"))) {
+        fsg_model_t *fsg = fsg_model_readfile(path, ps->lmath, lw);
+        if (!fsg)
+            //goto error_out;
             return -1;
-        if ((fsgs = fsg_search_init(ps->config, ps->acmod, ps->dict, ps->d2p)) == NULL)
+        if (ps_set_fsg(ps, PS_DEFAULT_SEARCH, fsg))
             return -1;
-        fsgs->pls = ps->phone_loop;
-        ps->searches = glist_add_ptr(ps->searches, fsgs);
-        ps->search = fsgs;
+        ps_set_search(ps, PS_DEFAULT_SEARCH);
     }
-    else if ((lmfile = cmd_ln_str_r(ps->config, "-lm"))
-             || (lmctl = cmd_ln_str_r(ps->config, "-lmctl"))) {
-        ps_search_t *ngs;
+    
+    if ((path = cmd_ln_str_r(config, "-jsgf"))) {
+        /* Or load a JSGF grammar */
+        fsg_model_t *fsg;
+        jsgf_rule_t *rule;
+        char const *toprule;
+        jsgf_t *jsgf = jsgf_parse_file(path, NULL);
 
-        if ((ps->d2p = dict2pid_build(ps->acmod->mdef, ps->dict)) == NULL)
+        if (!jsgf)
             return -1;
-        if ((ngs = ngram_search_init(ps->config, ps->acmod, ps->dict, ps->d2p)) == NULL)
-            return -1;
-        ngs->pls = ps->phone_loop;
-        ps->searches = glist_add_ptr(ps->searches, ngs);
-        ps->search = ngs;
+
+        rule = NULL;
+        /* Take the -toprule if specified. */
+        if ((toprule = cmd_ln_str_r(config, "-toprule"))) {
+            char *ruletok;
+            ruletok = string_join("<", toprule, ">", NULL);
+            rule = jsgf_get_rule(jsgf, ruletok);
+            ckd_free(ruletok);
+            if (rule == NULL) {
+                E_ERROR("Start rule %s not found\n", toprule);
+                return -1;
+            }
+        } else {
+            /* Otherwise, take the first public rule. */
+            jsgf_rule_iter_t *itor;
+
+            for (itor = jsgf_rule_iter(jsgf); itor;
+                 itor = jsgf_rule_iter_next(itor)) {
+                rule = jsgf_rule_iter_rule(itor);
+                if (jsgf_rule_public(rule)) {
+            	    jsgf_rule_iter_free(itor);
+                    break;
+                }
+            }
+            if (rule == NULL) {
+                E_ERROR("No public rules found in %s\n", path);
+                return -1;
+            }
+        }
+
+        fsg = jsgf_build_fsg(jsgf, rule, ps->lmath, lw);
+        ps_set_fsg(ps, PS_DEFAULT_SEARCH, fsg);
+        fsg_model_free(fsg);
+        ps_set_search(ps, PS_DEFAULT_SEARCH);
     }
-    /* Otherwise, we will initialize the search whenever the user
-     * decides to load an FSG or a language model. */
-    else {
-        if ((ps->d2p = dict2pid_build(ps->acmod->mdef, ps->dict)) == NULL)
+
+    if ((path = cmd_ln_str_r(ps->config, "-lm"))) {
+        ngram_model_t *lm;
+        lm = ngram_model_read(ps->config, path, NGRAM_AUTO, ps->lmath);
+        if (!lm)
             return -1;
+
+        int err = ps_set_lm(ps, PS_DEFAULT_SEARCH, lm);
+        ngram_model_free(lm);
+        if (err)
+            return -1;
+        ps_set_search(ps, PS_DEFAULT_SEARCH);
+    }
+
+    if ((path = cmd_ln_str_r(ps->config, "-lmctl"))) {
+        ngram_model_t *lmset;
+        if (!(lmset = ngram_model_set_read(ps->config, path, ps->lmath))) {
+            E_ERROR("Failed to read language model control file: %s\n", path);
+            return -1;
+        }
+
+        ngram_model_set_iter_t *lmset_it = ngram_model_set_iter(lmset);
+        for(; lmset_it; lmset_it = ngram_model_set_iter_next(lmset_it)) {
+            const char *name;
+            ngram_model_t *lm = ngram_model_set_iter_model(lmset_it, &name);
+            E_INFO("adding search %s\n", name);
+            int err = ps_set_lm(ps, name, lm);
+            ngram_model_free(lm);
+            if (err) {
+                ngram_model_set_iter_free(lmset_it);
+                return -1;
+            }
+        }
+
+        const char *name = cmd_ln_str_r(config, "-lmname");
+        if (name)
+            ps_set_search(ps, name);
+        else
+            E_WARN("No default LM name (-lmname) for `-lmctl'\n");
     }
 
     /* Initialize performance timer. */
@@ -371,81 +436,55 @@ ps_update_mllr(ps_decoder_t *ps, ps_mllr_t *mllr)
     return acmod_update_mllr(ps->acmod, mllr);
 }
 
-ngram_model_t *
-ps_get_lmset(ps_decoder_t *ps)
+int
+ps_set_search(ps_decoder_t *ps, const char *name)
 {
-    if (ps->search == NULL
-        || 0 != strcmp(ps_search_name(ps->search), "ngram"))
-        return NULL;
-    return ((ngram_search_t *)ps->search)->lmset;
+    ps_search_t *search = ps_find_search(ps, name);
+    if (search)
+        ps->search = search;
+    return NULL == search;
 }
 
 ngram_model_t *
-ps_update_lmset(ps_decoder_t *ps, ngram_model_t *lmset)
+ps_get_lm(ps_decoder_t *ps, const char *name)
 {
-    ngram_search_t *ngs;
-    ps_search_t *search;
-
-    /* Look for N-Gram search. */
-    search = ps_find_search(ps, "ngram");
-    if (search == NULL) {
-        /* Initialize N-Gram search. */
-        search = ngram_search_init(ps->config, ps->acmod, ps->dict, ps->d2p);
-        if (search == NULL)
-            return NULL;
-        search->pls = ps->phone_loop;
-        ps->searches = glist_add_ptr(ps->searches, search);
-        ngs = (ngram_search_t *)search;
-    }
-    else if (lmset != NULL) {
-        ngs = (ngram_search_t *)search;
-        /* Free any previous lmset if this is a new one. */
-        if (ngs->lmset != NULL && ngs->lmset != lmset)
-            ngram_model_free(ngs->lmset);
-        ngs->lmset = lmset;
-        /* Tell N-Gram search to update its view of the world. */
-        if (ps_search_reinit(search, ps->dict, ps->d2p) < 0)
-            return NULL;
-    } else {
-	/* Just activate the existing search */
-	ngs = (ngram_search_t *)search;
-    }
-    ps->search = search;
-    return ngs->lmset;
-}
-
-fsg_set_t *
-ps_get_fsgset(ps_decoder_t *ps)
-{
-    if (ps->search == NULL
-        || 0 != strcmp(ps_search_name(ps->search), "fsg"))
+    ps_search_t *search =  ps_find_search(ps, name);
+    if (search && strcmp(PS_SEARCH_NGRAM, ps_search_name(search)))
         return NULL;
-    return (fsg_set_t *)ps->search;
+    return search ? ((ngram_search_t *) search)->lmset : NULL;
 }
 
-fsg_set_t *
-ps_update_fsgset(ps_decoder_t *ps)
+int
+ps_set_lm(ps_decoder_t *ps, const char *name, ngram_model_t *lm)
 {
     ps_search_t *search;
+    search = ngram_search_init(lm, ps->config, ps->acmod, ps->dict, ps->d2p);
+    search->pls = ps->phone_loop;
 
-    /* Look for FSG search. */
-    search = ps_find_search(ps, "fsg");
-    if (search == NULL) {
-        /* Initialize FSG search. */
-        if ((search = fsg_search_init(ps->config,
-                                 ps->acmod, ps->dict, ps->d2p)) == NULL) {
-            return NULL;
-        }
-        search->pls = ps->phone_loop;
-        ps->searches = glist_add_ptr(ps->searches, search);
-    }
-    else {
-        /* Tell FSG search to update its view of the world. */
-        if (ps_search_reinit(search, ps->dict, ps->d2p) < 0)
-            return NULL;
-    }
-    ps->search = search;
-    return (fsg_set_t *)search;
+    if (search)
+        hash_table_replace(ps->searches, ckd_salloc(name), search);
+    return NULL == search;
+}
+
+fsg_model_t *
+ps_get_fsg(ps_decoder_t *ps, const char *name)
+{
+    ps_search_t *search = ps_find_search(ps, name);
+    if (search && strcmp(PS_SEARCH_FSG, ps_search_name(search)))
+        return NULL;
+    return search ? ((fsg_search_t *) search)->fsg : NULL;
+}
+
+int
+ps_set_fsg(ps_decoder_t *ps, const char *name, fsg_model_t *fsg)
+{
+    ps_search_t *search;
+    search = fsg_search_init(fsg, ps->config, ps->acmod, ps->dict, ps->d2p);
+    search->pls = ps->phone_loop;
+
+    if (search)
+        hash_table_replace(ps->searches, ckd_salloc(name), search);
+    return NULL == search;
 }
 
 int
@@ -455,8 +494,6 @@ ps_load_dict(ps_decoder_t *ps, char const *dictfile,
     cmd_ln_t *newconfig;
     dict2pid_t *d2p;
     dict_t *dict;
-    gnode_t *gn;
-    int rv;
 
     /* Create a new scratch config to load this dict (so existing one
      * won't be affected if it fails) */
@@ -494,10 +531,12 @@ ps_load_dict(ps_decoder_t *ps, char const *dictfile,
     ps->d2p = d2p;
 
     /* And tell all searches to reconfigure themselves. */
-    for (gn = ps->searches; gn; gn = gnode_next(gn)) {
-        ps_search_t *search = gnode_ptr(gn);
-        if ((rv = ps_search_reinit(search, dict, d2p)) < 0)
-            return rv;
+    hash_iter_t *search_it = hash_table_iter(ps->searches);
+    for (; search_it; search_it = hash_table_iter_next(search_it)) {
+        if (ps_search_reinit(hash_entry_val(search_it->ent), dict, d2p) < 0) {
+            hash_table_iter_free(search_it);
+            return -1;
+        }
     }
 
     return 0;
@@ -516,8 +555,7 @@ ps_add_word(ps_decoder_t *ps,
             char const *phones,
             int update)
 {
-    int32 wid, lmwid;
-    ngram_model_t *lmset;
+    int32 wid;
     s3cipid_t *pron;
     char **phonestr, *tmp;
     int np, i, rv;
@@ -554,20 +592,27 @@ ps_add_word(ps_decoder_t *ps,
     /* Now we also have to add it to dict2pid. */
     dict2pid_add_word(ps->d2p, wid);
 
-    if ((lmset = ps_get_lmset(ps)) != NULL) {
-        /* Add it to the LM set (meaning, the current LM).  In a perfect
-         * world, this would result in the same WID, but because of the
-         * weird way that word IDs are handled, it doesn't. */
-        if ((lmwid = ngram_model_add_word(lmset, word, 1.0))
-            == NGRAM_INVALID_WID)
-            return -1;
+    // TODO: we definitely need to refactor this
+    hash_iter_t *search_it = hash_table_iter(ps->searches);
+    for (; search_it; search_it = hash_table_iter_next(search_it)) {
+        ps_search_t *search = hash_entry_val(search_it->ent);
+        if (!strcmp(PS_SEARCH_NGRAM, ps_search_name(search))) {
+            ngram_model_t *lmset = ((ngram_search_t *) search)->lmset;
+            if (ngram_model_add_word(lmset, word, 1.0) == NGRAM_INVALID_WID) {
+                hash_table_iter_free(search_it);
+                return -1;
+            }
+        }
+
+        if (update) {
+            if ((rv = ps_search_reinit(ps->search, ps->dict, ps->d2p) < 0)) {
+                hash_table_iter_free(search_it);
+                return rv;
+            }
+        }
     }
- 
+
     /* Rebuild the widmap and search tree if requested. */
-    if (update) {
-        if ((rv = ps_search_reinit(ps->search, ps->dict, ps->d2p) < 0))
-            return rv;
-    }
     return wid;
 }
 
@@ -749,8 +794,8 @@ ps_process_raw(ps_decoder_t *ps,
     int n_searchfr = 0;
 
     if (ps->acmod->state == ACMOD_IDLE) {
-	E_ERROR("Failed to process data, utterance is not started. Use start_utt to start it\n");
-	return 0;
+    E_ERROR("Failed to process data, utterance is not started. Use start_utt to start it\n");
+    return 0;
     }
 
     if (no_search)
@@ -856,7 +901,8 @@ ps_end_utt(ps_decoder_t *ps)
             ps_seg_frames(seg, &sf, &ef);
             post = ps_seg_prob(seg, &ascr, &lscr, &lback);
             E_INFO_NOFN("%-20s %-5d %-5d %-1.3f %-10d %-10d %-3d\n",
-                        word, sf, ef, logmath_exp(ps_get_logmath(ps), post), ascr, lscr, lback);
+                        word, sf, ef, logmath_exp(ps_get_logmath(ps), post),
+                        ascr, lscr, lback);
         }
     }
     return rv;
@@ -969,11 +1015,10 @@ ps_nbest(ps_decoder_t *ps, int sf, int ef,
     /* FIXME: This is all quite specific to N-Gram search.  Either we
      * should make N-best a method for each search module or it needs
      * to be abstracted to work for N-Gram and FSG. */
-    if (0 != strcmp(ps_search_name(ps->search), "ngram")) {
+    if (0 != strcmp(ps_search_name(ps->search), PS_SEARCH_NGRAM)) {
         lmset = NULL;
         lwf = 1.0f;
-    }
-    else {
+    } else {
         lmset = ((ngram_search_t *)ps->search)->lmset;
         lwf = ((ngram_search_t *)ps->search)->bestpath_fwdtree_lw_ratio;
     }
@@ -1008,7 +1053,7 @@ char const *
 ps_nbest_hyp(ps_nbest_t *nbest, int32 *out_score)
 {
     assert(nbest != NULL);
-    
+
     if (nbest->top == NULL)
         return NULL;
     if (out_score) *out_score = nbest->top->score;
@@ -1116,3 +1161,5 @@ ps_search_deinit(ps_search_t *search)
     ckd_free(search->hyp_str);
     ps_lattice_free(search->dag);
 }
+
+/* vim: set ts=4 sw=4: */

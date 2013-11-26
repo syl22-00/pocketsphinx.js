@@ -53,6 +53,7 @@ extern "C" {
 #include <sphinxbase/logmath.h>
 #include <sphinxbase/fe.h>
 #include <sphinxbase/feat.h>
+#include <sphinxbase/fsg_model.h>
 #include <sphinxbase/ngram_model.h>
 
 /* PocketSphinx headers (not many of them!) */
@@ -60,7 +61,11 @@ extern "C" {
 #include <cmdln_macro.h>
 #include <ps_lattice.h>
 #include <ps_mllr.h>
-#include <fsg_set.h>
+
+#define PS_DEFAULT_SEARCH  "default"
+
+#define PS_SEARCH_FSG    "fsg"
+#define PS_SEARCH_NGRAM  "ngram"
 
 /**
  * PocketSphinx speech recognizer object.
@@ -76,6 +81,13 @@ typedef struct ps_astar_s ps_nbest_t;
  * PocketSphinx segmentation iterator object.
  */
 typedef struct ps_seg_s ps_seg_t;
+
+/**
+ * Sets default grammar and language model if they are not set explicitly and
+ * are present in the default search path.
+ */
+POCKETSPHINX_EXPORT void
+ps_default_search_args(cmd_ln_t *);
 
 /**
  * Initialize the decoder from a configuration object.
@@ -204,6 +216,12 @@ POCKETSPHINX_EXPORT
 ps_mllr_t *ps_update_mllr(ps_decoder_t *ps, ps_mllr_t *mllr);
 
 /**
+ * TODO: write doc
+ */
+POCKETSPHINX_EXPORT int
+ps_set_search(ps_decoder_t *ps, const char *name);
+
+/**
  * Get the language model set object for this decoder.
  *
  * If N-Gram decoding is not enabled, this will return NULL.  You will
@@ -214,27 +232,11 @@ ps_mllr_t *ps_update_mllr(ps_decoder_t *ps, ps_mllr_t *mllr);
  *         not attempt to free it manually.  Use ngram_model_retain()
  *         if you wish to reuse it elsewhere.
  */
-POCKETSPHINX_EXPORT
-ngram_model_t *ps_get_lmset(ps_decoder_t *ps);
+POCKETSPHINX_EXPORT ngram_model_t *
+ps_get_lm(ps_decoder_t *ps, const char *name);
 
-/**
- * Update the language model set object for this decoder.
- *
- * This function does several things.  Most importantly, it enables
- * N-Gram decoding if not currently enabled.  It also updates internal
- * data structures to reflect any changes made to the language model
- * set (e.g. switching language models, adding words, etc).
- *
- * @param lmset The new lmset to use, or NULL to update the existing
- *              lmset.  The decoder retains ownership of this pointer,
- *              so you should not attempt to free it manually.  Use
- *              ngram_model_retain() if you wish to reuse it
- *              elsewhere.
- * @return The updated language model set object for this decoder, or
- *         NULL on failure.
- */
-POCKETSPHINX_EXPORT
-ngram_model_t *ps_update_lmset(ps_decoder_t *ps, ngram_model_t *lmset);
+POCKETSPHINX_EXPORT int
+ps_set_lm(ps_decoder_t *ps, const char *name, ngram_model_t *lm);
 
 /**
  * Get the finite-state grammar set object for this decoder.
@@ -245,21 +247,11 @@ ngram_model_t *ps_update_lmset(ps_decoder_t *ps, ngram_model_t *lmset);
  * @return The current FSG set object for this decoder, or
  *         NULL if none is available.
  */
-POCKETSPHINX_EXPORT
-fsg_set_t *ps_get_fsgset(ps_decoder_t *ps);
+POCKETSPHINX_EXPORT fsg_model_t *
+ps_get_fsg(ps_decoder_t *ps, const char *name);
 
-/**
- * Update the finite-state grammar set object for this decoder.
- *
- * This function does several things.  Most importantly, it enables
- * FSG decoding if not currently enabled.  It also updates internal
- * data structures to reflect any changes made to the FSG set.
- *
- * @return The current FSG set object for this decoder, or
- *         NULL on failure.
- */
-POCKETSPHINX_EXPORT
-fsg_set_t *ps_update_fsgset(ps_decoder_t *ps);
+POCKETSPHINX_EXPORT int
+ps_set_fsg(ps_decoder_t *ps, const char *name, fsg_model_t *fsg);
 
 /**
  * Reload the pronunciation dictionary from a file.

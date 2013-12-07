@@ -96,7 +96,7 @@ Consumers should be web workers that understand the following messages:
 
 * `{command: 'start', data: data}`, posted when `recorder.start(data)` is called. `data` can be anything useful to the consumer. For instance it can indicate which language model to use to a speech recognizer.
 * `{command: 'stop'}`, posted when `recorder.stop()` is called.
-* `{command: 'process', data: audioSamples}`, posted every time an audio buffer is available, the buffer is stored in `data`.
+* `{command: 'process', data: audioSamples}`, posted every time an audio buffer is available, the buffer is stored in `data`. The buffer is a `Int16Array` typed array. If you need to pass it in a message for Google's PPAPI, you might need to take the underlying `ArrayBuffer` with `audioSamples.buffer`.
 
 
 # 5. License

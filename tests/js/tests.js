@@ -331,7 +331,8 @@ module( "With living recognizer", {
 	transitions = new Module.VectorTransitions();
 	ids = new Module.Integers();
 	ok(recognizer != undefined, "Recognizer instantiated successfully");
-    }, teardown: function() {
+    }, 
+    teardown: function() {
 	recognizer.delete();
 	buffer.delete();
 	words.delete();
@@ -339,6 +340,27 @@ module( "With living recognizer", {
 	ids.delete();
     }
 });
+
+
+test("Dictionary words", function() {
+    words.push_back(["A", "AH"]);
+    equal(recognizer.addWords(words), Module.ReturnType.SUCCESS, "Valid words should be added successfully");
+    words.set(0,["B", "!"]);
+    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
+    words.set(0,["C", ""]);
+    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
+    words.set(0,["D", "Q"]);
+    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
+    words.set(0,["E", "AH"]);
+    equal(recognizer.addWords(words), Module.ReturnType.SUCCESS, "Valid words should be added successfully");
+    words.set(0,["E", "AH"]);
+    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
+    words.set(0,["E(2)", "AH"]);
+    equal(recognizer.addWords(words), Module.ReturnType.SUCCESS, "Valid words should be added successfully");
+    words.set(0,["F(2)", "AH"]);
+    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
+});
+
 
 test( "Recognizing silence", function() {
     var num_samples = 1024;
@@ -354,6 +376,101 @@ test( "Recognizing silence", function() {
 	equal(recognizer.getHyp(), "", "Recognizer should recognize nothing with silence");
     }
     equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
+});
+
+
+test( "Switching grammars", function() {
+
+    words.push_back(["A", "AH"]);
+    words.push_back(["B", "AH"]);
+    words.push_back(["C", "AH"]);
+    words.push_back(["D", "AH"]);
+    recognizer.addWords(words);
+    var transitionA = new Module.VectorTransitions();
+    var transitionB = new Module.VectorTransitions();
+    var transitionC = new Module.VectorTransitions();
+    var transitionD = new Module.VectorTransitions();
+    transitionA.push_back({from: 0, to: 0, word: "A", logp: 0});
+    transitionB.push_back({from: 0, to: 0, word: "B", logp: 0});
+    transitionC.push_back({from: 0, to: 0, word: "C", logp: 0});
+    transitionD.push_back({from: 0, to: 0, word: "D", logp: 0});
+    equal(recognizer.addGrammar(ids,
+				{numStates: 1, start: 0, end: 0,
+				 transitions: transitionA}),
+	  Module.ReturnType.SUCCESS,
+	  "Grammar should be added successfully");
+    var idA = ids.get(0);
+    
+    equal(recognizer.addGrammar(ids,
+				{numStates: 1, start: 0, end: 0,
+				 transitions: transitionB}),
+	  Module.ReturnType.SUCCESS,
+	  "Grammar should be added successfully");
+    var idB = ids.get(0);
+    
+    equal(recognizer.addGrammar(ids,
+				{numStates: 1, start: 0, end: 0,
+				 transitions: transitionC}),
+	  Module.ReturnType.SUCCESS,
+	  "Grammar should be added successfully");
+    var idC = ids.get(0);
+    
+    equal(recognizer.addGrammar(ids,
+				{numStates: 1, start: 0, end: 0,
+				 transitions: transitionD}),
+	  Module.ReturnType.SUCCESS,
+	  "Grammar should be added successfully");
+    var idD = ids.get(0);
+    
+    for (var i = 0 ; i < audio.length ; i++) buffer.push_back(audio[i]);
+
+    recognizer.start();
+    equal(recognizer.process(buffer), Module.ReturnType.SUCCESS, "Recognizer should process successfully");
+    equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
+    ok(recognizer.getHyp().indexOf("A") < 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("B") < 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("C") < 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("D") >= 0, "We should get an hyp that matches the grammar");
+    return;
+    equal(recognizer.switchGrammar(idA), Module.ReturnType.SUCCESS, "Recognizer should switch grammar successfully");
+    recognizer.start();
+    equal(recognizer.process(buffer), Module.ReturnType.SUCCESS, "Recognizer should process successfully");
+    equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
+    ok(recognizer.getHyp().indexOf("A") >= 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("B") < 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("C") < 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("D") < 0, "We should get an hyp that matches the grammar");
+
+    equal(recognizer.switchGrammar(idB), Module.ReturnType.SUCCESS, "Recognizer should switch grammar successfully");
+    recognizer.start();
+    equal(recognizer.process(buffer), Module.ReturnType.SUCCESS, "Recognizer should process successfully");
+    equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
+    ok(recognizer.getHyp().indexOf("A") < 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("B") >= 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("C") < 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("D") < 0, "We should get an hyp that matches the grammar");
+
+    equal(recognizer.switchGrammar(idC), Module.ReturnType.SUCCESS, "Recognizer should switch grammar successfully");
+    recognizer.start();
+    equal(recognizer.process(buffer), Module.ReturnType.SUCCESS, "Recognizer should process successfully");
+    equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
+    ok(recognizer.getHyp().indexOf("A") < 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("B") < 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("C") >= 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("D") < 0, "We should get an hyp that matches the grammar");
+
+    equal(recognizer.switchGrammar(idD), Module.ReturnType.SUCCESS, "Recognizer should switch grammar successfully");
+    recognizer.start();
+    equal(recognizer.process(buffer), Module.ReturnType.SUCCESS, "Recognizer should process successfully");
+    equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
+    ok(recognizer.getHyp().indexOf("A") < 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("B") < 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("C") < 0, "We should get an hyp that matches the grammar");
+    ok(recognizer.getHyp().indexOf("D") >= 0, "We should get an hyp that matches the grammar");
+    transitionA.delete();
+    transitionB.delete();
+    transitionC.delete();
+    transitionD.delete();
 });
 
 test( "Recognizing audio", function() {
@@ -376,23 +493,3 @@ test( "Recognizing audio", function() {
     equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
     equal(recognizer.getHyp(), "WINDOWS SUCKS AND LINUX IS GREAT", "Recognizer should recognize the correct utterance");
 });
-
-test("Dictionary words", function() {
-    words.push_back(["A", "AH"]);
-    equal(recognizer.addWords(words), Module.ReturnType.SUCCESS, "Valid words should be added successfully");
-    words.set(0,["B", "!"]);
-    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
-    words.set(0,["C", ""]);
-    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
-    words.set(0,["D", "Q"]);
-    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
-    words.set(0,["E", "AH"]);
-    equal(recognizer.addWords(words), Module.ReturnType.SUCCESS, "Valid words should be added successfully");
-    words.set(0,["E", "AH"]);
-    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
-    words.set(0,["E(2)", "AH"]);
-    equal(recognizer.addWords(words), Module.ReturnType.SUCCESS, "Valid words should be added successfully");
-    words.set(0,["F(2)", "AH"]);
-    equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
-});
-

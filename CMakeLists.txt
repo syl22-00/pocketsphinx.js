@@ -116,9 +116,8 @@ if(LM_BASE AND LM_FILES)
 endif()
 
 # Set it to 1 if packaged files are larged, the console will warn you to do so if necessary
-if(ALLOW_MEMORY_GROWTH)
-  set(ALLOW_MEMORY_GROWTH 1)
-else()
+set(ALLOW_MEMORY_GROWTH 1)
+if(DISABLE_MEMORY_GROWTH)
   set(ALLOW_MEMORY_GROWTH 0)
 endif()
 

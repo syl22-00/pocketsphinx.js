@@ -83,9 +83,7 @@ You can do the same thing with statistical language models and dictionary files,
 * Statistical language models: `LM_BASE` and `LM_FILES`.
 * Dictionary files: `DICT_BASE` and `DICT_FILES`.
 
-There are other options that you might need to set depending on the models you package:
-
-* If you package large files (acoustic model, language model, dictionary), you'll probably need to allow the memory to grow beyond the default value by setting `-DALLOW_MEMORY_GROWTH=1` when invoking `cmake`. Look at `live_zh.html` and `pocketsphinx_zh.ps` later in this document for an example with a Chinese acoustic model.
+By default, we turn on `ALLOW_MEMORY_GROWTH` in emscripten as files tend to be large. However, this apparently takes out some optmization steps, so if you do not want that, you can pass `-DDISABLE_MEMORY_GROWTH=on` when invoking `cmake`.
 
 Please note that:
 

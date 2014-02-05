@@ -796,19 +796,20 @@ ngram_add_word_internal(ngram_model_t *model,
                         const char *word,
                         int32 classid)
 {
-    void *dummy;
+
+    /* Check for hash collisions. */
     int32 wid;
+    if (hash_table_lookup_int32(model->wid, word, &wid) == 0) {
+        E_WARN("Omit duplicate word '%s'\n", word);
+        return wid;
+    }
 
     /* Take the next available word ID */
     wid = model->n_words;
     if (classid >= 0) {
         wid = NGRAM_CLASSWID(wid, classid);
     }
-    /* Check for hash collisions. */
-    if (hash_table_lookup(model->wid, word, &dummy) == 0) {
-        E_ERROR("Duplicate definition of word %s\n", word);
-        return NGRAM_INVALID_WID;
-    }
+
     /* Reallocate word_str if necessary. */
     if (model->n_words >= model->n_1g_alloc) {
         model->n_1g_alloc += UG_ALLOC_STEP;
@@ -836,9 +837,9 @@ ngram_model_add_word(ngram_model_t *model,
 
     /* If we add word to unwritable model, we need to make it writable */
     if (!model->writable) {
-	E_WARN("Can't add word '%s' to read-only language model. "
-	       "Disable mmap with '-mmap no' to make it writable\n", word);
-	return -1;
+      E_WARN("Can't add word '%s' to read-only language model. "
+             "Disable mmap with '-mmap no' to make it writable\n", word);
+      return -1;
     }
 
     wid = ngram_add_word_internal(model, word, -1);
@@ -847,10 +848,10 @@ ngram_model_add_word(ngram_model_t *model,
 
     /* Do what needs to be done to add the word to the unigram. */
     if (model->funcs && model->funcs->add_ug)
-        prob = (*model->funcs->add_ug)(model, wid, logmath_log(model->lmath, weight));
-    if (prob == 0) {
-	return -1;
-    }
+      prob = (*model->funcs->add_ug)(model, wid, logmath_log(model->lmath, weight));
+    if (prob == 0)
+      return -1;
+
     return wid;
 }
 

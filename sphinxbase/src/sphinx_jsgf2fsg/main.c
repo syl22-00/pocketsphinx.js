@@ -172,7 +172,7 @@ main(int argc, char *argv[])
 #pragma comment(linker,"/entry:mainWCRTStartup")
 #include <windows.h>
 
-//Windows Mobile has the Unicode main only
+/* Windows Mobile has the Unicode main only */
 int wmain(int32 argc, wchar_t *wargv[]) {
     char** argv;
     size_t wlen;
@@ -187,7 +187,7 @@ int wmain(int32 argc, wchar_t *wargv[]) {
         wcstombs(argv[i], wargv[i], wlen);
     }
 
-    //assuming ASCII parameters
+    /* assuming ASCII parameters */
     return main(argc, argv);
 }
 #endif

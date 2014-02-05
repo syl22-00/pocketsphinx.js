@@ -197,6 +197,9 @@ int32 fe_compute_melcosine(melfb_t *MEL_FB);
 void fe_create_hamming(window_t *in, int32 in_len);
 void fe_create_twiddle(fe_t *fe);
 
+fixed32 fe_log_add(fixed32 x, fixed32 y);
+fixed32 fe_log_sub(fixed32 x, fixed32 y);
+
 /* Miscellaneous processing functions. */
 void fe_spec2cep(fe_t * fe, const powspec_t * mflogspec, mfcc_t * mfcep);
 void fe_dct2(fe_t *fe, const powspec_t *mflogspec, mfcc_t *mfcep, int htk);

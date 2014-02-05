@@ -54,7 +54,7 @@
 #define DEFAULT_DEVICE "system:capture_1"
 #define BUFFER_SIZE 352800
 
-//#define MIC_SPEAKER_PASSTHROUGH_DEBUG
+/* #define MIC_SPEAKER_PASSTHROUGH_DEBUG */
 
 const size_t sample_size = sizeof(jack_default_audio_sample_t);
 const size_t int16_range_over_two = (-SHRT_MIN + SHRT_MAX) / 2.0;
@@ -73,14 +73,14 @@ process (jack_nframes_t nframes, void *arg)
         return 1;
     }
 
-    // Write to jack ringbuffer which should be thread safe
+    /* Write to jack ringbuffer which should be thread safe */
     jack_ringbuffer_write (handle->rbuffer, (char*) in, sample_size * nframes);
 
 #ifdef MIC_SPEAKER_PASSTHROUGH_DEBUG
 
     jack_default_audio_sample_t *out = (jack_default_audio_sample_t *) jack_port_get_buffer (handle->output_port, nframes);
 
-    // Output mic output to speakers (Just for testing)
+    /* Output mic output to speakers (Just for testing) */
     memcpy (out, in, sample_size * nframes);
 
 #endif
@@ -230,7 +230,7 @@ ad_open_dev(const char *dev, int32 sps)
 #endif
 
 #ifdef HAVE_SAMPLERATE_H
-    // Initialize the sample rate converter.
+    /* Initialize the sample rate converter. */
     if ((handle->resample_state = src_new (SRC_SINC_BEST_QUALITY, 1, &resample_error)) == NULL) {
         fprintf (stderr, "Error : src_new() failed: %s\n", src_strerror(resample_error));
         return NULL;
@@ -241,7 +241,7 @@ ad_open_dev(const char *dev, int32 sps)
     handle->sps = sps;
     handle->bps = sizeof(int16);
 
-    // Give the jack process callback time to run ?
+    /* Give the jack process callback time to run ? */
     sleep (1);
 
     return (ad_rec_t *) handle;
@@ -250,7 +250,7 @@ ad_open_dev(const char *dev, int32 sps)
 ad_rec_t *
 ad_open_sps(int32 sps)
 {
-    // Ignored the sps has to set for the jackd server
+    /* Ignored the sps has to set for the jackd server */
     return ad_open_dev(DEFAULT_DEVICE, sps);
 }
 
@@ -307,8 +307,8 @@ ad_read(ad_rec_t * handle, int16 * buf, int32 max)
 
 #ifdef HAVE_SAMPLERATE_H
 
-   // Resample the data from the sample rate set in the jack server to that required 
-   // by sphinx
+   /* Resample the data from the sample rate set in the jack server to that required 
+    * by sphinx */
 
    length = jack_ringbuffer_peek (handle->rbuffer, (char*) handle->sample_buffer, length);
    size_t length_in_samples = length / sample_size;
@@ -316,7 +316,7 @@ ad_read(ad_rec_t * handle, int16 * buf, int32 max)
    if(handle->resample_state == NULL)
        return AD_EOF;
 
-   // We will try to downsample if jackd is running at a higher sample rate
+   /* We will try to downsample if jackd is running at a higher sample rate */
    jack_nframes_t jack_samplerate = jack_get_sample_rate(handle->client);
 
    SRC_DATA data;

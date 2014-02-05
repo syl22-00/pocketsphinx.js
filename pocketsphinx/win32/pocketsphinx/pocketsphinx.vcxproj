@@ -44,7 +44,7 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">../../bin/Debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</IntDir>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
@@ -154,6 +154,7 @@
     <ClInclude Include="..\..\src\libpocketsphinx\fsg_lextree.h" />
     <ClInclude Include="..\..\src\libpocketsphinx\fsg_search_internal.h" />
     <ClInclude Include="..\..\src\libpocketsphinx\hmm.h" />
+    <ClInclude Include="..\..\src\libpocketsphinx\kws_search.h" />
     <ClInclude Include="..\..\src\libpocketsphinx\mdef.h" />
     <ClInclude Include="..\..\src\libpocketsphinx\ms_gauden.h" />
     <ClInclude Include="..\..\src\libpocketsphinx\ms_mgau.h" />
@@ -181,6 +182,7 @@
     <ClCompile Include="..\..\src\libpocketsphinx\fsg_lextree.c" />
     <ClCompile Include="..\..\src\libpocketsphinx\fsg_search.c" />
     <ClCompile Include="..\..\src\libpocketsphinx\hmm.c" />
+    <ClCompile Include="..\..\src\libpocketsphinx\kws_search.c" />
     <ClCompile Include="..\..\src\libpocketsphinx\mdef.c" />
     <ClCompile Include="..\..\src\libpocketsphinx\ms_gauden.c" />
     <ClCompile Include="..\..\src\libpocketsphinx\ms_mgau.c" />

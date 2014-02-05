@@ -19,8 +19,7 @@ main(int argc, char *argv[])
     char const testname3[] = "/foo";
     char testout[32];
 
-    path2basename(testname, testout);
-    TEST_EQUAL(0, strcmp("quux.argh", testout));
+    TEST_EQUAL(0, strcmp("quux.argh", path2basename(testname)));
 
     path2dirname(testname, testout);
     TEST_EQUAL(0, strcmp("/foo/bar/baz", testout));

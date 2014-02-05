@@ -273,7 +273,7 @@ read_cep(char const *file, float ***cep, int *numframes, int cepsize)
 #if defined(_WIN32_WCE)
 #pragma comment(linker,"/entry:mainWCRTStartup")
 
-//Windows Mobile has the Unicode main only
+/* Windows Mobile has the Unicode main only */
 int wmain(int32 argc, wchar_t *wargv[]) {
     char** argv;
     size_t wlen;
@@ -288,7 +288,7 @@ int wmain(int32 argc, wchar_t *wargv[]) {
         wcstombs(argv[i], wargv[i], wlen);
     }
 
-    //assuming ASCII parameters
+    /* assuming ASCII parameters */
     return main(argc, argv);
 }
 #endif

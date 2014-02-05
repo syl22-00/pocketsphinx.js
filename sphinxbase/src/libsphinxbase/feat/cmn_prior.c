@@ -96,6 +96,11 @@ cmn_prior_shiftwin(cmn_t *cmn)
     mfcc_t sf;
     int32 i;
 
+    E_INFO("cmn_prior_update: from < ");
+    for (i = 0; i < cmn->veclen; i++)
+        E_INFOCONT("%5.2f ", MFCC2FLOAT(cmn->cmn_mean[i]));
+    E_INFOCONT(">\n");
+
     sf = FLOAT2MFCC(1.0) / cmn->nframe;
     for (i = 0; i < cmn->veclen; i++)
         cmn->cmn_mean[i] = cmn->sum[i] / cmn->nframe; /* sum[i] * sf */
@@ -107,6 +112,11 @@ cmn_prior_shiftwin(cmn_t *cmn)
             cmn->sum[i] = MFCCMUL(cmn->sum[i], sf);
         cmn->nframe = CMN_WIN;
     }
+
+    E_INFO("cmn_prior_update: to   < ");
+    for (i = 0; i < cmn->veclen; i++)
+        E_INFOCONT("%5.2f ", MFCC2FLOAT(cmn->cmn_mean[i]));
+    E_INFOCONT(">\n");
 }
 
 void

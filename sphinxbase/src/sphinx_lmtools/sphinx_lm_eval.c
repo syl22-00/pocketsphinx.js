@@ -202,7 +202,7 @@ evaluate_file(ngram_model_t *lm, logmath_t *lmath, const char *lsnfn)
 	/* We have to keep ch in floating-point to avoid overflows, so
 	 * we might as well use log2. */
 	log_to_log2 = log(logmath_get_base(lmath)) / log(2);
-	nccs = noovs = nwords = 0;
+	lscr = nccs = noovs = nwords = 0;
 	ch = 0.0;
         for (litor = lineiter_start(fh); litor; litor = lineiter_next(litor)) {
 		char **words;

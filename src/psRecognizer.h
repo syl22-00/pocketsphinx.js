@@ -59,8 +59,13 @@ namespace pocketsphinxjs {
     ReturnType reInit(const Config&);
     ReturnType addWords(const std::vector<Word>&);
     ReturnType addGrammar(Integers&, const Grammar&);
+    ReturnType addKeyword(Integers&, const std::string&);
+    // Kept for backward compatibility, use switchSearch
+    // instead
     ReturnType switchGrammar(int);
+    ReturnType switchSearch(int);
     std::string getHyp();
+    int32_t getCount();
     ReturnType start();
     ReturnType stop();
     ReturnType process(const std::vector<int16_t>&);
@@ -74,8 +79,8 @@ namespace pocketsphinxjs {
     bool is_fsg;
     bool is_recording;
     std::string current_hyp;
-    int32_t grammar_index; 
-    int32 score;
+    int32_t current_count;
+    int32_t grammar_index;
     char const * sentence_id;
     fsg_model_t * current_grammar;
     ps_decoder_t * decoder;
@@ -168,8 +173,11 @@ EMSCRIPTEN_BINDINGS(recognizer) {
     .function("reInit", &ps::Recognizer::reInit)
     .function("addWords", &ps::Recognizer::addWords)
     .function("addGrammar", &ps::Recognizer::addGrammar)
+    .function("addKeyword", &ps::Recognizer::addKeyword)
     .function("switchGrammar", &ps::Recognizer::switchGrammar)
+    .function("switchSearch", &ps::Recognizer::switchSearch)
     .function("getHyp", &ps::Recognizer::getHyp)
+    .function("getCount", &ps::Recognizer::getCount)
     .function("start", &ps::Recognizer::start)
     .function("stop", &ps::Recognizer::stop)
     .function("process", &ps::Recognizer::process);

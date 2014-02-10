@@ -11,12 +11,12 @@ namespace pocketsphinxjs {
   // Implemented later in this file
   ReturnType parseStringList(const std::string &, StringsSetType*, std::string*);
 
-  Recognizer::Recognizer(): grammar_names(MAX_NUM_GRAMMARS), is_fsg(true), is_recording(false), current_hyp(""), grammar_index(0) {
+  Recognizer::Recognizer(): grammar_names(MAX_NUM_GRAMMARS), is_fsg(true), is_recording(false), current_hyp(""), current_count(0), grammar_index(0) {
     Config c;
     if (init(c) != SUCCESS) cleanup();
   }
 
-  Recognizer::Recognizer(const Config& config) : grammar_names(MAX_NUM_GRAMMARS), is_fsg(true), is_recording(false), current_hyp(""), grammar_index(0) {
+  Recognizer::Recognizer(const Config& config) : grammar_names(MAX_NUM_GRAMMARS), is_fsg(true), is_recording(false), current_hyp(""), current_count(0), grammar_index(0) {
     if (init(config) != SUCCESS) cleanup();
   }
 
@@ -67,11 +67,40 @@ namespace pocketsphinxjs {
     return SUCCESS;
   }
 
-  ReturnType Recognizer::switchGrammar(int id) {
+
+  ReturnType Recognizer::addKeyword(Integers& id, const std::string& keyphrase) {
     if (decoder == NULL) return BAD_STATE;
-    std::ostringstream grammar_name;
-    grammar_name << id;
-    if(ps_set_search(decoder, grammar_name.str().c_str())) {
+    std::ostringstream search_name;
+    search_name << grammar_index;
+    grammar_names.push_back(search_name.str());
+    if(ps_set_kws(decoder, grammar_names.back().c_str(), keyphrase.c_str())) {
+      return RUNTIME_ERROR;
+    }
+    if (id.size() == 0) id.push_back(grammar_index);
+    else id.at(0) = grammar_index;
+    grammar_index++;
+    // We switch to the newly added search right away
+    if (ps_set_search(decoder, grammar_names.back().c_str())) {
+      return RUNTIME_ERROR;
+    }
+    return SUCCESS;
+
+
+
+
+    return SUCCESS;
+  }
+
+
+  ReturnType Recognizer::switchGrammar(int id) {
+    return switchSearch(id);
+  }
+
+  ReturnType Recognizer::switchSearch(int id) {
+    if (decoder == NULL) return BAD_STATE;
+    std::ostringstream search_name;
+    search_name << id;
+    if(ps_set_search(decoder, search_name.str().c_str())) {
       return RUNTIME_ERROR;
     }
     return SUCCESS;
@@ -83,6 +112,7 @@ namespace pocketsphinxjs {
       return RUNTIME_ERROR;
     }
     current_hyp = "";
+    current_count = 0;
     is_recording = true;
     return SUCCESS;
   }
@@ -92,7 +122,7 @@ namespace pocketsphinxjs {
     if (ps_end_utt(decoder) < 0) {
       return RUNTIME_ERROR;
     }
-    const char* h = ps_get_hyp(decoder, &score, &sentence_id);
+    const char* h = ps_get_hyp(decoder, &current_count, &sentence_id);
     current_hyp = (h == NULL) ? "" : h;
     is_recording = false;
     return SUCCESS;
@@ -103,7 +133,7 @@ namespace pocketsphinxjs {
     if (buffer.size() == 0)
       return RUNTIME_ERROR;
     ps_process_raw(decoder, (short int *) &buffer[0], buffer.size(), 0, 0);
-    const char* h = ps_get_hyp(decoder, &score, &sentence_id);
+    const char* h = ps_get_hyp(decoder, &current_count, &sentence_id);
     current_hyp = (h == NULL) ? "" : h;
     return SUCCESS;
   }
@@ -114,6 +144,10 @@ namespace pocketsphinxjs {
 
   std::string Recognizer::getHyp() {
     return current_hyp;
+  }
+
+  int32_t Recognizer::getCount() {
+    return current_count;
   }
 
   void Recognizer::cleanup() {
@@ -202,8 +236,8 @@ namespace pocketsphinxjs {
    *
    * Parses the string with available models and fills in
    * the default model and the available models
-   * @param string to parse, the models are separated with ;
-   * @return 0 if successful, alaways successful
+   * @param string to parse, the models are separated with ";"
+   * @return 0 if successful, always successful
    *
    *****************************************/
   ReturnType parseStringList(const std::string & list, StringsSetType* strings_set, std::string* default_string = NULL) {

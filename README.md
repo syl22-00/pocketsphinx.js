@@ -34,6 +34,8 @@ The file `webapp/live.html` illustrates how these work together in a real applic
 
 There is also a live demo for Chinese. To try it, open `http://localhost:8000/webapp/live_zh.html` in your browser.
 
+In addition to speech recognition, there is also a keyword spotting functionality that detects a specific word or phrase in the audio input.
+
 # 2. Compilation of `pocketsphinx.js`
 
 A prebuilt version of `pocketsphinx.js` is available in `webapp/js`, or you can build it yourself. Below is the procedure on Linux (and Mac OS X). On Windows, refer to the emscripten manual.
@@ -174,13 +176,13 @@ if (recognizer.reInit(config_french) != Module.ReturnType.SUCCESS)
     alert("Error while recognizer is re-initialized");
 ```
 
-## 3.3 Adding words and grammars
+## 3.3 Adding words, grammars and key phrases
 
-Dictionary and language model files can be packaged at compile time as explained previously. Meanwhile, dictionary words and grammars (Finite State Grammars, FSG) can be added at runtime.
+Dictionary and language model files can be packaged at compile time as explained previously. Meanwhile, dictionary words, grammars (Finite State Grammars, FSG) or key phrases (for keyword spotting) can be added at runtime.
 
 ### a. Adding words
 
-All words used in grammars must be present in the pronunciation dictionary. Refer to the [CMU Pronunciation Dictionary site](http://www.speech.cs.cmu.edu/cgi-bin/cmudict) if you are not familiar with it. Words can be added as a vector of pairs word-pronunciation:
+All words used in grammars or for keyword spotting must be present in the pronunciation dictionary. Refer to the [CMU Pronunciation Dictionary site](http://www.speech.cs.cmu.edu/cgi-bin/cmudict) if you are not familiar with it. Words can be added as a vector of pairs word-pronunciation:
 
 ```javascript
 var recognizer = new Module.Recognizer();
@@ -228,16 +230,30 @@ ids.delete();
 
 Notice the `Integers` object that is used to return an id back to the app to refer to the grammar. This id is then used to switch the recognizer to using that specific grammar. You will note that `new Module.Integers()` actually returns a vector object that is then passed as a reference to `addGrammar`. If the call is successful, the first element of the array is the id assigned to the grammar.
 
-### c. Switching between grammars
+### c. Adding key phrases
 
-A recognizer object can have any number of grammars but only one active grammar at a time. The active grammar is the one used when there is a call to `start()`, described later in this document. To switch to a specific grammar, you must use the id that was given during the call to `addGrammar`.
+Pocketsphinx also includes a keyword spotting search. Give the decoder a keyword or key phrase to catch and you can get at any time, the number of times it was spotted. The key phrase is just a string with the phrase to spot. All words from the phrase must have been previously added with `addWord`.
 
 ```javascript
-// id is the first element of the ids vector after call to addGrammar:
-if (recognizer.switchGrammar(id) != Module.ReturnType.SUCCESS)
-     alert("Error while switching grammar"); // The id is probably wrong
+words.push_back(["HELLO", "HH AH L OW"], ["WORLD", "W ER L D"]);
+recognizer.addWords(words);
+var ids = new Module.Integers();
+if (recognizer.addKeyword(ids, "HELLO WORLD") != Module.ReturnType.SUCCESS)
+     alert("Error while adding key phrase"); // Meaning that the key phrase has issues
+transitions.delete();
+var id = ids.get(0); // This is the id assigned to the search
+ids.delete();
 ```
 
+### d. Switching between grammars or keyword searches
+
+A recognizer object can have any number of grammars and keyword searches but only one can be active at a time. The active search is the one used when there is a call to `start()`, described later in this document. To switch to a specific search, you must use the id that was given during the call to `addGrammar` or `addKeyword`.
+
+```javascript
+// id is the first element of the ids vector after call to addGrammar or addKeyword:
+if (recognizer.switchSearch(id) != Module.ReturnType.SUCCESS)
+     alert("Error while switching search"); // The id is probably wrong
+```
 
 ## 3.4 Recognizing audio
 
@@ -245,8 +261,8 @@ To recognize audio, one must first call `start` to initialize recognition, then 
 
 Before calling start, one must make sure that the current language model is the correct one, mainly, whatever happened last:
 
-* If a grammar has just been given to the recognizer, it is automatically used as current language model.
-* If a call to `switchGrammar` was successful, the specified grammar will be used in the next call to `start`.
+* If a grammar or keyword search has just been given to the recognizer, it is automatically used as current language model.
+* If a call to `switchSearch` was successful, the specified search will be used in the next call to `start`.
 * If a SLM was packaged in `pocketsphinx.js` and was loaded by being added in the parameters to the `Config` object used when the recognizer was instantiated (or re-initialized), then this model is the current language model.
 
 Calls to process must include audio buffers in the form of an `AudioBuffer` object. `AudioBuffer` objects can be re-used. They must contain audio samples, as 2-byte integers, recorded at 16kHz (unless your acoustic model uses different characteristics).
@@ -274,6 +290,9 @@ buffer.delete();
 ```
 
 Remember to check the return values of the different calls and compare them to `Module.ReturnType....`.
+
+For a keyword spotting search, use `addKeyword` instead of `addGrammar` as explained previously and use `getCount` instead of `getHyp`. `getCount` returns the number of times the key phrase was spotted since recognition started.
+
 
 ## 3.5 Releasing memory
 
@@ -599,7 +618,7 @@ To build an application, this is a good starting point as it illustrates the dif
 
 # 7. Test suite
 
-There is a test suite being developed in `tests/js`, it makes use of [QUnit](http://qunitjs.com). There is a README file inside the folder. It is currently being re-factored, following refactoring of the API.
+There is a test suite in `tests/js` which makes use of [QUnit](http://qunitjs.com). There is a README file inside the folder.
 
 # 8. Notes about speech recognition and performance
 

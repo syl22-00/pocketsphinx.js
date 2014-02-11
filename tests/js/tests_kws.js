@@ -22,7 +22,6 @@ test( "Key phrase and dictionary", function() {
 var recognizer;
 var buffer;
 var words;
-var transitions;
 var ids;
 
 module( "With living recognizer", {
@@ -30,7 +29,6 @@ module( "With living recognizer", {
 	recognizer = new Module.Recognizer();
 	buffer = new Module.AudioBuffer();
 	words = new Module.VectorWords();
-	transitions = new Module.VectorTransitions();
 	ids = new Module.Integers();
 	ok(recognizer != undefined, "Recognizer instantiated successfully");
     }, 
@@ -38,7 +36,6 @@ module( "With living recognizer", {
 	recognizer.delete();
 	buffer.delete();
 	words.delete();
-	transitions.delete();
 	ids.delete();
     }
 });

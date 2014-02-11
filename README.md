@@ -85,7 +85,7 @@ You can do the same thing with statistical language models and dictionary files,
 * Statistical language models: `LM_BASE` and `LM_FILES`.
 * Dictionary files: `DICT_BASE` and `DICT_FILES`.
 
-By default, we turn on `ALLOW_MEMORY_GROWTH` in emscripten as files tend to be large. However, this apparently takes out some optmization steps, so if you do not want that, you can pass `-DDISABLE_MEMORY_GROWTH=on` when invoking `cmake`.
+By default, we turn on `ALLOW_MEMORY_GROWTH` in emscripten as files tend to be large. However, this apparently takes out some optimization steps, so if you do not want that, you can pass `-DDISABLE_MEMORY_GROWTH=on` when invoking `cmake`.
 
 Please note that:
 
@@ -95,7 +95,7 @@ Please note that:
 * Make sure you optimize the size of your acoustic models (`mdef` in binary format, `sendump` instead of `mixture_weights`, see PocketSphinx docs).
 * Statistical language models and dictionary files are optional. As explained later, grammars and dictionary words can be added at runtime.
 * If you want to package statistical language models, you must provide a dictionary that contains all words used in the SLMs.
-* The Pocketsphinx parameter for dictionary files is `"-dict"` and for language models `"-lm"`. See next sections for how to specify recognizer parameters.
+* The PocketSphinx parameter for dictionary files is `"-dict"` and for language models `"-lm"`. See next sections for how to specify recognizer parameters.
 
 # 3. API of `pocketsphinx.js`
 
@@ -207,7 +207,7 @@ words.push_back(["HELLO(2)", "HH AH L OW"], ["HELLO", "HH EH L OW"]); // Invalid
 
 ### b. Adding grammars
 
-A FSG is a structure that includes an initial state, a last state as well as a set of transitions between these states. Again, make sure all words used in transitions are in the dictionary (either loaded through a packaged dictionary file or added at runtime using `addWords`). Here is an example of inputing one grammar:
+A FSG is a structure that includes an initial state, a last state as well as a set of transitions between these states. Again, make sure all words used in transitions are in the dictionary (either loaded through a packaged dictionary file or added at runtime using `addWords`). Here is an example of inputting one grammar:
 
 ```javascript
 var transitions = new Module.VectorTransitions();
@@ -232,7 +232,7 @@ Notice the `Integers` object that is used to return an id back to the app to ref
 
 ### c. Adding key phrases
 
-Pocketsphinx also includes a keyword spotting search. Give the decoder a keyword or key phrase to catch and you can get at any time, the number of times it was spotted. The key phrase is just a string with the phrase to spot. All words from the phrase must have been previously added with `addWord`.
+PocketSphinx also includes a keyword spotting search. Give the decoder a keyword or key phrase to catch and you can get, at any time, the number of times it was spotted. The key phrase is just a string with the phrase to spot. All words from the phrase must have been previously added with `addWord`.
 
 ```javascript
 words.push_back(["HELLO", "HH AH L OW"], ["WORLD", "W ER L D"]);
@@ -240,7 +240,6 @@ recognizer.addWords(words);
 var ids = new Module.Integers();
 if (recognizer.addKeyword(ids, "HELLO WORLD") != Module.ReturnType.SUCCESS)
      alert("Error while adding key phrase"); // Meaning that the key phrase has issues
-transitions.delete();
 var id = ids.get(0); // This is the id assigned to the search
 ids.delete();
 ```
@@ -390,9 +389,12 @@ The message back could be:
 
 Note that words can have several pronunciation alternatives as explained in Section 3.3.a.
 
-### d. Adding grammars
+### d. Adding grammars or key phrases
 
-As described previously, any number of grammars can be added. The recognizer can then switch between them. A grammar can be added at once using a JavaScript object that contains the number of states, the first and last states, and an array of transitions, for instance:
+As described previously, any number of grammars or keyword searched can be added. The recognizer can then switch between them. 
+
+
+A grammar can be added at once using a JavaScript object that contains the number of states, the first and last states, and an array of transitions, for instance:
 
 ```javascript
 var grammar = {numStates: 3,
@@ -411,9 +413,19 @@ Notice that `logp` is optional, it defaults to 0. `word` is also optional, it de
 
 In the message back, the grammar id assigned to the grammar is given. It can be used to switch to that grammar. So the message, if successful, would be like `{id: clbId, data: id, status: "done", command: "addGrammar"}`, where `id` is the id of the newly created grammar. In case of errors, the message would be as described previously.
 
+Similarly, keyword spotting search can be added by just providing the key phrase to stop:
+
+```javascript
+var keyphrase = "HELLO WORLD";
+recognizer.postMessage({command: 'addKeyword', data: keyphrase, callbackId: id});
+```
+
+Just as like with grammars, words should already be in the recognizer, and the id of the newly added search is given in the callback.
+
+
 ### e. Starting recognition
 
-The message to start recognition should include the id of the grammar to be used:
+The message to start recognition should include the id of the grammar (or keyword search) to be used:
 
 ```javascript
 // id is the id of a previously added grammar:
@@ -430,7 +442,7 @@ recognizer.postMessage({command: 'process', data: array});
 ```
 Audio samples should be 2-byte integers, at 16 kHz.
 
-While data are processed, hypothesis will be sent back in a message in the form `{hyp: "RECOGNIZED STRING"}`.
+While data are processed, hypothesis will be sent back in a message in the form `{hyp: "RECOGNIZED STRING", count: c}`. If it is a keyword spotting search, the number of occurrences of the key phrase is given in the `count` field.
 
 ### g. Ending recognition
 
@@ -440,7 +452,7 @@ Recognition can be simply stopped using the `stop` command:
 recognizer.postMessage({command: 'stop'});
 ```
 
-It will then send a last message with the hypothesis, marked as final (which means that it is more accurate as it comes after a second pass that was triggered by the `stop` command). It would look like: `{hyp: "FINAL RECOGNIZED STRING", final: true}`.
+It will then send a last message with the hypothesis, marked as final (which means that it is more accurate as it comes after a second pass that was triggered by the `stop` command). It would look like: `{hyp: "FINAL RECOGNIZED STRING", count: c, final: true}`.
 
 ## 4.4 Using `CallbackManager`
 
@@ -515,7 +527,7 @@ function spawnWorker(workerurl, onReady) {
 };
 ```
 
-After the first message back was received, propers listening to onmessage can be added:
+After the first message back was received, proper listening to onmessage can be added:
 
 ```javascript
 spawnWorker("js/recognizer.js", function(worker) {
@@ -646,7 +658,7 @@ The files `webapp/js/audioRecorder.js` and `webapp/js/audioRecorderWorker.js` ar
 
 The remaining of this software is licensed under the MIT license:
 
-Copyright © 2013 Sylvain Chevalier
+Copyright © 2013-2014 Sylvain Chevalier
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

@@ -391,7 +391,7 @@ Note that words can have several pronunciation alternatives as explained in Sect
 
 ### d. Adding grammars or key phrases
 
-As described previously, any number of grammars or keyword searched can be added. The recognizer can then switch between them. 
+As described previously, any number of grammars or keyword searches can be added. The recognizer can then switch between them. 
 
 
 A grammar can be added at once using a JavaScript object that contains the number of states, the first and last states, and an array of transitions, for instance:
@@ -413,7 +413,7 @@ Notice that `logp` is optional, it defaults to 0. `word` is also optional, it de
 
 In the message back, the grammar id assigned to the grammar is given. It can be used to switch to that grammar. So the message, if successful, would be like `{id: clbId, data: id, status: "done", command: "addGrammar"}`, where `id` is the id of the newly created grammar. In case of errors, the message would be as described previously.
 
-Similarly, keyword spotting search can be added by just providing the key phrase to stop:
+Similarly, keyword spotting search can be added by just providing the key phrase to spot:
 
 ```javascript
 var keyphrase = "HELLO WORLD";

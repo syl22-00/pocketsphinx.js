@@ -2,19 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>PocketSphinx.js</title>
+    <title>PocketSphinx.js - Keyword spotting</title>
   </head>
   <body>
-    <h2>PocketSphinx.js live demo</h2>
+    <h2>PocketSphinx.js live demo for keyword spotting</h2>
     <ul>
       <li>This demo works on recent versions of Chrome and Firefox with the Web Audio API, make sure it works for you and actually records audio.</li>
       <li>Press "Start" and speak</li>
     </ul>
-    <select id="grammars"></select>
+    <select id="keyword"></select>
     <button id="startBtn">Start</button>
     <button id="stopBtn">Stop</button>
     <span id="recording-indicator" style="border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; width: 20px; height: 20px; background: red;"></span>
-    <h2>Recognition Output</h2>
+    <h2>Number of spotted keywords</h2>
     <div id="output" style="height:150px;overflow:auto;" >
     </div>
     <h2>Status</h2>
@@ -46,8 +46,9 @@
       };
 
       // To display the hypothesis sent by the recognizer
-      function updateHyp(hyp) {
-        if (outputContainer) outputContainer.innerHTML = hyp;
+      function updateCount(count) {
+console.log("Got count " + count);
+        if (outputContainer) outputContainer.innerHTML = count;
       };
 
       // This updates the UI when the app might get ready
@@ -80,9 +81,9 @@
         updateStatus("Audio recorder ready");
       };
 
-      // This starts recording. We first need to get the id of the grammar to use
+      // This starts recording. We first need to get the id of the keyword search to use
       var startRecording = function() {
-        var id = document.getElementById('grammars').value;
+        var id = document.getElementById('keyword').value;
         if (recorder && recorder.start(id)) displayRecording(true);
       };
 
@@ -95,34 +96,34 @@
       // Called once the recognizer is ready
       // We then add the grammars to the input select tag and update the UI
       var recognizerReady = function() {
-           updateGrammars();
+           updateKeywords();
            recognizerReady = true;
            updateUI();
            updateStatus("Recognizer ready");
       };
 
       // We get the grammars defined below and fill in the input select tag
-      var updateGrammars = function() {
-        var selectTag = document.getElementById('grammars');
-        for (var i = 0 ; i < grammarIds.length ; i++) {
+      var updateKeywords = function() {
+        var selectTag = document.getElementById('keyword');
+        for (var i = 0 ; i < keywordIds.length ; i++) {
             var newElt = document.createElement('option');
-            newElt.value=grammarIds[i].id;
-            newElt.innerHTML = grammarIds[i].title;
+            newElt.value=keywordIds[i].id;
+            newElt.innerHTML = keywordIds[i].title;
             selectTag.appendChild(newElt);
         }                          
       };
 
-      // This adds a grammar from the grammars array
+      // This adds a keyword search from the array
       // We add them one by one and call it again as
       // a callback.
       // Once we are done adding all grammars, we can call
       // recognizerReady()
-      var feedGrammar = function(g, index, id) {
-        if (id && (grammarIds.length > 0)) grammarIds[0].id = id.id;
+      var feedKeyword = function(g, index, id) {
+        if (id && (keywordIds.length > 0)) keywordIds[0].id = id.id;
         if (index < g.length) {
-          grammarIds.unshift({title: g[index].title})
-	  postRecognizerJob({command: 'addGrammar', data: g[index].g},
-                             function(id) {feedGrammar(grammars, index + 1, {id:id});});
+          keywordIds.unshift({title: g[index].title})
+	  postRecognizerJob({command: 'addKeyword', data: g[index].g},
+                             function(id) {feedKeyword(keywords, index + 1, {id:id});});
         } else {
           recognizerReady();
         }
@@ -131,7 +132,7 @@
       // This adds words to the recognizer. When it calls back, we add grammars
       var feedWords = function(words) {
            postRecognizerJob({command: 'addWords', data: words},
-                        function() {feedGrammar(grammars, 0);});
+                        function() {feedKeyword(keywords, 0);});
       };
 
       // This initializes the recognizer. When it calls back, we add words
@@ -159,11 +160,11 @@
                   if ( e.data.hasOwnProperty('data')) data = e.data.data;
                   if(clb) clb(data);
                 }
-                // This is a case when the recognizer has a new hypothesis
-                if (e.data.hasOwnProperty('hyp')) {
-                  var newHyp = e.data.hyp;
-                  if (e.data.hasOwnProperty('final') &&  e.data.final) newHyp = "Final: " + newHyp;
-                  updateHyp(newHyp);
+                // This is a case when the recognizer has a new count number
+                if (e.data.hasOwnProperty('count')) {
+                  var newCount = e.data.count;
+                  if (e.data.hasOwnProperty('final') &&  e.data.final) newCount = "Final: " + newCount;
+                  updateCount(newCount);
                 }
                 // This is the case when we have an error
                 if (e.data.hasOwnProperty('status') && (e.data.status == "error")) {
@@ -200,14 +201,8 @@
        // This is the list of words that need to be added to the recognizer
        // This follows the CMU dictionary format
       var wordList = [["ONE", "W AH N"], ["TWO", "T UW"], ["THREE", "TH R IY"], ["FOUR", "F AO R"], ["FIVE", "F AY V"], ["SIX", "S IH K S"], ["SEVEN", "S EH V AH N"], ["EIGHT", "EY T"], ["NINE", "N AY N"], ["ZERO", "Z IH R OW"], ["NEW-YORK", "N UW Y AO R K"], ["NEW-YORK-CITY", "N UW Y AO R K S IH T IY"], ["PARIS", "P AE R IH S"] , ["PARIS(2)", "P EH R IH S"], ["SHANGHAI", "SH AE NG HH AY"], ["SAN-FRANCISCO", "S AE N F R AE N S IH S K OW"], ["LONDON", "L AH N D AH N"], ["BERLIN", "B ER L IH N"], ["SUCKS", "S AH K S"], ["ROCKS", "R AA K S"], ["IS", "IH Z"], ["NOT", "N AA T"], ["GOOD", "G IH D"], ["GOOD(2)", "G UH D"], ["GREAT", "G R EY T"], ["WINDOWS", "W IH N D OW Z"], ["LINUX", "L IH N AH K S"], ["UNIX", "Y UW N IH K S"], ["MAC", "M AE K"], ["AND", "AE N D"], ["AND(2)", "AH N D"], ["O", "OW"], ["S", "EH S"], ["X", "EH K S"]];
-      // This grammar recognizes digits
-      var grammarDigits = {numStates: 1, start: 0, end: 0, transitions: [{from: 0, to: 0, word: "ONE"},{from: 0, to: 0, word: "TWO"},{from: 0, to: 0, word: "THREE"},{from: 0, to: 0, word: "FOUR"},{from: 0, to: 0, word: "FIVE"},{from: 0, to: 0, word: "SIX"},{from: 0, to: 0, word: "SEVEN"},{from: 0, to: 0, word: "EIGHT"},{from: 0, to: 0, word: "NINE"},{from: 0, to: 0, word: "ZERO"}]};
-      // This grammar recognizes a few cities names
-      var grammarCities = {numStates: 1, start: 0, end: 0, transitions: [{from: 0, to: 0, word: "NEW-YORK"}, {from: 0, to: 0, word: "NEW-YORK-CITY"}, {from: 0, to: 0, word: "PARIS"}, {from: 0, to: 0, word: "SHANGHAI"}, {from: 0, to: 0, word: "SAN-FRANCISCO"}, {from: 0, to: 0, word: "LONDON"}, {from: 0, to: 0, word: "BERLIN"}]};
-      // This is to play with beloved or belated OSes
-      var grammarOses = {numStates: 7, start: 0, end: 6, transitions: [{from: 0, to: 1, word: "WINDOWS"}, {from: 0, to: 1, word: "LINUX"}, {from: 0, to: 1, word: "UNIX"}, {from: 1, to: 2, word: "IS"}, {from: 2, to: 2, word: "NOT"}, {from: 2, to: 6, word: "GOOD"}, {from: 2, to: 6, word: "GREAT"}, {from: 1, to: 6, word: "ROCKS"}, {from: 1, to: 6, word: "SUCKS"}, {from: 0, to: 4, word: "MAC"}, {from: 4, to: 5, word: "O"}, {from: 5, to: 3, word: "S"}, {from: 3, to: 1, word: "X"}, {from: 6, to: 0, word: "AND"}]};
-      var grammars = [{title: "OSes", g: grammarOses}, {title: "Digits", g: grammarDigits}, {title: "Cities", g: grammarCities}];
-      var grammarIds = [];
+      var keywords = [{title: "ONE", g: "ONE"}, {title: "TWO", g: "TWO"}, {title: "NEW-YORK", g: "NEW-YORK"}];
+      var keywordIds = [];
     </script>
     <!-- These are the two JavaScript files you must load in the HTML,
     The recognizer is loaded through a Web Worker -->

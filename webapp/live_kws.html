@@ -138,7 +138,7 @@ console.log("Got count " + count);
       // This initializes the recognizer. When it calls back, we add words
       var initRecognizer = function() {
           // You can pass parameters to the recognizer, such as : {command: 'initialize', data: [["-hmm", "my_model"], ["-fwdflat", "no"]]}
-          postRecognizerJob({command: 'initialize'},
+          postRecognizerJob({command: 'initialize', data: [["-kws_threshold", "2"]]},
                             function() {
                                         if (recorder) recorder.consumers = [recognizer];
                                         feedWords(wordList);});

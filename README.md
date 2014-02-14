@@ -34,7 +34,7 @@ The file `webapp/live.html` illustrates how these work together in a real applic
 
 There is also a live demo for Chinese. To try it, open `http://localhost:8000/webapp/live_zh.html` in your browser.
 
-In addition to speech recognition, there is also a keyword spotting functionality that detects a specific word or phrase in the audio input.
+In addition to speech recognition, there is also a keyword spotting functionality that detects a specific word or phrase in the audio input. There is also a live demo in `webapp/live_kws.html`.
 
 # 2. Compilation of `pocketsphinx.js`
 
@@ -244,6 +244,8 @@ var id = ids.get(0); // This is the id assigned to the search
 ids.delete();
 ```
 
+Note that there is a threshold that can be set to define how sensitive the search is. Add `["-kws_threshold", "2"]` for instance to the config object. Default value is 1, higher values means more likely to be spotted and more likely to get false positives.
+
 ### d. Switching between grammars or keyword searches
 
 A recognizer object can have any number of grammars and keyword searches but only one can be active at a time. The active search is the one used when there is a call to `start()`, described later in this document. To switch to a specific search, you must use the id that was given during the call to `addGrammar` or `addKeyword`.
@@ -420,7 +422,7 @@ var keyphrase = "HELLO WORLD";
 recognizer.postMessage({command: 'addKeyword', data: keyphrase, callbackId: id});
 ```
 
-Just as like with grammars, words should already be in the recognizer, and the id of the newly added search is given in the callback.
+Just as like with grammars, words should already be in the recognizer, and the id of the newly added search is given in the callback. As explained previously, you might want to ajust the sensitivity threshold when initializing the recognizer, for example with providing `["-kws_threshold", "2"]`.
 
 
 ### e. Starting recognition
@@ -627,6 +629,11 @@ Note that live audio capture is only available on recent versions of Google Chro
 The file `webapp/live.html` is an example of live recognition using the web audio API. It works on Chrome and Firefox (25+), if the web audio API actually works. Note that we observed the recorded audio to be silent on some configurations we have tried.
 
 To build an application, this is a good starting point as it illustrates the different components described in this document. In that demo, three different grammars are available and the app can switch between them.
+
+There is also:
+
+* `live_kws.html` for keyword spotting,
+* `live_zh.html` for recognition of Chinese.
 
 # 7. Test suite
 

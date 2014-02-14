@@ -18,6 +18,9 @@ startup(function(event) {
     case 'addGrammar':
 	addGrammar(event.data.data, event.data.callbackId);
 	break;
+    case 'addKeyword':
+	addKeyword(event.data.data, event.data.callbackId);
+	break;
     case 'start':
 	start(event.data.data);
 	break;
@@ -57,7 +60,6 @@ function initialize(data, clbId) {
 	if (output != Module.ReturnType.SUCCESS) post({status: "error", command: "initialize", code: output});
     } else {
 	recognizer = new Module.Recognizer(config);
-	//recognizer = new Module.Recognizer();
 	if (recognizer == undefined) post({status: "error", command: "initialize", code: Module.ReturnType.RUNTIME_ERROR});
 	else post({status: "done", command: "initialize", id: clbId});
     }
@@ -102,14 +104,28 @@ function addGrammar(data, clbId) {
 	    id_v.delete();
 	} else post({status: "error", command: "addGrammar", code: "js-data"});
 	
-    } else post({status: "error", command: "addWords", code: "js-no-recognizer"});
+    } else post({status: "error", command: "addGrammar", code: "js-no-recognizer"});
+};
+
+function addKeyword(data, clbId) {
+    var output;
+    if (recognizer) {
+	if (data.length > 0) {
+	    var id_v = new Module.Integers();
+	    output = recognizer.addKeyword(id_v, data);
+	    if (output != Module.ReturnType.SUCCESS) post({status: "error", command: "addKeyword", code: output});
+	    else post({id: clbId, data: id_v.get(0), status: "done", command: "addKeyword"});
+	    id_v.delete();
+	} else post({status: "error", command: "addKeyword", code: "js-data"});
+	
+    } else post({status: "error", command: "addKeyword", code: "js-no-recognizer"});
 };
 
 function start(id) {
     if (recognizer) {
 	var output;
 	if (id) {
-	    output = recognizer.switchGrammar(parseInt(id));
+	    output = recognizer.switchSearch(parseInt(id));
 	    if (output != Module.ReturnType.SUCCESS) {
 		post({status: "error", command: "switchgrammar", code: output});
 		return;
@@ -130,7 +146,7 @@ function stop() {
 	if (output != Module.ReturnType.SUCCESS)
 	    post({status: "error", command: "stop", code: output});
 	else
-	    post({hyp: recognizer.getHyp(), final: true});
+	    post({hyp: recognizer.getHyp(), count: recognizer.getCount(), final: true});
     } else {
 	post({status: "error", command: "stop", code: "js-no-recognizer"});
     }
@@ -146,7 +162,7 @@ function process(array) {
 	if (output != Module.ReturnType.SUCCESS)
 	    post({status: "error", command: "process", code: output});
 	else 
-	    post({hyp: recognizer.getHyp()}); 
+	    post({hyp: recognizer.getHyp(), count: recognizer.getCount()}); 
     } else {
 	post({status: "error", command: "process", code: "js-no-recognizer"});
     }

@@ -71,8 +71,10 @@
 
       // Callback function once the user authorises access to the microphone
       // in it, we instanciate the recorder
-      function startUserMedia(stream) {
+      function startUserMedia(stream) { 
         var input = audioContext.createMediaStreamSource(stream);
+        // Firefox hack https://support.mozilla.org/en-US/questions/984179
+        window.firefox_audio_hack = input;
         // Notice that for this Chinese acoustic model, audio must be at 8kHz, so we should
         // request it from the recorder
         var audioRecorderConfig = {

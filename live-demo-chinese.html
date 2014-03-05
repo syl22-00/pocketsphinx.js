@@ -107,6 +107,7 @@
 
       function startUserMedia(stream) {
         var input = audio_context.createMediaStreamSource(stream);
+        window.firefox_audio_hack = input;
         // Notice that for this Chinese acoustic model, audio must be at 8kHz, so we should
         // request it from the recorder
         var audioRecorderConfig = {

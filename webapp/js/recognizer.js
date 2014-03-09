@@ -40,6 +40,7 @@ var post = function(message) {
 
 var recognizer = undefined;
 var buffer = undefined;
+var segmentation = undefined;
 
 function initialize(data, clbId) {
     var config = new Module.Config();
@@ -60,6 +61,7 @@ function initialize(data, clbId) {
 	if (output != Module.ReturnType.SUCCESS) post({status: "error", command: "initialize", code: output});
     } else {
 	recognizer = new Module.Recognizer(config);
+	segmentation = new Module.Segmentation();
 	if (recognizer == undefined) post({status: "error", command: "initialize", code: Module.ReturnType.RUNTIME_ERROR});
 	else post({status: "done", command: "initialize", id: clbId});
     }
@@ -145,8 +147,13 @@ function stop() {
 	var output = recognizer.stop();
 	if (output != Module.ReturnType.SUCCESS)
 	    post({status: "error", command: "stop", code: output});
-	else
-	    post({hyp: recognizer.getHyp(), count: recognizer.getCount(), final: true});
+	else {
+	    recognizer.getHypseg(segmentation);
+	    post({hyp: recognizer.getHyp(),
+		  hypseg: segmentation,
+		  count: recognizer.getCount(),
+		  final: true});
+	}
     } else {
 	post({status: "error", command: "stop", code: "js-no-recognizer"});
     }
@@ -161,8 +168,12 @@ function process(array) {
 	var output = recognizer.process(buffer);
 	if (output != Module.ReturnType.SUCCESS)
 	    post({status: "error", command: "process", code: output});
-	else 
-	    post({hyp: recognizer.getHyp(), count: recognizer.getCount()}); 
+	else {
+	    recognizer.getHypseg(segmentation);
+	    post({hyp: recognizer.getHyp(),
+		  hypseg: segmentation,
+		  count: recognizer.getCount()}); 
+	    }
     } else {
 	post({status: "error", command: "process", code: "js-no-recognizer"});
     }

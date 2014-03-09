@@ -46,10 +46,17 @@ namespace pocketsphinxjs {
     std::string value;
   };
 
+  struct SegItem {
+    std::string word;
+    int start;
+    int end;
+  };
+
   typedef std::vector<std::string> StringsListType;
   typedef std::set<std::string> StringsSetType;
   typedef std::vector<ConfigItem> Config;
   typedef std::vector<int> Integers;
+  typedef std::vector<SegItem> Segmentation;
 
   class Recognizer {
 
@@ -66,6 +73,7 @@ namespace pocketsphinxjs {
     ReturnType switchSearch(int);
     std::string getHyp();
     int32_t getCount();
+    ReturnType getHypseg(Segmentation&);
     ReturnType start();
     ReturnType stop();
     ReturnType process(const std::vector<int16_t>&);
@@ -148,6 +156,11 @@ EMSCRIPTEN_BINDINGS(recognizer) {
     .element(&ps::ConfigItem::key)
     .element(&ps::ConfigItem::value);
 
+  emscripten::value_object<ps::SegItem>("SegItem")
+    .field("word", &ps::SegItem::word)
+    .field("start", &ps::SegItem::start)
+    .field("end", &ps::SegItem::end);
+
   emscripten::value_object<ps::Transition>("Transition")
     .field("from", &ps::Transition::from)
     .field("to", &ps::Transition::to)
@@ -159,6 +172,7 @@ EMSCRIPTEN_BINDINGS(recognizer) {
   emscripten::register_vector<ps::Transition>("VectorTransitions");
   emscripten::register_vector<ps::Word>("VectorWords");
   emscripten::register_vector<ps::ConfigItem>("Config");
+  emscripten::register_vector<ps::SegItem>("Segmentation");
   emscripten::register_vector<int>("Integers");
 
   emscripten::value_object<ps::Grammar>("Grammar")
@@ -177,6 +191,7 @@ EMSCRIPTEN_BINDINGS(recognizer) {
     .function("switchGrammar", &ps::Recognizer::switchGrammar)
     .function("switchSearch", &ps::Recognizer::switchSearch)
     .function("getHyp", &ps::Recognizer::getHyp)
+    .function("getHypseg", &ps::Recognizer::getHypseg)
     .function("getCount", &ps::Recognizer::getCount)
     .function("start", &ps::Recognizer::start)
     .function("stop", &ps::Recognizer::stop)

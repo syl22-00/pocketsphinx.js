@@ -150,6 +150,24 @@ namespace pocketsphinxjs {
     return current_count;
   }
 
+  ReturnType Recognizer::getHypseg(Segmentation& seg) {
+    if ((decoder == NULL) || (is_recording)) return BAD_STATE;
+    seg.clear();
+    int32 scoreh=0, sfh=0, efh=0;
+    std::string hseg;
+    ps_seg_t *itor = ps_seg_iter(decoder, &scoreh);
+    while (itor) { 
+      SegItem segItem;
+      segItem.word = ps_seg_word(itor);
+      ps_seg_frames(itor, &sfh, &efh);
+      segItem.start = sfh;
+      segItem.end = efh;
+      seg.push_back(segItem);
+      itor = ps_seg_next(itor);
+    }
+    return SUCCESS;
+  }
+
   void Recognizer::cleanup() {
     if (decoder) ps_free(decoder);
     if (logmath) logmath_free(logmath);

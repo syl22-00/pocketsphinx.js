@@ -64,6 +64,76 @@ test( "Config type", function() {
     equal(error.name, "BindingError", "Should be a BindError exception");
 });
 
+test( "Segmentation type", function() {
+    var x = new Module.Segmentation();
+    ok (x != undefined, "Segmentation should not be undefined");
+    equal(x.size(), 0, "Segmentation should be initialized empty");
+    var error = undefined;
+    try {x.push_back({});}
+    catch (e) {error = e;}
+    ok(error != undefined, "Adding an invalid value to Segmentation should raise an exception");
+    equal(error.name, "TypeError", "Should be a TypeError exception");
+
+    error = undefined;
+    try {x.push_back({word: "", start: "", end: 1, hello: ""});}
+    catch (e) {error = e;}
+    ok(error != undefined, "Adding an invalid value to Segmentation should raise an exception");
+    equal(error.name, "TypeError", "Should be a TypeError exception");
+
+    error = undefined;
+    try {x.push_back(["", "", ""]);}
+    catch (e) {error = e;}
+    ok(error != undefined, "Adding an invalid value to Segmentation should raise an exception");
+    equal(error.name, "TypeError", "Should be a TypeError exception");
+
+    error = undefined;
+    try {x.push_back(undefined);}
+    catch (e) {error = e;}
+    ok(error != undefined, "Adding an invalid value to Segmentation should raise an exception");
+    equal(error.name, "TypeError", "Should be a TypeError exception");
+
+    error = undefined;
+    try {x.push_back({start: "", end: 2, word: ""});}
+    catch (e) {error = e;}
+    ok(error != undefined, "Adding an invalid value to Segmentation should raise an exception");
+    equal(error.name, "TypeError", "Should be a TypeError exception");
+
+    error = undefined;
+    try {x.push_back({start: 0, end: 1, word: 2});}
+    catch (e) {error = e;}
+    ok(error != undefined, "Adding an invalid value to Segmentation should raise an exception");
+    equal(error.name, "BindingError", "Should be a BindingError exception");
+
+    x.push_back({start: 0, end: 0, word: ""});
+    equal(x.size(), 1, "config size should grow");
+    x.push_back({start: 0, end: 0, word: ""});
+    x.push_back({start: 0, end: 0, word: ""});
+    x.push_back({start: 0, end: 0, word: ""});
+    x.push_back({start: 0, end: 0, word: ""});
+    x.push_back({start: 0, end: 0, word: ""});
+    x.push_back({start: 0, end: 0, word: ""});
+    x.push_back({start: 0, end: 0, word: ""});
+    x.push_back({start: 0, end: 0, word: ""});
+    x.push_back({start: 0, end: 0, word: ""});
+    x.push_back({start: 0, end: 0, word: ""});
+    equal(x.size(), 11, "Segmentation size should grow");
+
+    x.push_back({start: 12, end: 13, word: "hello, world!", hello: 0});
+    equal(x.size(), 12, "Extra fields in Segmentation item should not matter");
+    equal(x.get(11).start, 12, "stored segmentation item should have the correct value");
+    equal(x.get(11).end, 13, "stored segmentation item should have the correct value");
+    equal(x.get(11).word, "hello, world!", "stored segmentation item should have the correct value");
+    equal(x.get(11).hello, undefined, "stored segmentation item should have the correct value");
+    
+    x.delete();
+    var error = undefined;
+    try {x.get(0);}
+    catch (e) {error = e;}
+    ok(error != undefined, "Using a deleted Segmentation should raise an exception");
+    equal(error.name, "BindingError", "Should be a BindError exception");
+
+});
+
 test( "Transitions types", function() {
     var x = new Module.VectorTransitions();
     ok (x != undefined, "vector transitions should not be undefined");
@@ -322,6 +392,7 @@ var buffer;
 var words;
 var transitions;
 var ids;
+var segmentation;
 
 module( "With living recognizer", {
     setup: function() {
@@ -330,6 +401,7 @@ module( "With living recognizer", {
 	words = new Module.VectorWords();
 	transitions = new Module.VectorTransitions();
 	ids = new Module.Integers();
+	segmentation = new Module.Segmentation();
 	ok(recognizer != undefined, "Recognizer instantiated successfully");
     }, 
     teardown: function() {
@@ -338,6 +410,7 @@ module( "With living recognizer", {
 	words.delete();
 	transitions.delete();
 	ids.delete();
+	segmentation.delete();
     }
 });
 
@@ -492,4 +565,34 @@ test( "Recognizing audio", function() {
     equal(recognizer.process(buffer), Module.ReturnType.SUCCESS, "Recognizer should process successfully");
     equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
     equal(recognizer.getHyp(), "WINDOWS SUCKS AND LINUX IS GREAT", "Recognizer should recognize the correct utterance");
+    equal(segmentation.size(), 0, "Segmentation should be initialized empty");
+    equal(recognizer.getHypseg(segmentation), Module.ReturnType.SUCCESS);
+    equal(segmentation.size(), 9, "Segmentation should not be empty after filled in");
+    equal(segmentation.get(0).word, "<sil>", "Value stored in Segmentation should be the correct one");
+    equal(segmentation.get(0).start, 0, "Value stored in Segmentation should be the correct one");
+    equal(segmentation.get(0).end, 16, "Value stored in Segmentation should be the correct one");
+    equal(segmentation.get(1).word, "WINDOWS");
+    equal(segmentation.get(1).start, 17);
+    equal(segmentation.get(1).end, 62);
+    equal(segmentation.get(2).word, "SUCKS");
+    equal(segmentation.get(2).start, 63);
+    equal(segmentation.get(2).end, 119);
+    equal(segmentation.get(3).word, "<sil>");
+    equal(segmentation.get(3).start, 120);
+    equal(segmentation.get(3).end, 129);
+    equal(segmentation.get(4).word, "AND(2)");
+    equal(segmentation.get(4).start, 130);
+    equal(segmentation.get(4).end, 145);
+    equal(segmentation.get(5).word, "LINUX");
+    equal(segmentation.get(5).start, 146);
+    equal(segmentation.get(5).end, 202);
+    equal(segmentation.get(6).word, "IS");
+    equal(segmentation.get(6).start, 203);
+    equal(segmentation.get(6).end, 215);
+    equal(segmentation.get(7).word, "GREAT");
+    equal(segmentation.get(7).start, 216);
+    equal(segmentation.get(7).end, 274);
+    equal(segmentation.get(8).word, "<sil>");
+    equal(segmentation.get(8).start, 275);
+    equal(segmentation.get(8).end, 301);
 });

@@ -1091,18 +1091,16 @@ main(int argc, char *argv[])
     cmd_ln_t *config;
     int rv;
 
-    /* Initialize config. */
-    if ((config = cmd_ln_parse_r(NULL, defn, argc, argv, TRUE)) == NULL)
-        return 2;
+    config = cmd_ln_parse_r(NULL, defn, argc, argv, TRUE);
 
-    /* Parse an argument file if there's one in there. */
-    if (cmd_ln_str_r(config, "-argfile"))
+    if (config && cmd_ln_str_r(config, "-argfile"))
         config = cmd_ln_parse_file_r(config, defn,
                                      cmd_ln_str_r(config, "-argfile"), FALSE);
     if (config == NULL) {
         E_ERROR("Command line parsing failed\n");
         return 1;
     }
+
     if ((wtf = sphinx_wave2feat_init(config)) == NULL) {
         E_ERROR("Failed to initialize wave2feat object\n");
         return 1;

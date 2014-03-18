@@ -45,12 +45,26 @@
 
 /* Local headers. */
 #include "pocketsphinx_internal.h"
+#include "kws_detections.h"
 #include "hmm.h"
 
-typedef struct kws_node_s {
-    hmm_t hmm;
-    uint8 active;
-} kws_node_t;
+/**
+ * Segmentation "iterator" for KWS history.
+ */
+typedef struct kws_seg_s {
+    ps_seg_t base;       /**< Base structure. */
+    gnode_t *detection;  /**< Keyword detection correspondent to segment. */
+} kws_seg_t;
+
+typedef struct kws_keyword_s {
+    char* word;
+    int32 threshold;
+    hmm_t* hmms;
+    int32 n_hmms;
+} kws_keyword_t;
+
+/** Access macros */
+#define hmm_is_active(hmm) (hmm.frame > 0)
 
 /**
  * Implementation of KWS search structure.
@@ -58,63 +72,67 @@ typedef struct kws_node_s {
 typedef struct kws_search_s {
     ps_search_t base;
 
-    hmm_context_t *hmmctx;    /**< HMM context. */
+    hmm_context_t *hmmctx;        /**< HMM context. */
 
-    char* keyphrase;          /**< Key phrase to spot */
-    int16 n_detect;           /**< Keyphrase detections amount */
-    frame_idx_t frame;        /**< Frame index */
+    kws_detections_t *detections; /**< Keyword spotting history */
+    kws_keyword_t* keyphrases;   /**< Keyphrases to spot */
+    int n_keyphrases;             /**< Keyphrases amount */
+    frame_idx_t frame;            /**< Frame index */
 
     int32 beam;
 
-    int32 plp;                /**< Phone loop probability */
-    int32 bestscore;          /**< For beam pruning */
-    int32 threshold;          /**< threshold for p(hyp)/p(altern) ratio */
+    int32 plp;                    /**< Phone loop probability */
+    int32 bestscore;              /**< For beam pruning */
+    int32 def_threshold;          /**< default threshold for p(hyp)/p(altern) ratio */
 
-    int32 n_pl;               /**< Number of CI phones */
-    hmm_t* pl_hmms;           /**< Phone loop hmms - hmms of CI phones */
+    int32 n_pl;                   /**< Number of CI phones */
+    hmm_t *pl_hmms;               /**< Phone loop hmms - hmms of CI phones */
 
-    kws_node_t* nodes;        /**< Search nodes */
-    int32 n_nodes;
 } kws_search_t;
 
 /**
  * Create, initialize and return a search module.
  */
-ps_search_t *kws_search_init(const char* key_phrase,
-                             cmd_ln_t *config,
-                             acmod_t *acmod,
-                             dict_t *dict,
-                             dict2pid_t *d2p);
+ps_search_t *kws_search_init(const char *keyword_list,
+                             cmd_ln_t * config,
+                             acmod_t * acmod,
+                             dict_t * dict, dict2pid_t * d2p);
 
 /**
  * Deallocate search structure.
  */
-void kws_search_free(ps_search_t *search);
+void kws_search_free(ps_search_t * search);
 
 /**
  * Update KWS search module for new key phrase.
  */
-int kws_search_reinit(ps_search_t *kwss, dict_t *dict, dict2pid_t *d2p);
+int kws_search_reinit(ps_search_t * kwss, dict_t * dict, dict2pid_t * d2p);
 
 /**
  * Prepare the KWS search structure for beginning decoding of the next
  * utterance.
  */
-int kws_search_start(ps_search_t *search);
+int kws_search_start(ps_search_t * search);
 
 /**
  * Step one frame forward through the Viterbi search.
  */
-int kws_search_step(ps_search_t *search, int frame_idx);
+int kws_search_step(ps_search_t * search, int frame_idx);
 
 /**
  * Windup and clean the KWS search structure after utterance.
  */
-int kws_search_finish(ps_search_t *search);
+int kws_search_finish(ps_search_t * search);
 
 /**
  * Get hypothesis string from the KWS search.
  */
-char const *kws_search_hyp(ps_search_t *search, int32 *out_score, int32 *out_is_final);
+char const *kws_search_hyp(ps_search_t * search, int32 * out_score,
+                           int32 * out_is_final);
 
-#endif /* __KWS_SEARCH_H__ */
+/**
+ * Get active keyphrases
+ */
+char* kws_search_get_keywords(ps_search_t * search);
+
+#endif                          /* __KWS_SEARCH_H__ */

@@ -717,6 +717,9 @@ process_ctl(ps_decoder_t *ps, cmd_ln_t *config, FILE *ctlfh)
                 ef = atoi(wptr[2]);
             if (nf > 3)
                 uttid = wptr[3];
+
+            E_INFO("Decoding '%s'\n", uttid ? uttid : file);
+
             /* Do actual decoding. */
             if(process_mllrctl_line(ps, config, mllrfile) < 0)
                 continue;
@@ -750,9 +753,7 @@ process_ctl(ps_decoder_t *ps, cmd_ln_t *config, FILE *ctlfh)
                    uttid, n_speech, n_cpu, n_wall);
             E_INFO("%s: %.2f xRT (CPU), %.2f xRT (elapsed)\n",
                    uttid, n_cpu / n_speech, n_wall / n_speech);
-            /* help make the logfile somewhat less opaque (air) */
-            E_INFO_NOFN("%s (%s %d)\n", hyp ? hyp : "", uttid, score); 
-            E_INFO_NOFN("%s done --------------------------------------\n", uttid);
+            E_INFO_NOFN("%s (%s %d)\n", hyp ? hyp : "", uttid, score);
         }
         i += ctlincr;
     nextline:
@@ -785,21 +786,18 @@ main(int32 argc, char *argv[])
     char const *ctl;
     FILE *ctlfh;
 
-    /* Handle argument file as only argument. */
-    if (argc == 2) {
-        config = cmd_ln_parse_file_r(NULL, ps_args_def, argv[1], TRUE);
-    }
-    else {
-        config = cmd_ln_parse_r(NULL, ps_args_def, argc, argv, TRUE);
-    }
+    config = cmd_ln_parse_r(NULL, ps_args_def, argc, argv, TRUE);
+
     /* Handle argument file as -argfile. */
     if (config && (ctl = cmd_ln_str_r(config, "-argfile")) != NULL) {
         config = cmd_ln_parse_file_r(config, ps_args_def, ctl, FALSE);
     }
+    
     if (config == NULL) {
         /* This probably just means that we got no arguments. */
-        return 2;
+        return 1;
     }
+
     if ((ctl = cmd_ln_str_r(config, "-ctl")) == NULL) {
         E_FATAL("-ctl argument not present, nothing to do in batch mode!\n");
     }

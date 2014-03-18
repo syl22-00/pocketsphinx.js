@@ -42,6 +42,10 @@
         return ptr;
     }
 
+    FsgModel(char const *path, LogMath *logmath, float w) {
+        return fsg_model_readfile(path, logmath, w);
+    }
+
     ~FsgModel() {
         fsg_model_free($self);
     }

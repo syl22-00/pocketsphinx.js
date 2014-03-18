@@ -37,8 +37,8 @@
 
 
 %extend NGramModel {
-    NGramModel(const char *path) {
-        return ngram_model_read(NULL, path, NGRAM_AUTO, logmath_init(1.001, 0, 0));
+    NGramModel(Config *config, LogMath *logmath, const char *path) {
+        return ngram_model_read(config, path, NGRAM_AUTO, logmath);
     }
 
     ~NGramModel() {
@@ -82,8 +82,8 @@
 
 // TODO: shares ptr type with NGramModel, docstrings are not generated
 %extend NGramModelSet {
-    NGramModelSet(const char *path) {
-        return ngram_model_set_read(NULL, path, logmath_init(1.001, 0, 0));
+    NGramModelSet(Config *config, LogMath *logmath, const char *path) {
+        return ngram_model_set_read(config, path, logmath);
     }
 
     ~NGramModelSet() {

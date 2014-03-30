@@ -63,11 +63,11 @@ The compilation process packages the acoustic models inside the resulting JavaSc
 
 For instance, to package acoustic models, place them inside a `HMM_BASE` folder. Each model being in its own folder inside `HMM_BASE`:
 
-    $ cmake -DEMSCRIPTEN=1 -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Platform/Emscripten_unix.cmake -DHMM_BASE=/path/to/models -DHMM_FOLDERS="model1;model2;..." ..
+    $ cmake -DEMSCRIPTEN=1 -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Platform/Emscripten.cmake -DHMM_BASE=/path/to/models -DHMM_FOLDERS="model1;model2;..." ..
 
 If you only need to package one model, you can also do:
 
-    $ cmake -DEMSCRIPTEN=1 -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Platform/Emscripten_unix.cmake -DHMM_BASE=/path/to/models -DHMM_FOLDERS=model ..
+    $ cmake -DEMSCRIPTEN=1 -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Platform/Emscripten.cmake -DHMM_BASE=/path/to/models -DHMM_FOLDERS=model ..
 
 Make sure the files of the acoustic model are directly inside the `HMM_FOLDERS`:
 

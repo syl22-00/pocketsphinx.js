@@ -1,4 +1,4 @@
-#ifndef _PSRECOGNIqZER_H_
+#ifndef _PSRECOGNIZER_H_
 #define _PSRECOGNIZER_H_
 
 #include <stdint.h>

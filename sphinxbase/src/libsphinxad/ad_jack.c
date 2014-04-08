@@ -296,6 +296,7 @@ ad_stop_rec(ad_rec_t * handle)
 int32
 ad_read(ad_rec_t * handle, int16 * buf, int32 max)
 {
+    int i;
 #ifdef HAVE_SAMPLERATE_H
     int resample_error;
 #endif
@@ -333,7 +334,7 @@ ad_read(ad_rec_t * handle, int16 * buf, int32 max)
        return 1;
    }
 
-   for(int i=0; i<data.output_frames_gen; i++) {
+   for(i = 0; i < data.output_frames_gen; i++) {
        buf[i] = (int16) (int16_range_over_two * (handle->resample_buffer[i] + 1.0) + SHRT_MIN);
    }
 
@@ -350,7 +351,7 @@ ad_read(ad_rec_t * handle, int16 * buf, int32 max)
    length = jack_ringbuffer_read (handle->rbuffer, (char*) handle->sample_buffer, length);
    size_t length_in_samples = length / sample_size;
 
-   for(int i=0; i<length_in_samples; i++) {
+   for(i = 0; i < length_in_samples; i++) {
        buf[i] = (int16) (int16_range_over_two * (handle->sample_buffer[i] + 1.0) + SHRT_MIN);
    }
 

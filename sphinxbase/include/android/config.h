@@ -26,7 +26,7 @@
 /* #undef FIXED16 */
 
 /* Use fixed-point computation */
-#define FIXED_POINT
+/* #undef FIXED_POINT */
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1

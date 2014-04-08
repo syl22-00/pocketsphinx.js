@@ -11,23 +11,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\programs\mdef_convert.c" />
+    <ClCompile Include="..\..\src\sphinx_adtools\cont_seg.c" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\pocketsphinx\pocketsphinx.vcxproj">
-      <Project>{94001a0e-a837-445c-8004-f918f10d0226}</Project>
+    <ProjectReference Include="..\sphinxbase\sphinxbase.vcxproj">
+      <Project>{2f025ead-99bd-40f5-b2cc-f0a28cad7f2d}</Project>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{4FB65800-11B8-46BD-95B8-6E4F73BDAD91}</ProjectGuid>
+    <ProjectGuid>{42DFD84F-14DB-42D1-B14D-B8C5ABCBA0E8}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>pocketsphinx_mdef_convert</RootNamespace>
+    <RootNamespace>sphinx_seg</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -47,7 +47,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\bin\Debug\</OutDir>
+    <OutDir>.\../../bin/Debug\</OutDir>
     <IntDir>.\Debug\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -60,14 +60,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>../../include;../../../sphinxbase/include;../../../sphinxbase/include/win32;../../src/libpocketsphinx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../include/win32;../../include;../../src/libsphinxbase/fe;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>sphinxbase.lib;pocketsphinx.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(SolutionDir)/bin/Debug/pocketsphinx_mdef_convert.exe</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\sphinxbase\bin\Debug;..\..\bin\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>.\../../bin/Debug/sphinx_seg.exe</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

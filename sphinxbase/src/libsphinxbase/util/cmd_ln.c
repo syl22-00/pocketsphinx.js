@@ -247,7 +247,7 @@ arg_dump_r(cmd_ln_t *cmdln, FILE *fp, const arg_t * defn, int32 doc)
     char const **array;
 
     /* No definitions, do nothing. */
-    if (defn == NULL)
+    if (defn == NULL || fp == NULL)
         return;
 
     /* Find max lengths of name and default value fields, and #entries in defn */

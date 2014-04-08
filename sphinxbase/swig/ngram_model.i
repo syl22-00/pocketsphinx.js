@@ -73,10 +73,14 @@
         return ngram_model_add_word($self, word, weight);
     }
 
-    int32 add_class(const char *c, float32 w, char **words,
-        const float32 *weights, int32 nwords)
+    int32 add_class(const char *c, float32 w, size_t n, char **ptr,
+                    const float32 *weights)
     {
-        return ngram_model_add_class($self, c, w, words, weights, nwords);
+        return ngram_model_add_class($self, c, w, ptr, weights, n);
+    }
+
+    int32 prob(size_t n, const char * const *ptr) {
+        return ngram_prob($self, ptr, n);
     }
 }
 
@@ -119,3 +123,5 @@ ngram_model_t * next_NGramModelSetIterator(ngram_model_set_iter_t *iter)
     return ngram_model_set_iter_model(iter, &name);
 }
 %}
+
+/* vim: set ts=4 sw=4: */

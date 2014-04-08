@@ -105,7 +105,8 @@ main(int argc, char *argv[])
         while (fgets(line, sizeof(line), logfh)) {
             string_trim(line, STRING_BOTH);
             printf("%s: |%s|\n", logfile, line);
-            TEST_EQUAL(0, strcmp(line, "INFO: test_tls_log.c(61): nfr = 1436"));
+            /* total number of frames in audio file is 1436, but there are only 1290 voiced */
+            TEST_EQUAL(0, strcmp(line, "INFO: test_tls_log.c(61): nfr = 1290"));
         }
         fclose(logfh);
     }

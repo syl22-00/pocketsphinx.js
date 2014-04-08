@@ -597,7 +597,7 @@ ngram_ng_prob(ngram_model_t *model, int32 wid, int32 *history,
 }
 
 int32
-ngram_prob(ngram_model_t *model, const char *word, ...)
+ngram_probv(ngram_model_t *model, const char *word, ...)
 {
     va_list history;
     const char *hword;
@@ -624,6 +624,26 @@ ngram_prob(ngram_model_t *model, const char *word, ...)
     prob = ngram_ng_prob(model, ngram_wid(model, word),
                          histid, n_hist, &n_used);
     ckd_free(histid);
+    return prob;
+}
+
+int32
+ngram_prob(ngram_model_t *model, const char *const *words, size_t n)
+{
+    int32 *ctx_id;
+    int32 nused;
+    int32 prob;
+    int32 wid;
+    int i;
+
+    ctx_id = ckd_calloc(n - 1, sizeof(*ctx_id));
+    for (i = 1; i < n; ++i)
+      ctx_id[i] = ngram_wid(model, words[i]);
+
+    wid = ngram_wid(model, *words);
+    prob = ngram_ng_prob(model, wid, ctx_id, n - 1, &nused);
+    ckd_free(ctx_id);
+    
     return prob;
 }
 

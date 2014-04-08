@@ -281,7 +281,7 @@ int wmain(int32 argc, wchar_t *wargv[]) {
     int i;
 
     argv = malloc(argc*sizeof(char*));
-    for (i=0; i<argc; i++){
+    for (i = 0; i < argc; i++){
         wlen = lstrlenW(wargv[i]);
         len = wcstombs(NULL, wargv[i], wlen);
         argv[i] = malloc(len+1);

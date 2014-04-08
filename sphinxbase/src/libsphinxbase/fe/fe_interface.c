@@ -111,8 +111,12 @@ fe_parse_general_params(cmd_ln_t *config, fe_t * fe)
         return -1;
     }
 
+    fe->prespch_len = (int16)cmd_ln_int32_r(config, "-vad_prespeech");
+    fe->postspch_len = (int16)cmd_ln_int32_r(config, "-vad_postspeech");
+
     fe->remove_dc = cmd_ln_boolean_r(config, "-remove_dc");
     fe->remove_noise = cmd_ln_boolean_r(config, "-remove_noise");
+    fe->remove_silence = cmd_ln_boolean_r(config, "-remove_silence");
 
     if (0 == strcmp(cmd_ln_str_r(config, "-transform"), "dct"))
         fe->transform = DCT_II;
@@ -212,6 +216,7 @@ fe_t *
 fe_init_auto_r(cmd_ln_t *config)
 {
     fe_t *fe;
+    int prespch_frame_len;
 
     fe = (fe_t*)ckd_calloc(1, sizeof(*fe));
     fe->refcount = 1;
@@ -259,8 +264,12 @@ fe_init_auto_r(cmd_ln_t *config)
     fe_build_melfilters(fe->mel_fb);
 
     fe_compute_melcosine(fe->mel_fb);
-    if (fe->remove_noise)
-	fe->noise_stats = fe_init_noisestats(fe->mel_fb->num_filters);
+    if (fe->remove_noise || fe->remove_silence)
+        fe->noise_stats = fe_init_noisestats(fe->mel_fb->num_filters);
+
+    fe->vad_data = (vad_data_t*)ckd_calloc(1, sizeof(*fe->vad_data));
+    prespch_frame_len = fe->log_spec != RAW_LOG_SPEC ? fe->num_cepstra : fe->mel_fb->num_filters;
+    fe->vad_data->prespch_buf = fe_init_prespch(fe->prespch_len + 1, prespch_frame_len, fe->frame_shift);
 
     /* Create temporary FFT, spectrum and mel-spectrum buffers. */
     /* FIXME: Gosh there are a lot of these. */
@@ -313,6 +322,18 @@ fe_init_dither(int32 seed)
     }
 }
 
+static void
+fe_reset_vad_data(vad_data_t * vad_data)
+{
+    vad_data->global_state = 1;
+    vad_data->local_state = 0;
+    vad_data->state_changed = 0;
+    vad_data->prespch_num = 0;
+    vad_data->postspch_num = 0;
+    vad_data->frame_idx = 0;
+    fe_reset_prespch_cep(vad_data->prespch_buf);
+}
+
 int32
 fe_start_utt(fe_t * fe)
 {
@@ -320,10 +341,8 @@ fe_start_utt(fe_t * fe)
     memset(fe->overflow_samps, 0, fe->frame_size * sizeof(int16));
     fe->start_flag = 1;
     fe->prior = 0;
-
-    if (fe->remove_noise)
-	fe_reset_noisestats(fe->noise_stats);
-
+    fe_reset_noisestats(fe->noise_stats);
+    fe_reset_vad_data(fe->vad_data);
     return 0;
 }
 
@@ -343,11 +362,12 @@ fe_get_input_size(fe_t *fe, int *out_frame_shift,
         *out_frame_size = fe->frame_size;
 }
 
-int32
-fe_process_frame(fe_t * fe, int16 const *spch, int32 nsamps, mfcc_t * fr_cep)
+uint8
+fe_get_vad_state(fe_t *fe)
 {
-    fe_read_frame(fe, spch, nsamps);
-    return fe_write_frame(fe, fr_cep);
+    if (fe->vad_data->frame_idx < fe->postspch_len)
+        return 0;
+    return fe->vad_data->global_state;
 }
 
 int
@@ -358,7 +378,7 @@ fe_process_frames(fe_t *fe,
                   int32 *inout_nframes)
 {
     int32 frame_count;
-    int outidx, i, n, n_overflow, orig_n_overflow;
+    int outidx, i, n_overflow, orig_n_overflow;
     int16 const *orig_spch;
 
     /* In the special case where there is no output buffer, return the
@@ -395,6 +415,22 @@ fe_process_frames(fe_t *fe,
         return 0;
     }
 
+    /* Index of output frame. */
+    outidx = 0;
+
+    /* Try to read from prespeech buffer */
+    if (fe->vad_data->global_state) {
+        while ((*inout_nframes) > 0 && fe_prespch_read_cep(fe->vad_data->prespch_buf, buf_cep[outidx]) > 0) {
+            outidx++;
+            (*inout_nframes)--;
+        }
+        if ((*inout_nframes) < 1) {
+            /* mfcc buffer is filled from prespeech buffer */
+            *inout_nframes = outidx;
+            return 0;
+        }
+    }
+
     /* Keep track of the original start of the buffer. */
     orig_spch = *inout_spch;
     orig_n_overflow = fe->num_overflow_samps;
@@ -405,8 +441,6 @@ fe_process_frames(fe_t *fe,
     /* Limit it to the number of output frames available. */
     if (frame_count > *inout_nframes)
         frame_count = *inout_nframes;
-    /* Index of output frame. */
-    outidx = 0;
 
     /* Start processing, taking care of any incoming overflow. */
     if (fe->num_overflow_samps) {
@@ -416,41 +450,51 @@ fe_process_frames(fe_t *fe,
         memcpy(fe->overflow_samps + fe->num_overflow_samps,
                *inout_spch, offset * sizeof(**inout_spch));
         fe_read_frame(fe, fe->overflow_samps, fe->frame_size);
-        assert(outidx < frame_count);
-        if ((n = fe_write_frame(fe, buf_cep[outidx])) < 0)
-            return -1;
-        outidx += n;
         /* Update input-output pointers and counters. */
         *inout_spch += offset;
         *inout_nsamps -= offset;
         fe->num_overflow_samps -= fe->frame_shift;
-    }
-    else {
+    } else {
         fe_read_frame(fe, *inout_spch, fe->frame_size);
-        assert(outidx < frame_count);
-        if ((n = fe_write_frame(fe, buf_cep[outidx])) < 0)
-            return -1;
-        outidx += n;
         /* Update input-output pointers and counters. */
         *inout_spch += fe->frame_size;
         *inout_nsamps -= fe->frame_size;
+    }
+    fe_write_frame(fe, buf_cep[outidx]);
+    if (!fe->vad_data->state_changed && fe->vad_data->global_state)
+        outidx++;
+
+    if (fe->vad_data->state_changed && fe->vad_data->global_state) {
+        /* previous frame triggered vad into speech state
+         * dumping prespeech buffer */
+        while ((*inout_nframes) > 0 && fe_prespch_read_cep(fe->vad_data->prespch_buf, buf_cep[outidx]) > 0) {
+            outidx++;
+            (*inout_nframes)--;
+            frame_count--;
+        }
     }
 
     /* Process all remaining frames. */
     for (i = 1; i < frame_count; ++i) {
         assert(*inout_nsamps >= (size_t)fe->frame_shift);
-
         fe_shift_frame(fe, *inout_spch, fe->frame_shift);
-        assert(outidx < frame_count);
-        if ((n = fe_write_frame(fe, buf_cep[outidx])) < 0)
-            return -1;
-        outidx += n;
+        fe_write_frame(fe, buf_cep[outidx]);
+        if (!fe->vad_data->state_changed && fe->vad_data->global_state)
+            outidx++;
         /* Update input-output pointers and counters. */
         *inout_spch += fe->frame_shift;
         *inout_nsamps -= fe->frame_shift;
         /* Amount of data behind the original input which is still needed. */
         if (fe->num_overflow_samps > 0)
             fe->num_overflow_samps -= fe->frame_shift;
+
+        if (fe->vad_data->state_changed && fe->vad_data->global_state) {
+            /* previous frame triggered vad into speech state */
+            while (i < frame_count && fe_prespch_read_cep(fe->vad_data->prespch_buf, buf_cep[outidx]) != 0) {
+                i++;
+                outidx++;
+            }
+        }
     }
 
     /* How many relevant overflow samples are there left? */
@@ -472,8 +516,7 @@ fe_process_frames(fe_t *fe,
             *inout_spch += n_overflow;
             *inout_nsamps -= n_overflow;
         }
-    }
-    else {
+    } else {
         /* There is still some relevant data left in the overflow buffer. */
         /* Shift existing data to the beginning. */
         memmove(fe->overflow_samps,
@@ -497,6 +540,28 @@ fe_process_frames(fe_t *fe,
     /* Finally update the frame counter with the number of frames we procesed. */
     *inout_nframes = outidx; /* FIXME: Not sure why I wrote it this way... */
     return 0;
+}
+
+int 
+fe_process_frames_ext(fe_t *fe,
+                  int16 const **inout_spch,
+                  size_t *inout_nsamps,
+                  mfcc_t **buf_cep,
+                  int32 *inout_nframes,
+                  int16 **voiced_spch,
+                  int32 *voiced_spch_nsamps)
+{
+    int proc_result;
+
+    fe->vad_data->store_pcm = 1;
+    *voiced_spch_nsamps = 0;
+    fe_reinit_prespch_pcm(fe->vad_data->prespch_buf, *inout_nframes);
+    fe_reinit_prespch_pcm(fe->vad_data->prespch_buf, *inout_nframes);
+    proc_result = fe_process_frames(fe, inout_spch, inout_nsamps, buf_cep, inout_nframes);
+    if (fe->vad_data->global_state)
+        fe_prespch_read_pcm(fe->vad_data->prespch_buf, voiced_spch, voiced_spch_nsamps);
+    fe->vad_data->store_pcm = 0;
+    return proc_result;
 }
 
 int
@@ -525,12 +590,12 @@ int32
 fe_end_utt(fe_t * fe, mfcc_t * cepvector, int32 * nframes)
 {
     /* Process any remaining data. */
+    *nframes = 0;
     if (fe->num_overflow_samps > 0) {
         fe_read_frame(fe, fe->overflow_samps, fe->num_overflow_samps);
-        *nframes = fe_write_frame(fe, cepvector);
-    }
-    else {
-        *nframes = 0;
+        fe_write_frame(fe, cepvector);
+        if (!fe->vad_data->state_changed && fe->vad_data->global_state)
+            *nframes = *nframes + 1;
     }
 
     /* reset overflow buffers... */
@@ -575,8 +640,10 @@ fe_free(fe_t * fe)
     ckd_free(fe->overflow_samps);
     ckd_free(fe->hamming_window);
 
-    if (fe->remove_noise)
-    	fe_free_noisestats(fe->noise_stats);
+    if (fe->remove_noise || fe->remove_silence)
+        fe_free_noisestats(fe->noise_stats);
+
+    fe_free_prespch(fe->vad_data->prespch_buf);
 
     cmd_ln_free_r(fe->config);
     ckd_free(fe);

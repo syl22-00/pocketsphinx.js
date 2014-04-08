@@ -28,7 +28,7 @@ include_directories("${sphinx_root}/sphinxbase/include")
 include_directories("${sphinx_root}/platform/include")
 
 # Sphinxbase source files
-set(fe_src_files fe_interface.c fe_sigproc.c fe_warp_affine.c fe_warp.c fe_warp_inverse_linear.c fe_warp_piecewise_linear.c fixlog.c fe_noise.c)
+set(fe_src_files fe_interface.c fe_sigproc.c fe_warp_affine.c fe_warp.c fe_warp_inverse_linear.c fe_warp_piecewise_linear.c fixlog.c fe_noise.c fe_prespch_buf.c)
 set(fe_srcs "")
 foreach(cfile ${fe_src_files})
     set(fe_srcs ${fe_srcs} "${fe_folder}/${cfile}")

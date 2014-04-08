@@ -35,15 +35,7 @@
  *
  */
 
-#if SWIGJAVA
-%javamethodmodifiers Config::Config "private";
-#endif
-
 %extend Config {
-
-    Config() {
-      return NULL;
-    }
 
     ~Config() {
         cmd_ln_free_r($self);

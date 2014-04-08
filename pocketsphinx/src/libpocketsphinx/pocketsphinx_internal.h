@@ -104,6 +104,7 @@ typedef struct ps_searchfuncs_s {
  */
 struct ps_search_s {
     ps_searchfuncs_t *vt;  /**< V-table of search methods. */
+
     ps_search_t *pls;      /**< Phoneme loop for lookahead. */
     cmd_ln_t *config;      /**< Configuration. */
     acmod_t *acmod;        /**< Acoustic model. */
@@ -225,6 +226,11 @@ struct ps_decoder_s {
     char const *mfclogdir; /**< Log directory for MFCC files. */
     char const *rawlogdir; /**< Log directory for audio files. */
     char const *senlogdir; /**< Log directory for senone score files. */
+};
+
+
+struct ps_search_iter_s {
+    hash_iter_t itor;
 };
 
 #endif /* __POCKETSPHINX_INTERNAL_H__ */

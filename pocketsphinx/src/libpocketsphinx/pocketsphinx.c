@@ -49,6 +49,7 @@
 #include <sphinxbase/filename.h>
 #include <sphinxbase/pio.h>
 #include <sphinxbase/jsgf.h>
+#include <sphinxbase/hash_table.h>
 
 /* Local headers. */
 #include "cmdln_macro.h"
@@ -299,64 +300,17 @@ ps_reinit(ps_decoder_t *ps, cmd_ln_t *config)
         ps_set_search(ps, PS_DEFAULT_SEARCH);
     }
     
+    /* Or load a JSGF grammar */
     if ((path = cmd_ln_str_r(config, "-jsgf"))) {
-        /* Or load a JSGF grammar */
-        fsg_model_t *fsg;
-        jsgf_rule_t *rule;
-        char const *toprule;
-        jsgf_t *jsgf = jsgf_parse_file(path, NULL);
-
-        if (!jsgf)
+        if (ps_set_jsgf_file(ps, PS_DEFAULT_SEARCH, path)
+            || ps_set_search(ps, PS_DEFAULT_SEARCH))
             return -1;
-
-        rule = NULL;
-        /* Take the -toprule if specified. */
-        if ((toprule = cmd_ln_str_r(config, "-toprule"))) {
-            char *ruletok;
-            ruletok = string_join("<", toprule, ">", NULL);
-            rule = jsgf_get_rule(jsgf, ruletok);
-            ckd_free(ruletok);
-            if (rule == NULL) {
-                E_ERROR("Start rule %s not found\n", toprule);
-                return -1;
-            }
-        } else {
-            /* Otherwise, take the first public rule. */
-            jsgf_rule_iter_t *itor;
-
-            for (itor = jsgf_rule_iter(jsgf); itor;
-                 itor = jsgf_rule_iter_next(itor)) {
-                rule = jsgf_rule_iter_rule(itor);
-                if (jsgf_rule_public(rule)) {
-                    jsgf_rule_iter_free(itor);
-                    break;
-                }
-            }
-            if (rule == NULL) {
-                E_ERROR("No public rules found in %s\n", path);
-                return -1;
-            }
-        }
-
-        fsg = jsgf_build_fsg(jsgf, rule, ps->lmath, lw);
-        ps_set_fsg(ps, PS_DEFAULT_SEARCH, fsg);
-        fsg_model_free(fsg);
-        ps_set_search(ps, PS_DEFAULT_SEARCH);
     }
 
     if ((path = cmd_ln_str_r(ps->config, "-lm"))) {
-        ngram_model_t *lm;
-
-        lm = ngram_model_read(ps->config, path, NGRAM_AUTO, ps->lmath);
-        if (!lm)
+        if (ps_set_lm_file(ps, PS_DEFAULT_SEARCH, path)
+            || ps_set_search(ps, PS_DEFAULT_SEARCH))
             return -1;
-
-        if (ps_set_lm(ps, PS_DEFAULT_SEARCH, lm)) {
-            ngram_model_free(lm);
-            return -1;
-        }
-        ngram_model_free(lm);
-        ps_set_search(ps, PS_DEFAULT_SEARCH);
     }
 
     if ((path = cmd_ln_str_r(ps->config, "-lmctl"))) {
@@ -483,7 +437,58 @@ ps_set_search(ps_decoder_t *ps, const char *name)
     ps_search_t *search = ps_find_search(ps, name);
     if (search)
         ps->search = search;
-    return NULL == search;
+    return search ? 0 : -1;
+}
+
+const char*
+ps_get_search(ps_decoder_t *ps)
+{
+    hash_iter_t *search_it;
+    const char* name = NULL;
+    for (search_it = hash_table_iter(ps->searches); search_it;
+        search_it = hash_table_iter_next(search_it)) {
+        if (hash_entry_val(search_it->ent) == ps->search) {
+    	    name = hash_entry_key(search_it->ent);
+    	    break;
+        }
+    }
+    return name;
+}
+
+int 
+ps_unset_search(ps_decoder_t *ps, const char *name)
+{
+    ps_search_t *search = hash_table_delete(ps->searches, name);
+    if (!search)
+        return -1;
+    if (ps->search == search)
+        ps->search = NULL;
+    ps_search_free(search);
+    return 0;
+}
+
+ps_search_iter_t *
+ps_search_iter(ps_decoder_t *ps)
+{
+   return (ps_search_iter_t *)hash_table_iter(ps->searches);
+}
+
+ps_search_iter_t *
+ps_search_iter_next(ps_search_iter_t *itor)
+{
+   return (ps_search_iter_t *)hash_table_iter_next((hash_iter_t *)itor);
+}
+
+const char* 
+ps_search_iter_val(ps_search_iter_t *itor)
+{
+   return (const char*)(((hash_iter_t *)itor)->ent->key);
+}
+
+void 
+ps_search_iter_free(ps_search_iter_t *itor)
+{
+   return hash_table_iter_free((hash_iter_t *)itor);
 }
 
 ngram_model_t *
@@ -539,6 +544,21 @@ ps_set_lm(ps_decoder_t *ps, const char *name, ngram_model_t *lm)
 }
 
 int
+ps_set_lm_file(ps_decoder_t *ps, const char *name, const char *path)
+{
+  ngram_model_t *lm;
+  int result;
+
+  lm = ngram_model_read(ps->config, path, NGRAM_AUTO, ps->lmath);
+  if (!lm)
+      return -1;
+
+  result = ps_set_lm(ps, name, lm);
+  ngram_model_free(lm);
+  return result;
+}
+
+int
 ps_set_kws(ps_decoder_t *ps, const char *name, const char *keyphrase)
 {
     ps_search_t *search;
@@ -552,6 +572,54 @@ ps_set_fsg(ps_decoder_t *ps, const char *name, fsg_model_t *fsg)
     ps_search_t *search;
     search = fsg_search_init(fsg, ps->config, ps->acmod, ps->dict, ps->d2p);
     return set_search_internal(ps, name, search);
+}
+
+int ps_set_jsgf_file(ps_decoder_t *ps, const char *name, const char *path)
+{
+  fsg_model_t *fsg;
+  jsgf_rule_t *rule;
+  char const *toprule;
+  jsgf_t *jsgf = jsgf_parse_file(path, NULL);
+  float lw;
+  int result;
+
+  if (!jsgf)
+      return -1;
+
+  rule = NULL;
+  /* Take the -toprule if specified. */
+  if ((toprule = cmd_ln_str_r(ps->config, "-toprule"))) {
+      char *ruletok;
+      ruletok = string_join("<", toprule, ">", NULL);
+      rule = jsgf_get_rule(jsgf, ruletok);
+      ckd_free(ruletok);
+      if (rule == NULL) {
+          E_ERROR("Start rule %s not found\n", toprule);
+          return -1;
+      }
+  } else {
+      /* Otherwise, take the first public rule. */
+      jsgf_rule_iter_t *itor;
+
+      for (itor = jsgf_rule_iter(jsgf); itor;
+           itor = jsgf_rule_iter_next(itor)) {
+          rule = jsgf_rule_iter_rule(itor);
+          if (jsgf_rule_public(rule)) {
+              jsgf_rule_iter_free(itor);
+              break;
+          }
+      }
+      if (rule == NULL) {
+          E_ERROR("No public rules found in %s\n", path);
+          return -1;
+      }
+  }
+
+  lw = cmd_ln_float32_r(ps->config, "-lw");
+  fsg = jsgf_build_fsg(jsgf, rule, ps->lmath, lw);
+  result = ps_set_fsg(ps, name, fsg);
+  fsg_model_free(fsg);
+  return result;
 }
 
 int
@@ -729,7 +797,6 @@ int
 ps_start_utt(ps_decoder_t *ps, char const *uttid)
 {
     int rv;
-
     if (ps->search == NULL) {
         E_ERROR("No search module is selected, did you forget to "
                 "specify a language model or grammar?\n");
@@ -1168,6 +1235,12 @@ ps_get_all_time(ps_decoder_t *ps, double *out_nspeech,
     *out_nwall = ps->perf.t_tot_elapsed;
 }
 
+uint8 
+ps_get_vad_state(ps_decoder_t *ps)
+{
+    return fe_get_vad_state(ps->acmod->fe);
+}
+
 void
 ps_search_init(ps_search_t *search, ps_searchfuncs_t *vt,
                cmd_ln_t *config, acmod_t *acmod, dict_t *dict,
@@ -1229,3 +1302,5 @@ ps_search_deinit(ps_search_t *search)
     ckd_free(search->hyp_str);
     ps_lattice_free(search->dag);
 }
+
+/* vim: set ts=4 sw=4: */

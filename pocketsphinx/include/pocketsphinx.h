@@ -55,6 +55,7 @@ extern "C" {
 #include <sphinxbase/feat.h>
 #include <sphinxbase/fsg_model.h>
 #include <sphinxbase/ngram_model.h>
+#include <sphinxbase/hash_table.h>
 
 /* PocketSphinx headers (not many of them!) */
 #include <pocketsphinx_export.h>
@@ -72,6 +73,11 @@ extern "C" {
  * PocketSphinx speech recognizer object.
  */
 typedef struct ps_decoder_s ps_decoder_t;
+
+/**
+ * PocketSphinx search iterator.
+ */
+typedef struct ps_search_iter_s ps_search_iter_t;
 
 /**
  * PocketSphinx N-best hypothesis iterator object.
@@ -225,8 +231,74 @@ ps_mllr_t *ps_update_mllr(ps_decoder_t *ps, ps_mllr_t *mllr);
  * @see ps_set_fsg
  * @see ps_set_fsg
  */
-POCKETSPHINX_EXPORT int
-ps_set_search(ps_decoder_t *ps, const char *name);
+POCKETSPHINX_EXPORT
+int ps_set_search(ps_decoder_t *ps, const char *name);
+
+/**
+ * Returns name of curent search in decoder
+ *
+ * @see ps_set_search
+ */
+POCKETSPHINX_EXPORT 
+const char* ps_get_search(ps_decoder_t *ps);
+
+/**
+ * Unsets the search and releases related resources.
+ *
+ * Unsets the search previously added with
+ * using either ps_set_fsg(), ps_set_lm() or ps_set_kws().
+ *
+ * @see ps_set_fsg
+ * @see ps_set_lm
+ * @see ps_set_kws
+ */
+POCKETSPHINX_EXPORT
+int ps_unset_search(ps_decoder_t *ps, const char *name);
+
+/**
+ * Returns iterator over current searches 
+ *
+ * @see ps_set_search
+ */
+POCKETSPHINX_EXPORT
+ps_search_iter_t *ps_search_iter(ps_decoder_t *ps);
+
+/**
+ * Updates search iterator to point to the next position.
+ * 
+ * This function automatically frees the iterator object upon reaching
+ * the final entry.
+ * @see ps_set_search
+ */
+POCKETSPHINX_EXPORT
+ps_search_iter_t *ps_search_iter_next(ps_search_iter_t *itor);
+
+/**
+ * Retrieves the name of the search the iterator points to.
+ *
+ * @see ps_set_search
+ */
+POCKETSPHINX_EXPORT
+const char* ps_search_iter_val(ps_search_iter_t *itor);
+
+/**
+ * Delete an unfinished search iterator
+ *
+ * @see ps_set_search
+ */
+POCKETSPHINX_EXPORT
+void ps_search_iter_free(ps_search_iter_t *itor);
+
+/**
+ * Updates search iterator to point to the next position.
+ * 
+ * This function automatically frees the iterator object upon reaching
+ * the final entry.
+ * @see ps_set_search
+ */
+POCKETSPHINX_EXPORT
+const char* ps_search_iter_val(ps_search_iter_t *itor);
+
 
 /**
  * Get the language model set object for this decoder.
@@ -239,8 +311,8 @@ ps_set_search(ps_decoder_t *ps, const char *name);
  *         not attempt to free it manually.  Use ngram_model_retain()
  *         if you wish to reuse it elsewhere.
  */
-POCKETSPHINX_EXPORT ngram_model_t *
-ps_get_lm(ps_decoder_t *ps, const char *name);
+POCKETSPHINX_EXPORT 
+ngram_model_t *ps_get_lm(ps_decoder_t *ps, const char *name);
 
 /**
  * Adds new search based on N-gram language model.
@@ -250,8 +322,18 @@ ps_get_lm(ps_decoder_t *ps, const char *name);
  *
  * @see ps_set_search.
  */ 
-POCKETSPHINX_EXPORT int
-ps_set_lm(ps_decoder_t *ps, const char *name, ngram_model_t *lm);
+POCKETSPHINX_EXPORT
+int ps_set_lm(ps_decoder_t *ps, const char *name, ngram_model_t *lm);
+
+/**
+ * Adds new search based on N-gram language model.
+ *
+ * Convenient method to load N-gram model and create a search.
+ * 
+ * @see ps_set_lm
+ */
+POCKETSPHINX_EXPORT
+int ps_set_lm_file(ps_decoder_t *ps, const char *name, const char *path);
 
 /**
  * Get the finite-state grammar set object for this decoder.
@@ -262,8 +344,8 @@ ps_set_lm(ps_decoder_t *ps, const char *name, ngram_model_t *lm);
  * @return The current FSG set object for this decoder, or
  *         NULL if none is available.
  */
-POCKETSPHINX_EXPORT fsg_model_t *
-ps_get_fsg(ps_decoder_t *ps, const char *name);
+POCKETSPHINX_EXPORT
+fsg_model_t *ps_get_fsg(ps_decoder_t *ps, const char *name);
 
 /**
  * Adds new search based on finite state grammar.
@@ -273,8 +355,18 @@ ps_get_fsg(ps_decoder_t *ps, const char *name);
  *
  * @see ps_set_search
  */
-POCKETSPHINX_EXPORT int
-ps_set_fsg(ps_decoder_t *ps, const char *name, fsg_model_t *fsg);
+POCKETSPHINX_EXPORT
+int ps_set_fsg(ps_decoder_t *ps, const char *name, fsg_model_t *fsg);
+
+/**
+ * Adds new search using JSGF model.
+ *
+ * Convenient method to load JSGF model and create a search.
+ *
+ * @see ps_set_fsg
+ */
+POCKETSPHINX_EXPORT
+int ps_set_jsgf_file(ps_decoder_t *ps, const char *name, const char *path);
 
 /**
  * Get the current Key phrase to spot
@@ -284,8 +376,8 @@ ps_set_fsg(ps_decoder_t *ps, const char *name, fsg_model_t *fsg);
  *
  * @return The current keyphrase to spot
  */
-POCKETSPHINX_EXPORT const char*
-ps_get_kws(ps_decoder_t *ps, const char *name);
+POCKETSPHINX_EXPORT 
+const char* ps_get_kws(ps_decoder_t *ps, const char *name);
 
 /**
  * Adds new keyword to spot
@@ -295,8 +387,8 @@ ps_get_kws(ps_decoder_t *ps, const char *name);
  *
  * @see ps_set_search
  */
-POCKETSPHINX_EXPORT int
-ps_set_kws(ps_decoder_t *ps, const char *name, const char *keyword_list);
+POCKETSPHINX_EXPORT 
+int ps_set_kws(ps_decoder_t *ps, const char *name, const char *keyphrase);
 
 /**
  * Reload the pronunciation dictionary from a file.
@@ -685,6 +777,15 @@ void ps_get_utt_time(ps_decoder_t *ps, double *out_nspeech,
 POCKETSPHINX_EXPORT
 void ps_get_all_time(ps_decoder_t *ps, double *out_nspeech,
                      double *out_ncpu, double *out_nwall);
+
+/**
+ * Checks if the last feed audio buffer contained speech
+ *
+ * @param ps Decoder.
+ * @return 1 if last buffer contained speech, 0 - otherwise
+ */
+POCKETSPHINX_EXPORT
+uint8 ps_get_vad_state(ps_decoder_t *ps);
 
 /**
  * @mainpage PocketSphinx API Documentation

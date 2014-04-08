@@ -87,6 +87,10 @@
         return cmd_ln_parse_r(NULL, ps_args(), 0, NULL, FALSE);
     }
 
+    static Config *file_config(char const * path) {
+        return cmd_ln_parse_file_r(NULL, ps_args(), path, FALSE);
+    }
+
     void start_utt(char const *uttid, int *errcode) {
         *errcode = ps_start_utt($self, uttid);
     }
@@ -142,6 +146,10 @@
     Feature * get_feat() {
         return ps_get_feat($self);
     }
+   
+    bool get_vad_state() {
+        return ps_get_vad_state($self);
+    }
 
     FsgModel * get_fsg(const char *name) {
         return fsg_model_retain(ps_get_fsg($self, name));
@@ -149,6 +157,10 @@
 
     void set_fsg(const char *name, FsgModel *fsg, int *errcode) {
         *errcode = ps_set_fsg($self, name, fsg);
+    }
+
+    void set_jsgf_file(const char *name, const char *path, int *errcode) {
+        *errcode = ps_set_jsgf_file($self, name, path);
     }
 
     const char * get_kws(const char *name) {
@@ -167,12 +179,20 @@
         *errcode = ps_set_lm($self, name, lm);
     }
 
+    void set_lm_file(const char *name, const char *path, int *errcode) {
+        *errcode = ps_set_lm_file($self, name, path);
+    }
+
     LogMath * get_logmath() {
         return logmath_retain(ps_get_logmath($self));
     }
 
     void set_search(const char *search_name, int *errcode) {
       *errcode = ps_set_search($self, search_name);
+    }
+
+    const char * get_search() {
+        return ps_get_search($self);
     }
 
     int n_frames() {

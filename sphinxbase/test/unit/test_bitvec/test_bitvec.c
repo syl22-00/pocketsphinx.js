@@ -52,7 +52,7 @@ main(int argc, char *argv[])
         TEST_EQUAL(6, bitvec_count_set(bv, 13));
 	bv = bitvec_realloc(bv, 13, 2000);
 	for (i = 0; i < 2000; i++) {
-//	    printf("%d %d\n", i, bitvec_is_set(bv, i) != 0);
+          /* printf("%d %d\n", i, bitvec_is_set(bv, i) != 0); */
 	}
 	printf("Bits set after realloc %d\n", bitvec_count_set(bv, 2000));
         TEST_EQUAL(6, bitvec_count_set(bv, 2000));

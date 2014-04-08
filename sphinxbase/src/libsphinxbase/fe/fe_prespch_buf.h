@@ -34,35 +34,45 @@
  * ====================================================================
  *
  */
-#ifndef FE_NOISE_H
-#define FE_NOISE_H
+
+#ifndef FE_INTERNAL_H
+#define FE_INTERNAL_H
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include "sphinxbase/fe.h"
-#include "sphinxbase/fixpoint.h"
 
-#include "fe_type.h"
+typedef struct prespch_buf_s prespch_buf_t;
 
-typedef struct noise_stats_s noise_stats_t;
+/* Creates prespeech buffer */
+prespch_buf_t *fe_init_prespch(int num_frames, int num_cepstra,
+                               int num_samples);
 
-/* Creates noisestats object */
-noise_stats_t *fe_init_noisestats(int num_filters);
+/* initialize pcm prespeech buffer with specified amount of frames */
+void fe_reinit_prespch_pcm(prespch_buf_t* prespch_buf, int num_frames_pcm);
 
-/* Resets collected noise statistics */
-void
- fe_reset_noisestats(noise_stats_t * noise_stats);
+/* Reads mfcc frame from prespeech buffer */
+int fe_prespch_read_cep(prespch_buf_t * prespch_buf, mfcc_t * fea);
 
-/* Frees allocated data */
-void
- fe_free_noisestats(noise_stats_t * noise_stats);
+/* Writes mfcc frame to prespeech buffer */
+void fe_prespch_write_cep(prespch_buf_t * prespch_buf, mfcc_t * fea);
 
-/* Process frame, update noise statistics, 
-   remove noise components if needed, 
-   makes local vad decision*/
-void
- fe_track_snr(fe_t * fe);
+/* Reads pcm frame from prespeech buffer */
+void fe_prespch_read_pcm(prespch_buf_t * prespch_buf, int16 ** samples,
+                         int32 * samples_num);
 
-#endif                          /* FE_NOISE_H */
+/* Writes pcm frame to prespeech buffer */
+void fe_prespch_write_pcm(prespch_buf_t * prespch_buf, int16 * samples);
+
+/* Resets read/write pointers for cepstrum buffer */
+void fe_reset_prespch_cep(prespch_buf_t * prespch_buf);
+
+/* Resets read/write pointer for pcm audio buffer */
+void fe_reset_prespch_pcm(prespch_buf_t * prespch_buf);
+
+/* Releases prespeech buffer */
+void fe_free_prespch(prespch_buf_t * prespch_buf);
+
+#endif                          /* FE_INTERNAL_H */

@@ -1,5 +1,7 @@
 %include <exception.i>
 
+%apply int {int32};
+
 #if SWIGPYTHON
 %include python.i
 #elif SWIGJAVA
@@ -80,7 +82,6 @@ typedef struct {
 typedef struct {} TYPE;
 
 %exception TYPE##Iterator##::next() {
-  $action
   if (!arg1->ptr) {
 #if SWIGJAVA
     jclass cls = (*jenv)->FindClass(jenv, "java/util/NoSuchElementException");
@@ -91,6 +92,7 @@ typedef struct {} TYPE;
     SWIG_fail;
 #endif
   }
+  $action;
 }
 
 %extend TYPE##Iterator {

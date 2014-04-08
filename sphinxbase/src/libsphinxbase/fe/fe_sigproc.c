@@ -1350,18 +1350,61 @@ fe_dct3(fe_t * fe, const mfcc_t * mfcep, powspec_t * mflogspec)
     }
 }
 
-int32
+static void
+fe_vad_hangover(fe_t * fe, mfcc_t * fea)
+{
+    /* track vad state and deal with cepstrum prespeech buffer */
+    fe->vad_data->state_changed = 0;
+    fe->vad_data->frame_idx++;
+    if (fe->vad_data->local_state) {
+        fe->vad_data->postspch_num = 0;
+        if (!fe->vad_data->global_state) {
+            fe->vad_data->prespch_num++;
+            fe_prespch_write_cep(fe->vad_data->prespch_buf, fea);
+            /* check for transition sil->speech */
+            if (fe->vad_data->prespch_num >= fe->prespch_len) {
+                fe->vad_data->prespch_num = 0;
+                fe->vad_data->global_state = 1;
+                /* transition silence->speech occurred */
+                fe->vad_data->state_changed = 1;
+            }
+        }
+    } else {
+        fe->vad_data->prespch_num = 0;
+        fe_reset_prespch_cep(fe->vad_data->prespch_buf);
+        if (fe->vad_data->global_state) {
+            fe->vad_data->postspch_num++;
+            /* check for transition speech->sil */
+            if (fe->vad_data->postspch_num >= fe->postspch_len) {
+                fe->vad_data->postspch_num = 0;
+                fe->vad_data->global_state = 0;
+                /* transition speech->silence occurred */
+                fe->vad_data->state_changed = 1;
+            }
+        }
+    }
+
+    /* deal with pcm prespeech buffer if needed */
+    if (fe->vad_data->store_pcm) {
+        if (fe->vad_data->local_state || fe->vad_data->global_state)
+            fe_prespch_write_pcm(fe->vad_data->prespch_buf, fe->spch);
+        if (!fe->vad_data->local_state && !fe->vad_data->global_state)
+            /* reset writing to pcm prespeech buffer if any */
+            fe_reset_prespch_pcm(fe->vad_data->prespch_buf);
+    }
+}
+
+void
 fe_write_frame(fe_t * fe, mfcc_t * fea)
 {
     fe_spec_magnitude(fe);
     fe_mel_spec(fe);
-    if (fe->remove_noise)
-        fe_remove_noise(fe->noise_stats, fe->mfspec);
+    fe_track_snr(fe);
     fe_mel_cep(fe, fea);
     fe_lifter(fe, fea);
-
-    return 1;
+    fe_vad_hangover(fe, fea);
 }
+
 
 void *
 fe_create_2d(int32 d1, int32 d2, int32 elem_size)

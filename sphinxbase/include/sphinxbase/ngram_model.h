@@ -291,7 +291,20 @@ int32 ngram_ng_score(ngram_model_t *model, int32 wid, int32 *history,
  * unigram weight (interpolation with uniform) is not removed.
  */
 SPHINXBASE_EXPORT
-int32 ngram_prob(ngram_model_t *model, const char *word, ...);
+int32 ngram_probv(ngram_model_t *model, const char *word, ...);
+
+/**
+ * Get the "raw" log-probability for a general N-Gram.
+ *
+ * This returns the log-probability of an N-Gram, as defined in the
+ * language model file, before any language weighting, interpolation,
+ * or insertion penalty has been applied.
+ *
+ * @note When backing off to a unigram from a bigram or trigram, the
+ * unigram weight (interpolation with uniform) is not removed.
+ */
+SPHINXBASE_EXPORT
+int32 ngram_prob(ngram_model_t *model, const char *const *words, size_t n);
 
 /**
  * Quick "raw" probability lookup for a general N-Gram.

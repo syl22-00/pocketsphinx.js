@@ -30,9 +30,9 @@ run_tests(ngram_model_t *model)
 	TEST_EQUAL_LOG(ngram_score(model, "daines", "huggins", "david", NULL),
 		   -77821);
 	/* Recover original score. */
-	TEST_EQUAL_LOG(ngram_prob(model, "daines", "huggins", "david", NULL),
+	TEST_EQUAL_LOG(ngram_probv(model, "daines", "huggins", "david", NULL),
 		   -9452);
-	TEST_EQUAL_LOG(ngram_prob(model, "huggins", "david", NULL), -831);
+	TEST_EQUAL_LOG(ngram_probv(model, "huggins", "david", NULL), -831);
 
 	/* Un-apply weights. */
 	ngram_model_apply_weights(model, 1.0, 1.0, 1.0);
@@ -40,7 +40,7 @@ run_tests(ngram_model_t *model)
 		       -9452);
 	TEST_EQUAL_LOG(ngram_score(model, "huggins", "david", NULL), -831);
 	/* Recover original score. */
-	TEST_EQUAL_LOG(ngram_prob(model, "daines", "huggins", "david", NULL),
+	TEST_EQUAL_LOG(ngram_probv(model, "daines", "huggins", "david", NULL),
 		       -9452);
 
 	/* Pre-weighting, this should give the "raw" score. */

@@ -91,6 +91,10 @@ extern "C" {
 #define DEFAULT_NUM_CEPSTRA 13
 /** Default number of filter bands used to generate MFCCs. */
 #define DEFAULT_NUM_FILTERS 40
+/** Default prespeech state length */
+#define DEFAULT_PRESPCH_STATE_LEN 25
+/** Default postspeech state length */
+#define DEFAULT_POSTSPCH_STATE_LEN 25
 /** Default lower edge of mel filter bank. */
 #define DEFAULT_LOWER_FILT_FREQ 133.33334
 /** Default upper edge of mel filter bank. */
@@ -183,6 +187,16 @@ extern "C" {
     "0", \
     "Length of sin-curve for liftering, or 0 for no liftering." }, \
    \
+  { "-vad_prespeech", \
+    ARG_INT32, \
+    ARG_STRINGIFY(DEFAULT_PRESPCH_STATE_LEN), \
+    "Num of speech frames to trigger vad from silence to speech." }, \
+   \
+  { "-vad_postspeech", \
+    ARG_INT32, \
+    ARG_STRINGIFY(DEFAULT_POSTSPCH_STATE_LEN), \
+    "Num of speech frames to trigger vad from speech to silence." }, \
+   \
   { "-input_endian", \
     ARG_STRING, \
     NATIVE_ENDIAN, \
@@ -217,7 +231,12 @@ extern "C" {
     ARG_BOOLEAN, \
     "yes", \
     "Remove noise with spectral subtraction in mel-energies" }, \
-                                                                              \
+                                                                \
+  { "-remove_silence", \
+    ARG_BOOLEAN, \
+    "yes", \
+    "Enables VAD, removes silence frames from processing" }, \
+                                                             \
   { "-verbose", \
     ARG_BOOLEAN, \
     "no", \
@@ -325,8 +344,8 @@ int fe_start_utt(fe_t *fe);
  * Get the dimensionality of the output of this front-end object.
  *
  * This is guaranteed to be the number of values in one frame of
- * output from fe_end_utt(), fe_process_frame(), and
- * fe_process_frames().  It is usually the number of MFCC
+ * output from fe_end_utt() and fe_process_frames().  
+ * It is usually the number of MFCC
  * coefficients, but it might be the number of log-spectrum bins, if
  * the <tt>-logspec</tt> or <tt>-smoothspec</tt> options to
  * fe_init_auto() were true.
@@ -351,6 +370,14 @@ int fe_get_output_size(fe_t *fe);
 SPHINXBASE_EXPORT
 void fe_get_input_size(fe_t *fe, int *out_frame_shift,
                        int *out_frame_size);
+
+/**
+ * Get vad state for the last processed frame
+ *
+ * @return 1 if speech, 0 if silence
+ */
+SPHINXBASE_EXPORT
+uint8 fe_get_vad_state(fe_t *fe);
 
 /**
  * Finish processing an utterance.
@@ -387,17 +414,26 @@ fe_t *fe_retain(fe_t *fe);
 SPHINXBASE_EXPORT
 int fe_free(fe_t *fe);
 
-/**
- * Process one frame of samples.
+/*
+ * Do same as fe_process_frames, but also returns
+ * voiced audio. Output audio is valid till next
+ * fe_process_frames call.
  *
- * @param spch Speech samples (signed 16-bit linear PCM)
- * @param nsamps Number of samples in <code>spch</code>
- * @param buf_cep Buffer which will receive one frame of features.
- * @return 0 for success, <0 for error (see enum fe_error_e)
+ * DO NOT MIX fe_process_frames calls
+ *
+ * @param voiced_spch Output: obtain voiced audio samples here
+ *
+ * @param voiced_spch_nsamps Output: shows voiced_spch length
+ *
  */
 SPHINXBASE_EXPORT
-int fe_process_frame(fe_t *fe, int16 const *spch,
-                     int32 nsamps, mfcc_t *out_cep);
+int fe_process_frames_ext(fe_t *fe,
+                      int16 const **inout_spch,
+                      size_t *inout_nsamps,
+                      mfcc_t **buf_cep,
+                      int32 *inout_nframes,
+                      int16 **voiced_spch,
+                      int32 *voiced_spch_nsamps);
 
 /** 
  * Process a block of samples.

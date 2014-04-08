@@ -12,6 +12,7 @@ SWIG_FILES = \
 	$(SWIG_DIR)/jsgf.i \
 	$(SWIG_DIR)/fsg_model.i \
 	$(SWIG_DIR)/ngram_model.i \
+	$(SWIG_DIR)/python.i \
 	$(SWIG_DIR)/typemaps.i
 
 if BUILD_DOXYGEN

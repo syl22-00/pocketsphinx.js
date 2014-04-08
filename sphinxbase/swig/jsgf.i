@@ -85,3 +85,12 @@
     return jsgf_rule_public($self);
   }
 }
+
+%runtime %{
+jsgf_rule_t * next_JsgfIterator(jsgf_rule_iter_t *iter)
+{
+    return jsgf_rule_iter_rule(iter);
+}
+%}
+
+/* vim: set ts=4 sw=4: */

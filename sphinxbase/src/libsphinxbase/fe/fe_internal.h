@@ -46,6 +46,7 @@
 #include "sphinxbase/fixpoint.h"
 
 #include "fe_noise.h"
+#include "fe_prespch_buf.h"
 #include "fe_type.h"
 
 #ifdef __cplusplus
@@ -114,10 +115,24 @@ typedef struct ringbuf_s {
 /* sqrt(1/2), also used for unitary DCT-II/DCT-III */
 #define SQRT_HALF FLOAT2MFCC(0.707106781186548)
 
+typedef struct vad_data_s {
+    uint8 global_state;
+    uint8 local_state;
+    uint8 state_changed;
+    uint8 store_pcm;
+    int16 prespch_num;
+    int16 postspch_num;
+    int32 frame_idx;
+    prespch_buf_t* prespch_buf;	
+} vad_data_t;
+
 /** Structure for the front-end computation. */
 struct fe_s {
     cmd_ln_t *config;
     int refcount;
+
+    int16 prespch_len;
+    int16 postspch_len;
 
     float32 sampling_rate;
     int16 frame_rate;
@@ -136,6 +151,7 @@ struct fe_s {
     uint8 dither;
     uint8 transform;
     uint8 remove_noise;
+    uint8 remove_silence;
 
     float32 pre_emphasis_alpha;
     int32 seed;
@@ -153,6 +169,9 @@ struct fe_s {
     /* Storage for noise removal  */
     noise_stats_t *noise_stats;
 
+    /* Storage for VAD variables */
+    vad_data_t *vad_data;
+
     /* Temporary buffers for processing. */
     /* FIXME: too many of these. */
     int16 *spch;
@@ -162,20 +181,6 @@ struct fe_s {
     int16 num_overflow_samps;    
     int16 prior;
 };
-
-#define BB_SAMPLING_RATE 16000
-#define DEFAULT_BB_FFT_SIZE 512
-#define DEFAULT_BB_FRAME_SHIFT 160
-#define DEFAULT_BB_NUM_FILTERS 40
-#define DEFAULT_BB_LOWER_FILT_FREQ 133.33334
-#define DEFAULT_BB_UPPER_FILT_FREQ 6855.4976
-
-#define NB_SAMPLING_RATE 8000
-#define DEFAULT_NB_FFT_SIZE 256
-#define DEFAULT_NB_FRAME_SHIFT 80
-#define DEFAULT_NB_NUM_FILTERS 31
-#define DEFAULT_NB_LOWER_FILT_FREQ 200
-#define DEFAULT_NB_UPPER_FILT_FREQ 3500
 
 void fe_init_dither(int32 seed);
 
@@ -189,7 +194,7 @@ int fe_read_frame(fe_t *fe, int16 const *in, int32 len);
 int fe_shift_frame(fe_t *fe, int16 const *in, int32 len);
 
 /* Process a frame of data into features. */
-int32 fe_write_frame(fe_t *fe, mfcc_t *fea);
+void fe_write_frame(fe_t *fe, mfcc_t *fea);
 
 /* Initialization functions. */
 int32 fe_build_melfilters(melfb_t *MEL_FB);

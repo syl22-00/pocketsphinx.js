@@ -8,6 +8,8 @@ cmake_minimum_required(VERSION 2.6)
 
 project(pocketsphinx.js)
 
+option(HMM_EMBED "Embed the HMM files inside generated JavaScript" ON)
+
 # CMakeLists.txt should be alongside pocketsphinx and
 # sphinxbase folders
 set(sphinx_root ${CMAKE_CURRENT_SOURCE_DIR})
@@ -73,9 +75,6 @@ if ((NOT HMM_BASE) OR (NOT HMM_FOLDERS))
   set(HMM_FOLDERS "rm1_200")
 endif()
 
-message("HMM_BASE is ${HMM_BASE}")
-message("HMM_FOLDERS is ${HMM_FOLDERS}")
-
 # We are using the C++ binding utility of emscripten, this needs to be added to the compilation command
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMODELDIR=\"\"")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --bind")
@@ -86,16 +85,17 @@ include_directories("${CMAKE_BINARY_DIR}/include")
 # Building a shared library to be converted to JavaScript
 add_library(${ps_lib} SHARED "src/psRecognizer.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
 
-# Copying acoustic models into the build tree
-foreach(model ${HMM_FOLDERS})
-  message("Copying ${HMM_BASE}/${model} to binary dir")
-  file(COPY ${HMM_BASE}/${model} DESTINATION ${CMAKE_BINARY_DIR})
-endforeach()
-
-set(EMBED_HMM "")
+if(HMM_EMBED)
+  # Copying acoustic models into the build tree
   foreach(model ${HMM_FOLDERS})
-  set(EMBED "${EMBED}" "--embed-file" "${model}" " ")
-endforeach()
+    message("Copying ${HMM_BASE}/${model} to binary dir")
+    file(COPY ${HMM_BASE}/${model} DESTINATION ${CMAKE_BINARY_DIR})
+  endforeach()
+
+  foreach(model ${HMM_FOLDERS})
+    set(EMBED "${EMBED}" "--embed-file" "${model}" " ")
+  endforeach()
+endif(HMM_EMBED)
 
 # Package dictionaries if needed
 if(DICT_BASE AND DICT_FILES)

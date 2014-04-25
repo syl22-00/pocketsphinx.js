@@ -59,7 +59,9 @@ This generates `pocketsphinx.js`. At this point, optimization level is hard-code
 
 ## 2.b Compilation with custom models and dictionary
 
-The compilation process packages the acoustic models inside the resulting JavaScript file and also, possibly, language models and dictionary files. If you would like to package your own models, you should specify where they are when running `cmake`. For that, place all models you want to package inside a base folder and specify the files or sub-folders you want to include.
+The compilation process can package the acoustic models inside the resulting JavaScript file and also, possibly, language models and dictionary files. It can also produce a JavaScript file that does not include these files, and load their content using separate files. The later being necessary if the files are large. If you would like to package your own models, you should specify where they are when running `cmake`. For that, place all models you want to package inside a base folder and specify the files or sub-folders you want to include.
+
+### i. Embedding the files into one large JavaScript file
 
 For instance, to package acoustic models, place them inside a `HMM_BASE` folder. Each model being in its own folder inside `HMM_BASE`:
 
@@ -96,6 +98,21 @@ Please note that:
 * Statistical language models and dictionary files are optional. As explained later, grammars and dictionary words can be added at runtime.
 * If you want to package statistical language models, you must provide a dictionary that contains all words used in the SLMs.
 * The PocketSphinx parameter for dictionary files is `"-dict"` and for language models `"-lm"`. See next sections for how to specify recognizer parameters.
+
+### ii. Package model files outside the main JavaScript
+
+Unless you are using a small acoustic model and no large dictionary nor statistical language model, you would probably want to have these files packaged into separate JavaScript files, that should be loaded before `pocketsphinx.js`. To do that, give the `-DHMM_EMBED=OFF` option when running cmake to skip the embedding of the acoustic model files. This way, the build will set the internal `HMM_BASE` and `HMM_FOLDERS` to the value you provided (or the default value), but the files won't be packaged.
+
+For the dictionary and statistical language model, just ignore them when running cmake.
+
+To generate the JavaScript files that contain these files, use emscripten's `tools/file_packager.py` utility. For instance, to package the `hub4` acoustic model provided with `pocketsphinx` on `cmusphinx`'s subversion repository:
+
+    # cd .../cmusphinx/models/hmm/en_us
+    # python .../emscripten/tools/file_packager.py .../pocketsphinx.js/build/pocketsphinx.js --embed hub4wsj_sc_8k/mdef --js-output=mdef.js
+    # python .../emscripten/tools/file_packager.py .../pocketsphinx.js/build/pocketsphinx.js --embed hub4wsj_sc_8k/variances --js-output=variances.js
+    ... and so on
+
+This assumes that you have compiled `pocketsphinx.js` with `-DHMM_BASE=.../cmusphinx/pocketsphinx/model/hmm/en_US/ -DHMM_FOLDERS=hub4wsj_sc_8k -DHMM_EMBED=off`. Then, make sure you load all these generated JavaScript files (`mdef.js`, `variances.js`, etc.) before you load `pocketsphinx.js`.
 
 # 3. API of `pocketsphinx.js`
 

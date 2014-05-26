@@ -22,7 +22,6 @@ pkginclude_HEADERS =				\
 	hash_table.h				\
 	heap.h					\
 	huff_code.h				\
-	info.h					\
 	jsgf.h					\
 	listelem_alloc.h			\
 	logmath.h				\
@@ -36,5 +35,5 @@ pkginclude_HEADERS =				\
 	profile.h				\
 	sbthread.h				\
 	sphinxbase_export.h			\
-	strfuncs.h				\
-	unlimit.h
+	strfuncs.h
+

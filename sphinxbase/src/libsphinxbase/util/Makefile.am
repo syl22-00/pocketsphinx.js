@@ -23,7 +23,6 @@ libsphinxutil_la_SOURCES = \
 	hash_table.c \
 	heap.c \
 	huff_code.c \
-	info.c \
 	logmath.c \
 	mmio.c \
 	pio.c \
@@ -31,7 +30,6 @@ libsphinxutil_la_SOURCES = \
 	profile.c \
 	sbthread.c \
 	strfuncs.c \
-	unlimit.c \
 	utf8.c \
 	$(LAPACK_LITE_SRCS)
 
@@ -39,9 +37,7 @@ EXTRA_DIST = \
 	slamch.c \
 	slapack_lite.c \
 	blas_lite.c \
-	f2c_lite.c \
-	string_wce.c \
-	errno.c
+	f2c_lite.c
 
 INCLUDES = -I$(top_srcdir)/include/sphinxbase \
 	   -I$(top_srcdir)/include \

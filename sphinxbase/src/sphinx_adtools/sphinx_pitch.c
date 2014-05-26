@@ -35,6 +35,10 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdio.h>
 #include <string.h>
 
@@ -45,10 +49,6 @@
 #include <sphinxbase/strfuncs.h>
 #include <sphinxbase/err.h>
 #include <sphinxbase/pio.h>
-
-#ifndef WORDS_BIGENDIAN
-#define WORDS_BIGENDIAN 0
-#endif
 
 static arg_t defn[] = {
   { "-i",
@@ -237,12 +237,12 @@ read_riff_header(FILE *infh)
     }
     /* Length of 'fmt ' chunk */
     TRY_FREAD(&intval, 4, 1, infh);
-    SWAP_INT32(&intval);
+    SWAP_LE_32(&intval);
     header_len = intval;
 
     /* Data format. */
     TRY_FREAD(&shortval, 2, 1, infh);
-    SWAP_INT16(&shortval);
+    SWAP_LE_16(&shortval);
     if (shortval != 1) { /* PCM */
         E_ERROR("WAVE file is not in PCM format\n");
         goto error_out;
@@ -250,7 +250,7 @@ read_riff_header(FILE *infh)
 
     /* Number of channels. */
     TRY_FREAD(&shortval, 2, 1, infh);
-    SWAP_INT16(&shortval);
+    SWAP_LE_16(&shortval);
     if (shortval != 1) { /* PCM */
         E_ERROR("WAVE file is not single channel\n");
         goto error_out;
@@ -258,7 +258,7 @@ read_riff_header(FILE *infh)
 
     /* Sampling rate (finally!) */
     TRY_FREAD(&intval, 4, 1, infh);
-    SWAP_INT32(&intval);
+    SWAP_LE_32(&intval);
     if (cmd_ln_int32("-samprate") == 0)
         cmd_ln_set_int32("-samprate", intval);
     else if (cmd_ln_int32("-samprate") != intval) {
@@ -274,7 +274,7 @@ read_riff_header(FILE *infh)
 
     /* Bits per sample (must be 16) */
     TRY_FREAD(&shortval, 2, 1, infh);
-    SWAP_INT16(&shortval);
+    SWAP_LE_16(&shortval);
     if (shortval != 16) {
         E_ERROR("WAVE file is not 16-bit\n");
         goto error_out;
@@ -296,7 +296,7 @@ read_riff_header(FILE *infh)
             /* Some other stuff... */
             /* Number of bytes of ... whatever */
             TRY_FREAD(&intval, 4, 1, infh);
-            SWAP_INT32(&intval);
+            SWAP_LE_32(&intval);
             fseek(infh, intval, SEEK_CUR);
         }
     }
@@ -414,10 +414,7 @@ extract_pitch(const char *in, const char *out)
     else if (cmd_ln_boolean("-raw")) {
         /* Just use some defaults for sampling rate and endian. */
         if (cmd_ln_str("-input_endian") == NULL) {
-            if (WORDS_BIGENDIAN)
-                cmd_ln_set_str("-input_endian", "big");
-            else
-                cmd_ln_set_str("-input_endian", "little");
+            cmd_ln_set_str("-input_endian", "little");
         }
         if (cmd_ln_int32("-samprate") == 0)
             cmd_ln_set_int32("-samprate", 16000);
@@ -476,15 +473,17 @@ extract_pitch(const char *in, const char *out)
         yin_free(yin);
     ckd_free(buf);
     fclose(infh);
-    if (outfh != stdout)
+    if (outfh && outfh != stdout)
         fclose(outfh);
     return 0;
 
 error_out:
-    yin_free(yin);
+    if (yin)
+        yin_free(yin);
     ckd_free(buf);
     if (infh) fclose(infh);
-    if (outfh && outfh != stdout) fclose(outfh);
+    if (outfh && outfh != stdout) 
+        fclose(outfh);
     return -1;
 }
 

@@ -177,11 +177,14 @@ namespace pocketsphinxjs {
 
   ReturnType Recognizer::init(const Config& config) {
     parseStringList(HMM_FOLDERS, &acoustic_models, &default_acoustic_model);
+    std::cout << HMM_FOLDERS << " "  << " " << default_acoustic_model << std::endl;
 #ifdef LM_FILES
     parseStringList(LM_FILES, &language_models, &default_language_model);
+    std::cout << LM_FILES << " " << " " << default_language_model << std::endl;
 #endif /* LM_FILES */
 #ifdef DICT_FILES
     parseStringList(DICT_FILES, &dictionaries, &default_dictionary);
+    std::cout << DICT_FILES << " " << " " << default_dictionary << std::endl;
 #endif /* DICT_FILES */
 
     const arg_t cont_args_def[] = {
@@ -220,7 +223,9 @@ namespace pocketsphinxjs {
     char ** argv = new char*[argc];
     int index = 0;
     for (StringsMapIterator i = parameters.begin() ; i != parameters.end(); ++i) {
+      std::cout << "Parameter " << " " << i->first << " " << i->second << std::endl;
       if (isValidParameter(i->first, i->second)) {
+	std::cout <<"Valid\n";
 	if (i->first == "-lm") is_fsg = false;
 	argv[index++] = (char*) i->first.c_str();
 	argv[index++] = (char*) i->second.c_str();

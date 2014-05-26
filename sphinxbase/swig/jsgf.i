@@ -77,6 +77,10 @@
   ~JsgfRule() {
   }
 
+  static JsgfRule * fromIter(jsgf_rule_iter_t *itor) {
+    return jsgf_rule_iter_rule(itor);
+  }
+
   const char * name() {
     return jsgf_rule_name($self);
   }
@@ -86,11 +90,3 @@
   }
 }
 
-%runtime %{
-jsgf_rule_t * next_JsgfIterator(jsgf_rule_iter_t *iter)
-{
-    return jsgf_rule_iter_rule(iter);
-}
-%}
-
-/* vim: set ts=4 sw=4: */

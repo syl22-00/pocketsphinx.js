@@ -29,7 +29,7 @@ SOURCE agc.c cmn.c cmn_prior.c feat.c lda.c
 SOURCEPATH ..\src\libsphinxbase\lm
 SOURCE fsg_model.c jsgf.c jsgf_parser.c jsgf_scanner.c lm3g_model.c ngram_model.c ngram_model_arpa.c ngram_model_dmp.c ngram_model_dmp32.c ngram_model_set.c
 SOURCEPATH ..\src\libsphinxbase\util
-SOURCE bio.c bitvec.c blas_lite.c case.c ckd_alloc.c cmd_ln.c dtoa.c err.c f2c_lite.c filename.c genrand.c glist.c hash_table.c heap.c huff_code.c info.c listelem_alloc.c logmath.c matrix.c mmio.c pio.c profile.c sbthread.c slamch.c slapack_lite.c strfuncs.c unlimit.c utf8.c
+SOURCE bio.c bitvec.c blas_lite.c case.c ckd_alloc.c cmd_ln.c dtoa.c err.c f2c_lite.c filename.c genrand.c glist.c hash_table.c heap.c huff_code.c listelem_alloc.c logmath.c matrix.c mmio.c pio.c profile.c sbthread.c slamch.c slapack_lite.c strfuncs.c unlimit.c utf8.c
 SOURCEPATH ..\src\libsphinxad
 SOURCE ad_s60.cpp
 

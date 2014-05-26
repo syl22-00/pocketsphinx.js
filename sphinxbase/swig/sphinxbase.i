@@ -56,6 +56,7 @@ negative error code."
 
 #if SWIGJAVA
 %module SphinxBase
+%rename("%(lowercamelcase)s", notregexmatch$name="^[A-Z]") "";
 #else
 %module(docstring=DOCSTRING) sphinxbase
 #endif
@@ -63,6 +64,7 @@ negative error code."
 %feature("autodoc", "1");
 
 %include typemaps.i
+%include iterators.i
 
 %begin %{
 #include <sphinxbase/cmd_ln.h>
@@ -95,9 +97,16 @@ typedef struct {} Feature;
 typedef struct {} FsgModel;
 typedef struct {} JsgfRule;
 typedef struct {} NGramModel;
+typedef struct {} LogMath;
 
-iterable(NGramModelSet, ngram_model_set, NGramModel)
-iterable(Jsgf, jsgf_rule, JsgfRule)
+sb_iterator(NGramModelSet, ngram_model_set_iter, NGramModel);
+sb_iterator(Jsgf, jsgf_rule_iter, JsgfRule)
+
+sb_iterable(NGramModelSet, ngram_model_set_iter, NGramModel)
+sb_iterable(Jsgf, jsgf_rule_iter, JsgfRule)
+
+typedef struct {} NGramModelSet;
+typedef struct {} Jsgf;
 
 #ifdef HAS_DOC
 %include pydoc.i
@@ -108,3 +117,5 @@ iterable(Jsgf, jsgf_rule, JsgfRule)
 %include fsg_model.i
 %include jsgf.i
 %include ngram_model.i
+%include logmath.i
+

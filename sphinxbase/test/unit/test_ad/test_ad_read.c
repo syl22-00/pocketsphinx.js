@@ -48,7 +48,7 @@ main(int argc, char *argv[])
 	    printf(" failed; file too short?\n");
     else
 	    printf(" done after %ld samples\n", ftell(infp) / 2);
-    rewind(infp);
+    fseek(infp, 0L, SEEK_SET);
 
     listening = FALSE;
     while (1) {

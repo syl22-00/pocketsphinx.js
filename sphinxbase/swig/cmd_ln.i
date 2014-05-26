@@ -41,39 +41,39 @@
         cmd_ln_free_r($self);
     }
 
-    void set_boolean(char const *key, bool val) {
+    void set_boolean(const char *key, bool val) {
         cmd_ln_set_boolean_r($self, key, val);
     }
 
-    void set_int(char const *key, int val) {
+    void set_int(const char *key, int val) {
         cmd_ln_set_int_r($self, key, val);
     }
 
-    void set_float(char const *key, double val) {
+    void set_float(const char *key, double val) {
         cmd_ln_set_float_r($self, key, val);
     }
 
-    void set_string(char const *key, char const *val) {
+    void set_string(const char *key, const char *val) {
         cmd_ln_set_str_r($self, key, val);
     }
 
-    bool exists(char const *key) {
+    bool exists(const char *key) {
         return cmd_ln_exists_r($self, key);
     }
 
-    bool get_boolean(char const *key) {
+    bool get_boolean(const char *key) {
         return cmd_ln_boolean_r($self, key);
     }
 
-    int get_int(char const *key) {
+    int get_int(const char *key) {
         return cmd_ln_int_r($self, key);
     }
 
-    double get_float(char const *key) {
+    double get_float(const char *key) {
         return cmd_ln_float_r($self, key);
     }
 
-    char const *get_string(char const *key) {
+    const char *get_string(const char *key) {
         return cmd_ln_str_r($self, key);
     }
 }

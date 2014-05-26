@@ -48,10 +48,8 @@
 
 #ifdef __cplusplus
 extern "C" extern int errno;
-extern "C" char *__cdecl strerror(int errnum );
 #else
 extern int errno;
-char *__cdecl strerror(int errnum);
 #endif
 
 #define EPERM           1

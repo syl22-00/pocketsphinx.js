@@ -48,11 +48,4 @@
 
 #if defined(_WIN32_WCE)
 int errno;
-int _doserrno;
-int _sys_nerr;
-
-char* strerror(int errno){ 
-    static char buf[32]="wince::strerror called."; 
-    return buf; 
-} 
 #endif

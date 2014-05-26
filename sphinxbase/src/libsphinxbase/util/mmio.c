@@ -73,7 +73,6 @@
 #include "sphinxbase/mmio.h"
 #include "sphinxbase/ckd_alloc.h"
 
-/** Silvio Moioli: slightly updated */
 #if defined(_WIN32_WCE) || defined(GNUWINCE)
 struct mmio_file_s {
 	int dummy;

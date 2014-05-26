@@ -211,7 +211,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\..\src\libsphinxbase\util\errno.c" />
     <ClCompile Include="..\..\src\libsphinxbase\util\f2c_lite.c">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -298,12 +297,6 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ClCompile Include="..\..\src\libsphinxbase\util\huff_code.c" />
-    <ClCompile Include="..\..\src\libsphinxbase\util\info.c">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
     <ClCompile Include="..\..\src\libsphinxbase\lm\jsgf.c" />
     <ClCompile Include="..\..\src\libsphinxbase\lm\jsgf_parser.c" />
     <ClCompile Include="..\..\src\libsphinxbase\lm\jsgf_scanner.c" />
@@ -371,13 +364,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\..\src\libsphinxbase\util\string_wce.c" />
-    <ClCompile Include="..\..\src\libsphinxbase\util\unlimit.c">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
     <ClCompile Include="..\..\src\libsphinxbase\util\utf8.c" />
     <ClCompile Include="..\..\src\libsphinxbase\fe\yin.c" />
   </ItemGroup>
@@ -418,7 +404,6 @@
     <ClInclude Include="..\..\include\hash_table.h" />
     <ClInclude Include="..\..\include\heap.h" />
     <ClInclude Include="..\..\include\huff_code.h" />
-    <ClInclude Include="..\..\include\info.h" />
     <ClInclude Include="..\..\include\jsgf.h" />
     <ClInclude Include="..\..\src\libsphinxbase\lm\jsgf_internal.h" />
     <ClInclude Include="..\..\src\libsphinxbase\lm\jsgf_parser.h" />
@@ -443,7 +428,6 @@
     <ClInclude Include="..\..\include\sphinx_types.h" />
     <ClInclude Include="..\..\include\sphinxbase_export.h" />
     <ClInclude Include="..\..\include\strfuncs.h" />
-    <ClInclude Include="..\..\include\unlimit.h" />
     <ClInclude Include="..\..\include\yin.h" />
   </ItemGroup>
   <ItemGroup>

@@ -93,7 +93,7 @@ main(int argc, char *argv[])
         }
     }
     else if (!strcmp(argv[1], "str2words")) {
-        char *line = strdup("    foo bar baz argh");
+        char *line = ckd_salloc("    foo bar baz argh");
         char **words;
         int n;
 
@@ -119,7 +119,7 @@ main(int argc, char *argv[])
         return 0;
     }
     else if (!strcmp(argv[1], "nextword")) {
-        char *line = strdup(" \tfoo bar\nbaz argh");
+        char *line = ckd_salloc(" \tfoo bar\nbaz argh");
         char *word;
         const char *delim = " \t\n";
         char delimfound;
@@ -174,7 +174,7 @@ main(int argc, char *argv[])
             printf("didn't get -1 at end of string\n");
         }
 
-        line = strdup("FOO!");
+        line = ckd_salloc("FOO!");
         n = nextword(line, delim, &word, &delimfound);
         if (strcmp(word, "FOO!") != 0) {
             printf("%s != FOO!\n", word);

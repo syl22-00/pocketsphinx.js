@@ -41,9 +41,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#ifndef _WIN32_WCE
 #include <errno.h>
-#endif
 
 /* Win32/WinCE DLL gunk */
 #include <sphinxbase/sphinxbase_export.h>
@@ -89,31 +87,16 @@ extern "C" {
 /**
  * Print error text; Call perror(""); exit(errno);
  */
-#define E_FATAL_SYSTEM(fmt, ...)                                             \
+#define E_FATAL_SYSTEM(...)                                                  \
     do {                                                                     \
-        int local_errno = errno;                                             \
-        char *err_fmt = (char *) malloc(strlen(": %s\n") + strlen(fmt) + 1); \
-        strcpy(err_fmt, fmt);                                                \
-        strcat(err_fmt, ": %s\n");                                           \
-        err_msg(ERR_FATAL, FILELINE, err_fmt,                                \
-                ##__VA_ARGS__, strerror(local_errno));                       \
-        free(err_fmt);                                                       \
-        exit(local_errno);                                                   \
+        err_msg_system(ERR_FATAL, FILELINE, __VA_ARGS__);		     \
+        exit(EXIT_FAILURE);                                                  \
     } while (0)
 
 /**
  * Print error text; Call perror("");
  */
-#define E_ERROR_SYSTEM(fmt, ...)                                             \
-    do {                                                                     \
-        int local_errno = errno;                                             \
-        char *err_fmt = (char *) malloc(strlen(": %s\n") + strlen(fmt) + 1); \
-        strcpy(err_fmt, fmt);                                                \
-        strcat(err_fmt, ": %s\n");                                           \
-        err_msg(ERR_ERROR, FILELINE, err_fmt,                                \
-                ##__VA_ARGS__, strerror(local_errno));                       \
-        free(err_fmt);                                                       \
-    } while (0)
+#define E_ERROR_SYSTEM(...)     err_msg_system(ERR_ERROR, FILELINE, __VA_ARGS__)
 
 /**
  * Print error message to error log
@@ -174,6 +157,9 @@ typedef enum err_e {
 
 SPHINXBASE_EXPORT void
 err_msg(err_lvl_t lvl, const char *path, long ln, const char *fmt, ...);
+
+SPHINXBASE_EXPORT void
+err_msg_system(err_lvl_t lvl, const char *path, long ln, const char *fmt, ...);
 
 SPHINXBASE_EXPORT void
 err_logfp_cb(void * user_data, err_lvl_t level, const char *fmt, ...);

@@ -48,9 +48,6 @@
 /* The size of `long', as computed by sizeof. */
 #define SIZEOF_LONG 4
 
-/* Yes, we have errno.h */
-#define HAVE_ERRNO_H 1
-
 /* We don't have popen, but we do have _popen */
 /* #define HAVE_POPEN 1 */
 

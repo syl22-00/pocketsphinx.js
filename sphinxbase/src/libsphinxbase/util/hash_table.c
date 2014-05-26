@@ -595,7 +595,7 @@ hash_table_display(hash_table_t * h, int32 showdisplay)
             else
                 printf("%p", e->key);
 
-            printf("|len:%d|val=%ld|->", e->len, (long)e->val);
+            printf("|len:%zd|val=%ld|->", e->len, (long)e->val);
             if (e->next == NULL) {
                 printf("NULL\n");
             }
@@ -606,7 +606,7 @@ hash_table_display(hash_table_t * h, int32 showdisplay)
                 if (showdisplay)
                     printf("%s", e->key);
 
-                printf("|len:%d|val=%ld|->", e->len, (long)e->val);
+                printf("|len:%zd|val=%ld|->", e->len, (long)e->val);
                 if (e->next == NULL) {
                     printf("NULL\n");
                 }

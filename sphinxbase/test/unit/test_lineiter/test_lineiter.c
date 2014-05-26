@@ -21,7 +21,7 @@ main(int argc, char *argv[])
 
 	lineiter_free(li);
 	
-	rewind(fp);
+        fseek(fp, 0L, SEEK_SET);
 	
 	for (i = 0, li = lineiter_start_clean(fp); i < 3 && li; li = lineiter_next(li), i++) {
 	    printf ("Clean line is %s\n", li->buf);

@@ -38,13 +38,13 @@ In addition to speech recognition, there is also a keyword spotting functionalit
 
 # 2. Compilation of `pocketsphinx.js`
 
-A prebuilt version of `pocketsphinx.js` is available in `webapp/js`, or you can build it yourself. Below is the procedure on Linux (and Mac OS X). On Windows, refer to the emscripten manual. Note that recent versions of emscripten have enabled a feature called `fastcomp` which does not work with `pocketsphinx.js` (because it does not yet support `embind`), so you will need to set the environment variable `EMCC_FAST_COMPILER` to 0 (https://github.com/kripken/emscripten/wiki/LLVM-Backend).
+A prebuilt version of `pocketsphinx.js` is available in `webapp/js`, or you can build it yourself. Below is the procedure on Linux (and Mac OS X). On Windows, refer to the emscripten manual.
 
 ## 2.a Compilation with the default acoustic model
 
 You will need:
 
-* [emscripten](https://github.com/kripken/emscripten) (which implies also node.js and LLVM), 
+* [emscripten](https://github.com/kripken/emscripten) (which implies also node.js and LLVM-fastcomp compiler, see emscripten docs for instructions on how to get it), 
 * [CMake](http://www.cmake.org/).
 
 The build is a classic CMake cross-compilation, using the toolchain provided by emscripten:

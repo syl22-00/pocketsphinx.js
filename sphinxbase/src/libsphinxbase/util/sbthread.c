@@ -149,7 +149,7 @@ cond_timed_wait(HANDLE cond, int sec, int nsec)
     return rv;
 }
 
-/* Silvio Moioli: updated to use Unicode */
+/* Updated to use Unicode */
 sbevent_t *
 sbevent_init(void)
 {

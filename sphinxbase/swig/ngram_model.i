@@ -37,6 +37,19 @@
 
 
 %extend NGramModel {
+
+    static NGramModel *fromIter(ngram_model_set_iter_t *itor) {
+        const char *name;
+	return ngram_model_set_iter_model(itor, &name);
+    }
+
+    NGramModel(const char *path) {
+        logmath_t *lmath = logmath_init(1.0001, 0, 0);
+        ngram_model_t * model = ngram_model_read(NULL, path, NGRAM_AUTO, lmath);
+        logmath_free(lmath);
+        return model;
+    }
+
     NGramModel(Config *config, LogMath *logmath, const char *path) {
         return ngram_model_read(config, path, NGRAM_AUTO, logmath);
     }
@@ -116,12 +129,3 @@
     }
 }
 
-%runtime %{
-ngram_model_t * next_NGramModelSetIterator(ngram_model_set_iter_t *iter)
-{
-    const char *name;
-    return ngram_model_set_iter_model(iter, &name);
-}
-%}
-
-/* vim: set ts=4 sw=4: */

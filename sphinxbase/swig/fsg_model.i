@@ -38,12 +38,17 @@
 
 // TODO: search for functions returning error code
 %extend FsgModel {
+
+    FsgModel(const char *name, LogMath *logmath, float lw, int32 n) {
+	return fsg_model_init(name, logmath, lw, n);
+    }
+
     FsgModel(fsg_model_t *ptr) {
         return ptr;
     }
 
-    FsgModel(char const *path, LogMath *logmath, float w) {
-        return fsg_model_readfile(path, logmath, w);
+    FsgModel(const char *path, LogMath *logmath, float lw) {
+        return fsg_model_readfile(path, logmath, lw);
     }
 
     ~FsgModel() {

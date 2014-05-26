@@ -427,7 +427,7 @@ fread_retry(void *pointer, int32 size, int32 num_items, FILE * stream)
             --n_retry_rem;
 
             loc += n_items_read * size;
-#ifdef HAVE_UNISTD_H
+#if !defined(_WIN32) && defined(HAVE_UNISTD_H)
             sleep(1);
 #endif
         }
@@ -437,7 +437,6 @@ fread_retry(void *pointer, int32 size, int32 num_items, FILE * stream)
 }
 
 
-/* Silvio Moioli: updated to use Unicode */
 #ifdef _WIN32_WCE /* No stat() on WinCE */
 int32
 stat_retry(const char *file, struct stat * statbuf)

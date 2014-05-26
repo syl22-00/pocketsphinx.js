@@ -85,7 +85,6 @@
 #include "sphinxbase/err.h"
 #include "sphinxbase/ckd_alloc.h"
 
-/* Silvio Moioli: updated to use Unicode */
 #ifdef _WIN32_WCE
 DWORD unlink(const char *filename)
 {

@@ -51,6 +51,12 @@
 #include <sphinxbase/strfuncs.h>
 #include <sphinxbase/jsgf.h>
 
+
+/* Flex uses strdup which is missing on WinCE */
+#if defined(_WIN32) || defined(_WIN32_WCE)
+#define strdup _strdup
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

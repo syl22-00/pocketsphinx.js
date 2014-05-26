@@ -42,7 +42,7 @@ foreach(cfile ${feat_src_files})
     set(feat_srcs ${feat_srcs} "${feat_folder}/${cfile}")
 endforeach(cfile)
 
-set(util_src_files bio.c bitvec.c case.c ckd_alloc.c cmd_ln.c dtoa.c err.c errno.c f2c_lite.c filename.c genrand.c glist.c hash_table.c heap.c huff_code.c info.c listelem_alloc.c logmath.c matrix.c mmio.c pio.c profile.c sbthread.c strfuncs.c utf8.c )
+set(util_src_files bio.c bitvec.c case.c ckd_alloc.c cmd_ln.c dtoa.c err.c errno.c f2c_lite.c filename.c genrand.c glist.c hash_table.c heap.c huff_code.c listelem_alloc.c logmath.c matrix.c mmio.c pio.c profile.c sbthread.c strfuncs.c utf8.c)
 set(util_srcs "")
 foreach(cfile ${util_src_files})
     set(util_srcs ${util_srcs} "${util_folder}/${cfile}")
@@ -123,7 +123,7 @@ endif()
 
 # Adding custom target for the JavaScript library. Note -O2 -s ASM_JS=0, which seems to be necessary with bind
 add_custom_target(${ps_lib_js} ALL
-  COMMAND ${CMAKE_C_COMPILER} -O2 -s ASM_JS=0 -s ALLOW_MEMORY_GROWTH=${ALLOW_MEMORY_GROWTH} --bind ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
+  COMMAND ${CMAKE_C_COMPILER} -O2 -s ALLOW_MEMORY_GROWTH=${ALLOW_MEMORY_GROWTH} --bind ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
   DEPENDS ${ps_lib}
   )
 

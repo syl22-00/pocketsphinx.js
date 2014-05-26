@@ -62,9 +62,8 @@
 #define WO_BUFSIZE	3200    /* Samples/buf */
 #define N_WO_BUF	2       /* #Playback bufs */
 
-/* Silvio Moioli: using OutputDebugStringW instead of OutputDebugString */
 #ifdef _WIN32_WCE
-#include "ckd_alloc.h"
+#include "sphinxbase/ckd_alloc.h"
 static void
 waveout_error(char *src, int32 ret)
 {

@@ -42,7 +42,6 @@ headers = \
 	$(top_srcdir)/include/sphinxbase/glist.h \
 	$(top_srcdir)/include/sphinxbase/hash_table.h \
 	$(top_srcdir)/include/sphinxbase/heap.h \
-	$(top_srcdir)/include/sphinxbase/info.h \
 	$(top_srcdir)/include/sphinxbase/jsgf.h \
 	$(top_srcdir)/include/sphinxbase/listelem_alloc.h \
 	$(top_srcdir)/include/sphinxbase/logmath.h \
@@ -55,7 +54,6 @@ headers = \
 	$(top_srcdir)/include/sphinxbase/profile.h \
 	$(top_srcdir)/include/sphinxbase/sphinxbase_export.h \
 	$(top_srcdir)/include/sphinxbase/strfuncs.h \
-	$(top_srcdir)/include/sphinxbase/unlimit.h \
 	$(top_srcdir)/include/sphinxbase/yin.h
 
 latex/refman.pdf: doxyfile $(headers)

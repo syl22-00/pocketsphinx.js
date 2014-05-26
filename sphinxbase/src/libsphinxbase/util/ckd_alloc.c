@@ -8,27 +8,27 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * This work was supported in part by funding from the Defense Advanced 
- * Research Projects Agency and the National Science Foundation of the 
+ * This work was supported in part by funding from the Defense Advanced
+ * Research Projects Agency and the National Science Foundation of the
  * United States of America, and the CMU Sphinx Speech Consortium.
  *
- * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
- * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
  * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ====================================================================
@@ -43,7 +43,7 @@
  * Copyright (c) 1999 Carnegie Mellon University.
  * ALL RIGHTS RESERVED.
  * **********************************************
- * 
+ *
  * HISTORY
  * $Log: ckd_alloc.c,v $
  * Revision 1.6  2005/06/22 02:59:25  arthchan2003
@@ -52,11 +52,11 @@
  * Revision 1.3  2005/03/30 01:22:48  archan
  * Fixed mistakes in last updates. Add
  *
- * 
+ *
  * 19-Jun-97	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Removed file,line arguments from free functions.
  * 		Removed debugging stuff.
- * 
+ *
  * 01-Jan-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
  * 		Created.
  */
@@ -74,13 +74,13 @@
  *********************************************************************
  *
  * file: ckd_alloc.c
- * 
- * traceability: 
- * 
- * description: 
- * 
- * author: 
- * 
+ *
+ * traceability:
+ *
+ * description:
+ *
+ * author:
+ *
  *********************************************************************/
 
 
@@ -99,7 +99,7 @@
 
 /**
  * Target for longjmp() on failure.
- * 
+ *
  * FIXME: This should be in thread-local storage.
  */
 static jmp_buf *ckd_target;
@@ -128,7 +128,7 @@ ckd_fail(char *format, ...)
     va_end(args);
 
     if (jmp_abort)
-        /* Silvio Moioli: abort() doesn't exist in Windows CE */
+        /* abort() doesn't exist in Windows CE */
         #if defined(_WIN32_WCE)
         exit(-1);
         #else
@@ -148,7 +148,7 @@ __ckd_calloc__(size_t n_elem, size_t elem_size,
 
 #if defined(__ADSPBLACKFIN__) && !defined(__linux__)
     if ((mem = heap_calloc(heap_lookup(1),n_elem, elem_size)) == NULL)
-    	if ((mem = heap_calloc(heap_lookup(0),n_elem, elem_size)) == NULL) 
+    	if ((mem = heap_calloc(heap_lookup(0),n_elem, elem_size)) == NULL)
     	{
         	ckd_fail("calloc(%d,%d) failed from %s(%d), free space: %d\n", n_elem,
                 elem_size, caller_file, caller_line,space_unused());
@@ -159,7 +159,7 @@ __ckd_calloc__(size_t n_elem, size_t elem_size,
                 elem_size, caller_file, caller_line);
 	}
 #endif
-    	
+
 
     return mem;
 }
@@ -172,13 +172,13 @@ __ckd_malloc__(size_t size, const char *caller_file, int caller_line)
 
 #if defined(__ADSPBLACKFIN__) && !defined(__linux__)
     if ((mem = heap_malloc(heap_lookup(0),size)) == NULL)
-       	if ((mem = heap_malloc(heap_lookup(1),size)) == NULL) 
+       	if ((mem = heap_malloc(heap_lookup(1),size)) == NULL)
 #else
     if ((mem = malloc(size)) == NULL)
 #endif
 	        ckd_fail("malloc(%d) failed from %s(%d)\n", size,
                 caller_file, caller_line);
-                
+
     return mem;
 }
 
@@ -207,6 +207,9 @@ __ckd_salloc__(const char *orig, const char *caller_file,
 {
     size_t len;
     char *buf;
+
+    if (!orig)
+        return NULL;
 
     len = strlen(orig) + 1;
     buf = (char *) __ckd_malloc__(len, caller_file, caller_line);
@@ -323,7 +326,7 @@ __ckd_calloc_4d__(size_t d1,
 	E_FATAL("ckd_calloc_4d failed for caller at %s(%d) at %s(%d)\n",
 		file, line, __FILE__, __LINE__);
     }
-    
+
     tmp1 = calloc(d1 * d2 * d3, sizeof(void *));
     if (tmp1 == NULL) {
 	E_FATAL("ckd_calloc_4d failed for caller at %s(%d) at %s(%d)\n",
@@ -341,7 +344,7 @@ __ckd_calloc_4d__(size_t d1,
 	E_FATAL("ckd_calloc_4d failed for caller at %s(%d) at %s(%d)\n",
 		file, line, __FILE__, __LINE__);
     }
-    
+
     for (i = 0, j = 0; i < d1*d2*d3; i++, j += d4) {
 	tmp1[i] = &((char *)store)[j*elem_size];
     }
@@ -385,19 +388,19 @@ __ckd_alloc_3d_ptr(size_t d1,
     void **tmp1;
     void ***out;
     size_t i, j;
-    
+
     tmp1 = __ckd_calloc__(d1 * d2, sizeof(void *), file, line);
 
     out  = __ckd_calloc__(d1, sizeof(void **), file, line);
-    
+
     for (i = 0, j = 0; i < d1*d2; i++, j += d3) {
 	tmp1[i] = &((char *)store)[j*elem_size];
     }
-    
+
     for (i = 0, j = 0; i < d1; i++, j += d2) {
 	out[i] = &tmp1[j];
     }
-    
+
     return out;
 }
 
@@ -411,9 +414,9 @@ __ckd_alloc_2d_ptr(size_t d1,
 {
     void **out;
     size_t i, j;
-    
+
     out = __ckd_calloc__(d1, sizeof(void *), file, line);
-    
+
     for (i = 0, j = 0; i < d1; i++, j += d2) {
 	out[i] = &((char *)store)[j*elem_size];
     }

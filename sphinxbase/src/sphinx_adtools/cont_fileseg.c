@@ -373,7 +373,7 @@ main(int32 argc, char **argv)
         printf(" failed; file too short?\n");
     else
         printf(" done\n");
-    rewind(infp);
+    fseek(infp, 0L, SEEK_SET);
 
     /* Convert desired min. inter-utterance silence duration to #samples */
     siltime = (int32) (endsil * sps);

@@ -1355,7 +1355,6 @@ fe_vad_hangover(fe_t * fe, mfcc_t * fea)
 {
     /* track vad state and deal with cepstrum prespeech buffer */
     fe->vad_data->state_changed = 0;
-    fe->vad_data->frame_idx++;
     if (fe->vad_data->local_state) {
         fe->vad_data->postspch_num = 0;
         if (!fe->vad_data->global_state) {

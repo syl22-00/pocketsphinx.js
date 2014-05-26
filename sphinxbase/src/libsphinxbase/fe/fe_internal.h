@@ -122,7 +122,6 @@ typedef struct vad_data_s {
     uint8 store_pcm;
     int16 prespch_num;
     int16 postspch_num;
-    int32 frame_idx;
     prespch_buf_t* prespch_buf;	
 } vad_data_t;
 

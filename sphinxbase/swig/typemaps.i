@@ -3,9 +3,82 @@
 %apply int {int32};
 
 #if SWIGPYTHON
-%include python.i
+
+%include <file.i>
+
+// Special typemap for arrays of audio.
+%typemap(in) \ 
+  (const void *SDATA, size_t NSAMP) = (const char *STRING, size_t LENGTH);
+
+%typemap(check) size_t NSAMP {
+  char buf[64];
+  if ($1 % sizeof(int16)) {
+    sprintf(buf, "block size must be a multiple of %zd", sizeof(int16));
+    SWIG_exception(SWIG_ValueError, buf);
+  }
+}
+
+// Special typemap for string array
+%typemap(in) (size_t n, char **ptr) {
+  /* Check if is a list */
+  if (PyList_Check($input)) {
+    int i;
+    $1 = PyList_Size($input);
+    $2 = (char **) malloc(($1)*sizeof(char *));
+    for (i = 0; i < $1; i++) {
+      PyObject *o = PyList_GetItem($input,i);
+      if (PyString_Check(o))
+        $2[i] = PyString_AsString(PyList_GetItem($input,i));
+      else {
+        PyErr_SetString(PyExc_TypeError,"must be a list of strings");
+        free($2);
+        return NULL;
+      }
+    }
+  } else {
+    PyErr_SetString(PyExc_TypeError,"list type expected");
+    return NULL;
+  }
+}
+
+%typemap(freearg) (size_t n, char **ptr) {
+  free($2);
+}
 #elif SWIGJAVA
-%include java.i
+
+%include <arrays_java.i>
+
+// Special typemap for arrays of audio.
+%apply short[] {const int16 *SDATA};
+
+// Typemap for arrays of strings used in ngram for example
+%typemap(in) (size_t n, char **ptr) {
+  int i = 0;
+  $1 = (*jenv)->GetArrayLength(jenv, $input);
+  $2 = (char **) malloc(($1)*sizeof(char *));
+  /* make a copy of each string */
+  for (i = 0; i<$1; i++) {
+    jstring j_string = (jstring)(*jenv)->GetObjectArrayElement(jenv, $input, i);
+    const char * c_string = (*jenv)->GetStringUTFChars(jenv, j_string, 0);
+    $2[i] = malloc((strlen(c_string)+1)*sizeof(char));
+    strcpy($2[i], c_string);
+    (*jenv)->ReleaseStringUTFChars(jenv, j_string, c_string);
+    (*jenv)->DeleteLocalRef(jenv, j_string);
+  }
+}
+
+%typemap(freearg) (size_t n, char **ptr) {
+  int i;
+  for (i=0; i<$1; i++)
+    free($2[i]);
+  free($2);
+}
+
+%typemap(jni) (size_t n, char **ptr) "jobjectArray"
+%typemap(jtype) (size_t n, char **ptr) "String[]"
+%typemap(jstype) (size_t n, char **ptr) "String[]"
+%typemap(javain) (size_t n, char **ptr) "$javainput"
+
 #endif
 
 // Define typemaps to wrap error codes returned by some functions,
@@ -23,111 +96,3 @@
   }
 }
 
-// Macro to construct iterable objects.
-%define iterable(TYPE, PREFIX, VALUE_TYPE)
-
-#if SWIGJAVA
-%typemap(javainterfaces) TYPE "Iterable<"#VALUE_TYPE">"
-%typemap(javainterfaces) TYPE##Iterator "java.util.Iterator<"#VALUE_TYPE">"
-
-%javamethodmodifiers TYPE::__iter__ "private";
-
-%typemap(javabody) TYPE %{
-
-  private long swigCPtr;
-  protected boolean swigCMemOwn;
-
-  public $javaclassname(long cPtr, boolean cMemoryOwn) {
-    swigCMemOwn = cMemoryOwn;
-    swigCPtr = cPtr;
-  }
-
-  public static long getCPtr($javaclassname obj) {
-    return (obj == null) ? 0 : obj.swigCPtr;
-  }
-
-  @Override
-  public java.util.Iterator<VALUE_TYPE> iterator() {
-    return iter();
-  }
-%}
-
-%typemap(javabody) TYPE##Iterator %{
-
-  private long swigCPtr;
-  protected boolean swigCMemOwn;
-
-  public $javaclassname(long cPtr, boolean cMemoryOwn) {
-    swigCMemOwn = cMemoryOwn;
-    swigCPtr = cPtr;
-  }
-
-  public static long getCPtr($javaclassname obj) {
-    return (obj == null) ? 0 : obj.swigCPtr;
-  }
-
-  @Override
-  public void remove() {
-    throw new UnsupportedOperationException();
-  }
-%}
-#endif
-
-%inline %{
-typedef struct {
-  PREFIX##_iter_t *ptr;
-} TYPE##Iterator;
-%}
-
-typedef struct {} TYPE;
-
-%exception TYPE##Iterator##::next() {
-  if (!arg1->ptr) {
-#if SWIGJAVA
-    jclass cls = (*jenv)->FindClass(jenv, "java/util/NoSuchElementException");
-    (*jenv)->ThrowNew(jenv, cls, NULL);
-    return $null;
-#elif SWIGPYTHON
-    SWIG_SetErrorObj(PyExc_StopIteration, SWIG_Py_Void());
-    SWIG_fail;
-#endif
-  }
-  $action;
-}
-
-%extend TYPE##Iterator {
-  TYPE##Iterator(PREFIX##_iter_t *ptr) {
-    TYPE##Iterator *iter = ckd_malloc(sizeof *iter);
-    iter->ptr = ptr;
-    return iter;
-  }
-
-  ~TYPE##Iterator() {
-    PREFIX##_iter_free($self->ptr);
-    ckd_free($self);
-  }
-
-  VALUE_TYPE * next() {
-    if ($self->ptr) {
-      VALUE_TYPE *value = next_##TYPE##Iterator($self->ptr);
-      $self->ptr = PREFIX##_iter_next($self->ptr);
-      return value;
-    }
-
-    return NULL;
-  }
-
-#if SWIGJAVA
-  bool hasNext() {
-    return $self->ptr != NULL;
-  }
-#endif
-}
-
-%extend TYPE {
-  TYPE##Iterator * __iter__() {
-    return new_##TYPE##Iterator(PREFIX##_iter($self));
-  }
-}
-
-%enddef

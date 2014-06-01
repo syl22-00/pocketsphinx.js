@@ -12,14 +12,14 @@
  $ cmake .. -DEMSCRIPTEN=1 \
    -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Platform/Emscripten.cmake \
    -DHMM_BASE=path_to_pocketsphinx/model/hmm/zh \
-   -DHMM_FOLDERS=tdt_sc_8k -DALLOW_MEMORY_GROWTH=1
+   -DHMM_FOLDERS=tdt_sc_8k
     </pre>
-    <p>It uses the file <code>../webapp/js/pocketsphinx_zh.js</code>.</p>
+    <p>It uses the file <code>../webapp/js/pocketsphinx_zh.js</code> instead of the one in the build folder as for the other test suites.</p>
     <p>A pronunciation dictionary for Chinese based on this phone set can be found in PocketSphinx on the subversion directory in <code>model/lm/zh_CN/mandarin_notone.dic</code>.
     <div id="qunit"></div>
     <div id="qunit-fixture"></div>
     <script src="js/qunit-1.14.0.js"></script>
-    <script src="../build/pocketsphinx_zh.js"></script>
+    <script src="../webapp/js/pocketsphinx_zh.js"></script>
     <script src="js/tests_zh.js"></script>
   </body>
 </html>

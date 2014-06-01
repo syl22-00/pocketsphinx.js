@@ -100,24 +100,6 @@ sleep_msec(int32 ms)
 #endif
 }
 
-static
-char *
-replace_str(char *str, char *orig, char *rep)
-{
-    static char buffer[4096];
-    char *p;
-
-    if (!(p = strstr(str, orig)))
-        return str;
-
-    strncpy(buffer, str, p - str);
-    buffer[p - str] = '\0';
-
-    sprintf(buffer + (p - str), "%s%s", rep, p + strlen(orig));
-
-    return buffer;
-}
-
 static int
 read_audio_file(int16 * buf, int len)
 {
@@ -140,6 +122,8 @@ read_audio_adev(int16 * buf, int len)
     while ((k = ad_read(ad, buf, len)) == 0)
         /* wait until something is read */
         sleep_msec(50);
+    
+    return k;
 }
 
 void
@@ -250,7 +234,7 @@ main(int argc, char *argv[])
 
     if ((infile_path = cmd_ln_str_r(config, "-infile")) != NULL) {
         if ((infile = fopen(infile_path, "rb")) == NULL) {
-            E_FATAL("Unable to read audio from [%s]\n", infile_path);
+            E_FATAL_SYSTEM("Failed to read audio from '%s'", infile_path);
             return 1;
         }
         read_audio = &read_audio_file;

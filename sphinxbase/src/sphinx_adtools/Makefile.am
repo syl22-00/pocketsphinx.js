@@ -1,7 +1,8 @@
-bin_PROGRAMS = sphinx_cont_adseg sphinx_cont_fileseg sphinx_pitch
+bin_PROGRAMS = sphinx_cont_adseg sphinx_cont_fileseg sphinx_pitch sphinx_cont_seg
 
 sphinx_cont_adseg_SOURCES = cont_adseg.c
 sphinx_cont_fileseg_SOURCES = cont_fileseg.c
+sphinx_cont_seg_SOURCES = cont_seg.c
 
 LDADD = $(top_builddir)/src/libsphinxbase/libsphinxbase.la \
 	 $(top_builddir)/src/libsphinxad/libsphinxad.la

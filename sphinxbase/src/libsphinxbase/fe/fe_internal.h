@@ -132,6 +132,7 @@ struct fe_s {
 
     int16 prespch_len;
     int16 postspch_len;
+    float32 vad_threshold;
 
     float32 sampling_rate;
     int16 frame_rate;

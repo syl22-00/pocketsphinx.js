@@ -115,15 +115,9 @@ if(LM_BASE AND LM_FILES)
   endforeach()
 endif()
 
-# Set it to 1 if packaged files are larged, the console will warn you to do so if necessary
-set(ALLOW_MEMORY_GROWTH 1)
-if(DISABLE_MEMORY_GROWTH)
-  set(ALLOW_MEMORY_GROWTH 0)
-endif()
-
-# Adding custom target for the JavaScript library. Note -O2 -s ASM_JS=0, which seems to be necessary with bind
+# Adding custom target for the JavaScript library.
 add_custom_target(${ps_lib_js} ALL
-  COMMAND ${CMAKE_C_COMPILER} -O2 -s ALLOW_MEMORY_GROWTH=${ALLOW_MEMORY_GROWTH} --bind ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
+  COMMAND ${CMAKE_C_COMPILER} -O2 -s TOTAL_MEMORY=33554432 --bind ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
   DEPENDS ${ps_lib}
   )
 

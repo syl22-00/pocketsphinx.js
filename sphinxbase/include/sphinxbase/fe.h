@@ -197,6 +197,11 @@ extern "C" {
     ARG_STRINGIFY(DEFAULT_POSTSPCH_STATE_LEN), \
     "Num of speech frames to trigger vad from speech to silence." }, \
    \
+  { "-vad_threshold", \
+    ARG_FLOAT32, \
+    "2.0", \
+    "Threshold for decision between noise and silence frames. Log-ratio between signal level and noise level." }, \
+   \
   { "-input_endian", \
     ARG_STRING, \
     NATIVE_ENDIAN, \

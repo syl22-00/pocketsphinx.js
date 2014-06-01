@@ -6,5 +6,3 @@ The tests are built on [QUnit](http://qunitjs.com). To run the suite, just open 
 You can for instance start a small web server with `python -m SimpleHTTPServer` in the base directory and open `http://localhost:8000/tests/test_suite.html` in your browser.
 
 In addition, there is a test suite for the `pocketsphinx_zh.js` file which is built with a Chinese acoustic model. Open `http://localhost:8000/tests/test_suite_zh.html` in your browser.
-
-Note that it seems like these tests must be run one by one.

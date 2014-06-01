@@ -113,6 +113,7 @@ fe_parse_general_params(cmd_ln_t *config, fe_t * fe)
 
     fe->prespch_len = (int16)cmd_ln_int32_r(config, "-vad_prespeech");
     fe->postspch_len = (int16)cmd_ln_int32_r(config, "-vad_postspeech");
+    fe->vad_threshold = (int16)cmd_ln_float32_r(config, "-vad_threshold");
 
     fe->remove_dc = cmd_ln_boolean_r(config, "-remove_dc");
     fe->remove_noise = cmd_ln_boolean_r(config, "-remove_noise");

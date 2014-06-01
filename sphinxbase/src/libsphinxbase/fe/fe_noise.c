@@ -70,9 +70,6 @@
 #define MU_T 0.2
 #define MAX_GAIN 20
 
-/* VAD constants */
-#define VAD_THRESHOLD 2.0
-
 struct noise_stats_s {
     /* Smoothed power */
     powspec_t *power;
@@ -330,10 +327,11 @@ fe_track_snr(fe_t * fe)
             lrt = snr;
     }
 
-    if (fe->remove_silence)
-        fe->vad_data->local_state = lrt > VAD_THRESHOLD;
+    if (fe->remove_silence && (lrt < fe->vad_threshold))
+        fe->vad_data->local_state = 0;
     else
-        fe->vad_data->local_state = 1;
+	fe->vad_data->local_state = 1;
+	
 
     fe_low_envelope(noise_stats, signal, noise_stats->floor, num_filts);
 

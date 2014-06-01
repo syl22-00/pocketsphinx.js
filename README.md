@@ -55,7 +55,7 @@ The build is a classic CMake cross-compilation, using the toolchain provided by 
     $ cmake -DEMSCRIPTEN=1 -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Platform/Emscripten.cmake ..
     $ make
 
-This generates `pocketsphinx.js`. At this point, optimization level is hard-coded, so modify `CMakeLists.txt` directly if you would like to change it.
+This generates `pocketsphinx.js`. At this point, optimization level and other compilation parameters are hard-coded, so modify `CMakeLists.txt` directly if you would like to change them.
 
 ## 2.b Compilation with custom models and dictionary
 
@@ -87,7 +87,7 @@ You can do the same thing with statistical language models and dictionary files,
 * Statistical language models: `LM_BASE` and `LM_FILES`.
 * Dictionary files: `DICT_BASE` and `DICT_FILES`.
 
-By default, we turn on `ALLOW_MEMORY_GROWTH` in emscripten as files tend to be large. However, this apparently takes out some optimization steps, so if you do not want that, you can pass `-DDISABLE_MEMORY_GROWTH=on` when invoking `cmake`.
+For Emscripten parameters, see the wiki page on Github, which explain what they are and how they can affect pocketsphinx.js.
 
 Please note that:
 

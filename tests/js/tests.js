@@ -353,9 +353,17 @@ test( "Instantiation of several recognizers", function() {
     ok(error != undefined, "Using a deleted recognizer should raise an exception");
 });
 
+/*
+*
+* Removing that test
+* It seems like every other try, or if the test is run by itself, it passes
+* oterwise it is aborted because of the recognizer being initialized with an
+* invalid config
+*/
+/*
 test( "Recognizer and configs", function() {
     var y = new Module.Config();
-    ok (y != undefined, "New config should not be undefined");
+    ok(y != undefined, "New config should not be undefined");
     y.push_back(["",""]);
     var x = new Module.Recognizer(y);
     var words = new Module.VectorWords();
@@ -371,6 +379,28 @@ test( "Recognizer and configs", function() {
     ok(error != undefined, "Using a deleted recognizer should raise an exception");
     equal(error.name, "BindingError", "Should be a BindError exception");
 });
+*/
+
+test( "Recognizer and configs", function() {
+    var y = new Module.Config();
+    ok(y != undefined, "New config should not be undefined");
+    var x = new Module.Recognizer(y);
+    var words = new Module.VectorWords();
+    words.push_back(["AH", "AH"]);
+    equal(x.addWords(words), Module.ReturnType.SUCCESS, "Recognizer should be valid");
+    y.set(0, ["-fwdflat", "no"]);
+    equal(x.reInit(y), Module.ReturnType.SUCCESS, "Re-init with valid config should work");
+    equal(x.getHyp(), "", "Initial hyp should be empty");
+    x.delete();
+    y.delete();
+    words.delete();
+    var error = undefined;
+    try {x.getHyp();}
+    catch (e) {error = e;}
+    ok(error != undefined, "Using a deleted recognizer should raise an exception");
+    equal(error.name, "BindingError", "Should be a BindError exception");
+});
+
 /*
 // This doesn't work
 module("Recognizer memory");

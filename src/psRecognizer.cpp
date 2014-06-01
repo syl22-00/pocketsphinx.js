@@ -11,12 +11,12 @@ namespace pocketsphinxjs {
   // Implemented later in this file
   ReturnType parseStringList(const std::string &, StringsSetType*, std::string*);
 
-  Recognizer::Recognizer(): grammar_names(MAX_NUM_GRAMMARS), is_fsg(true), is_recording(false), current_hyp(""), current_count(0), grammar_index(0) {
+  Recognizer::Recognizer(): grammar_names(MAX_NUM_GRAMMARS), is_fsg(true), is_recording(false), current_hyp(""), grammar_index(0) {
     Config c;
     if (init(c) != SUCCESS) cleanup();
   }
 
-  Recognizer::Recognizer(const Config& config) : grammar_names(MAX_NUM_GRAMMARS), is_fsg(true), is_recording(false), current_hyp(""), current_count(0), grammar_index(0) {
+  Recognizer::Recognizer(const Config& config) : grammar_names(MAX_NUM_GRAMMARS), is_fsg(true), is_recording(false), current_hyp(""), grammar_index(0) {
     if (init(config) != SUCCESS) cleanup();
   }
 
@@ -73,7 +73,7 @@ namespace pocketsphinxjs {
     std::ostringstream search_name;
     search_name << grammar_index;
     grammar_names.push_back(search_name.str());
-    if(ps_set_kws(decoder, grammar_names.back().c_str(), keyphrase.c_str())) {
+    if(ps_set_keyphrase(decoder, grammar_names.back().c_str(), keyphrase.c_str())) {
       return RUNTIME_ERROR;
     }
     if (id.size() == 0) id.push_back(grammar_index);
@@ -112,7 +112,6 @@ namespace pocketsphinxjs {
       return RUNTIME_ERROR;
     }
     current_hyp = "";
-    current_count = 0;
     is_recording = true;
     return SUCCESS;
   }
@@ -122,7 +121,7 @@ namespace pocketsphinxjs {
     if (ps_end_utt(decoder) < 0) {
       return RUNTIME_ERROR;
     }
-    const char* h = ps_get_hyp(decoder, &current_count, &sentence_id);
+    const char* h = ps_get_hyp(decoder, NULL, &sentence_id);
     current_hyp = (h == NULL) ? "" : h;
     is_recording = false;
     return SUCCESS;
@@ -133,7 +132,7 @@ namespace pocketsphinxjs {
     if (buffer.size() == 0)
       return RUNTIME_ERROR;
     ps_process_raw(decoder, (short int *) &buffer[0], buffer.size(), 0, 0);
-    const char* h = ps_get_hyp(decoder, &current_count, &sentence_id);
+    const char* h = ps_get_hyp(decoder, NULL, &sentence_id);
     current_hyp = (h == NULL) ? "" : h;
     return SUCCESS;
   }
@@ -144,10 +143,6 @@ namespace pocketsphinxjs {
 
   std::string Recognizer::getHyp() {
     return current_hyp;
-  }
-
-  int32_t Recognizer::getCount() {
-    return current_count;
   }
 
   ReturnType Recognizer::getHypseg(Segmentation& seg) {
@@ -177,14 +172,11 @@ namespace pocketsphinxjs {
 
   ReturnType Recognizer::init(const Config& config) {
     parseStringList(HMM_FOLDERS, &acoustic_models, &default_acoustic_model);
-    std::cout << HMM_FOLDERS << " "  << " " << default_acoustic_model << std::endl;
 #ifdef LM_FILES
     parseStringList(LM_FILES, &language_models, &default_language_model);
-    std::cout << LM_FILES << " " << " " << default_language_model << std::endl;
 #endif /* LM_FILES */
 #ifdef DICT_FILES
     parseStringList(DICT_FILES, &dictionaries, &default_dictionary);
-    std::cout << DICT_FILES << " " << " " << default_dictionary << std::endl;
 #endif /* DICT_FILES */
 
     const arg_t cont_args_def[] = {
@@ -223,9 +215,7 @@ namespace pocketsphinxjs {
     char ** argv = new char*[argc];
     int index = 0;
     for (StringsMapIterator i = parameters.begin() ; i != parameters.end(); ++i) {
-      std::cout << "Parameter " << " " << i->first << " " << i->second << std::endl;
       if (isValidParameter(i->first, i->second)) {
-	std::cout <<"Valid\n";
 	if (i->first == "-lm") is_fsg = false;
 	argv[index++] = (char*) i->first.c_str();
 	argv[index++] = (char*) i->second.c_str();

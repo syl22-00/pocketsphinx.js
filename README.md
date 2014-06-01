@@ -309,7 +309,7 @@ buffer.delete();
 
 Remember to check the return values of the different calls and compare them to `Module.ReturnType....`.
 
-For a keyword spotting search, use `addKeyword` instead of `addGrammar` as explained previously and use `getCount` instead of `getHyp`. `getCount` returns the number of times the key phrase was spotted since recognition started.
+For a keyword spotting search, use `addKeyword` instead of `addGrammar` as explained previously. `getHyp` returns as many times the keyphrase as it appeared since recognition started.
 
 
 ## 3.5 Releasing memory
@@ -461,7 +461,7 @@ recognizer.postMessage({command: 'process', data: array});
 ```
 Audio samples should be 2-byte integers, at 16 kHz.
 
-While data are processed, hypothesis will be sent back in a message in the form `{hyp: "RECOGNIZED STRING", count: c}`. If it is a keyword spotting search, the number of occurrences of the key phrase is given in the `count` field.
+While data are processed, hypothesis will be sent back in a message in the form `{hyp: "RECOGNIZED STRING"}`. If it is a keyword spotting search, the `hyp` field will be the key phrase, present as many times as it appeared since recognition started.
 
 ### g. Ending recognition
 
@@ -471,7 +471,7 @@ Recognition can be simply stopped using the `stop` command:
 recognizer.postMessage({command: 'stop'});
 ```
 
-It will then send a last message with the hypothesis, marked as final (which means that it is more accurate as it comes after a second pass that was triggered by the `stop` command). It would look like: `{hyp: "FINAL RECOGNIZED STRING", count: c, final: true}`.
+It will then send a last message with the hypothesis, marked as final (which means that it is more accurate as it comes after a second pass that was triggered by the `stop` command). It would look like: `{hyp: "FINAL RECOGNIZED STRING", final: true}`.
 
 ## 4.4 Using `CallbackManager`
 

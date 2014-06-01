@@ -72,7 +72,6 @@ namespace pocketsphinxjs {
     ReturnType switchGrammar(int);
     ReturnType switchSearch(int);
     std::string getHyp();
-    int32_t getCount();
     ReturnType getHypseg(Segmentation&);
     ReturnType start();
     ReturnType stop();
@@ -87,7 +86,6 @@ namespace pocketsphinxjs {
     bool is_fsg;
     bool is_recording;
     std::string current_hyp;
-    int32_t current_count;
     int32_t grammar_index;
     char const * sentence_id;
     fsg_model_t * current_grammar;
@@ -192,7 +190,6 @@ EMSCRIPTEN_BINDINGS(recognizer) {
     .function("switchSearch", &ps::Recognizer::switchSearch)
     .function("getHyp", &ps::Recognizer::getHyp)
     .function("getHypseg", &ps::Recognizer::getHypseg)
-    .function("getCount", &ps::Recognizer::getCount)
     .function("start", &ps::Recognizer::start)
     .function("stop", &ps::Recognizer::stop)
     .function("process", &ps::Recognizer::process);

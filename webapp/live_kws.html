@@ -47,7 +47,6 @@
 
       // To display the hypothesis sent by the recognizer
       function updateCount(count) {
-console.log("Got count " + count);
         if (outputContainer) outputContainer.innerHTML = count;
       };
 
@@ -163,8 +162,8 @@ console.log("Got count " + count);
                   if(clb) clb(data);
                 }
                 // This is a case when the recognizer has a new count number
-                if (e.data.hasOwnProperty('count')) {
-                  var newCount = e.data.count;
+                if (e.data.hasOwnProperty('hyp')) {
+                  var newCount = e.data.hyp;
                   if (e.data.hasOwnProperty('final') &&  e.data.final) newCount = "Final: " + newCount;
                   updateCount(newCount);
                 }

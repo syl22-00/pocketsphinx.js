@@ -151,7 +151,6 @@ function stop() {
 	    recognizer.getHypseg(segmentation);
 	    post({hyp: recognizer.getHyp(),
 		  hypseg: segmentation,
-		  count: recognizer.getCount(),
 		  final: true});
 	}
     } else {
@@ -171,8 +170,7 @@ function process(array) {
 	else {
 	    recognizer.getHypseg(segmentation);
 	    post({hyp: recognizer.getHyp(),
-		  hypseg: segmentation,
-		  count: recognizer.getCount()}); 
+		  hypseg: segmentation}); 
 	    }
     } else {
 	post({status: "error", command: "process", code: "js-no-recognizer"});

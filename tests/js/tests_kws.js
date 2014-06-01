@@ -8,7 +8,6 @@ test( "Key phrase and dictionary", function() {
     words.push_back(["THREE", "AH"]);
     equal(x.addWords(words), Module.ReturnType.SUCCESS, "Recognizer should be valid");
     equal(x.getHyp(), "", "Initial hyp should be empty");
-    equal(x.getCount(), "", "Initial count should be 0");
     var ids = new Module.Integers();
     equal(x.addKeyword(ids, "ONE"), Module.ReturnType.SUCCESS, "Valid key phrase should be added successfully");
     equal(x.addKeyword(ids, "ONE TWO"), Module.ReturnType.SUCCESS, "Valid key phrase should be added successfully");
@@ -50,7 +49,7 @@ test( "Spotting silence", function() {
     var num_buffers = 32;
     for (var j = 0 ; j < num_buffers ; j++) {
 	equal(recognizer.process(buffer), Module.ReturnType.SUCCESS, "Recognizer should process successfully");
-	equal(recognizer.getCount(), 0, "Recognizer should spot nothing with silence");
+	equal(recognizer.getHyp().length, 0, "Recognizer should spot nothing with silence");
     }
     equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
 });
@@ -62,9 +61,9 @@ test( "Spotting audio", function() {
     recognizer.addKeyword(ids, "AH");
     for (var i = 0 ; i < audio.length ; i++) buffer.push_back(audio[i]);
     recognizer.start();
-    equal(recognizer.getCount(), 0, "Recognizer should initially have spotted nothing");
+    equal(recognizer.getHyp().length, 0, "Recognizer should initially have spotted nothing");
     equal(recognizer.process(buffer), Module.ReturnType.SUCCESS, "Recognizer should process successfully");
-    ok((recognizer.getCount() > 0), "Recognizer should have spotted word");
+    ok((recognizer.getHyp().length > 0), "Recognizer should have spotted word");
     equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
-    ok((recognizer.getCount() > 0), "Recognizer should have spotted word");
+    ok((recognizer.getHyp().length > 0), "Recognizer should have spotted word");
 });

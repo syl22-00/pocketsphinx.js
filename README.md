@@ -311,6 +311,20 @@ Remember to check the return values of the different calls and compare them to `
 
 For a keyword spotting search, use `addKeyword` instead of `addGrammar` as explained previously. `getHyp` returns as many times the keyphrase as it appeared since recognition started.
 
+The recognition process also produces the segmentation, called hypseg in Sphinx jargon. It can be retrieved the same way as the hypothesis, with a `getHypseg` call. It uses a `Segmentation` object which is a vector of `SegItem` objects, that contain the following fields: `word` for the current recognized word, `start` for the start frame of the word (one frame is 10ms), and `end` for the end frame. The Segmentation is passed as a reference:
+
+```javascript
+var seg = new Module.Segmentation();
+if (recognizer.getHypseg(seg) == Module.ReturnType.SUCCESS) {
+    for (var i = 0 ; i < seg.length ; i++) {
+        var segItem = seg.at(i);
+        console.log("Word " + segItem.word +
+                    " starts at frame " + segItem.start +
+                    " ends at frame " + segItem.end);
+    }
+}
+seg.delete();
+```
 
 ## 3.5 Releasing memory
 

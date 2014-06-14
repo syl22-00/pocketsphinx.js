@@ -30,7 +30,6 @@ headers = \
 	$(top_srcdir)/include/sphinxbase/clapack_lite.h \
 	$(top_srcdir)/include/sphinxbase/cmd_ln.h \
 	$(top_srcdir)/include/sphinxbase/cmn.h \
-	$(top_srcdir)/include/sphinxbase/cont_ad.h \
 	$(top_srcdir)/include/sphinxbase/err.h \
 	$(top_srcdir)/include/sphinxbase/f2c.h \
 	$(top_srcdir)/include/sphinxbase/fe.h \

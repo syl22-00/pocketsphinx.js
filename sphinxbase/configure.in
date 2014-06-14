@@ -284,7 +284,6 @@ doc/doxyfile
 test/Makefile
 test/unit/testfuncs.sh
 test/unit/Makefile
-test/unit/test_ad/Makefile
 test/unit/test_alloc/Makefile
 test/unit/test_bitvec/Makefile
 test/unit/test_case/Makefile

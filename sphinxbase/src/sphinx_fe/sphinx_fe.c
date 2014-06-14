@@ -410,7 +410,7 @@ decode_sndfile(sphinx_wave2feat_t *wtf)
         /* Consume all samples. */
         while (nsamp) {
             nfr = nvec;
-            fe_process_frames(wtf->fe, &inspeech, &nsamp, wtf->feat, &nfr);
+            fe_process_frames(wtf->fe, &inspeech, &nsamp, wtf->feat, &nfr, NULL);
             if (nfr) {
                 if ((n = (*wtf->ot->output_frames)(wtf, wtf->feat, nfr)) < 0)
                     return -1;
@@ -467,7 +467,7 @@ decode_pcm(sphinx_wave2feat_t *wtf)
         /* Consume all samples. */
         while (nsamp) {
             nfr = nvec;
-            fe_process_frames(wtf->fe, &inspeech, &nsamp, wtf->feat, &nfr);
+            fe_process_frames(wtf->fe, &inspeech, &nsamp, wtf->feat, &nfr, NULL);
             if (nfr) {
                 if ((n = (*wtf->ot->output_frames)(wtf, wtf->feat, nfr)) < 0)
                     return -1;

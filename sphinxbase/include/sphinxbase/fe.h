@@ -339,6 +339,12 @@ SPHINXBASE_EXPORT
 const cmd_ln_t *fe_get_config(fe_t *fe);
 
 /**
+ * Start processing of the stream, resets processed frame counter
+ */
+SPHINXBASE_EXPORT
+void fe_start_stream(fe_t *fe);
+
+/**
  * Start processing an utterance.
  * @return 0 for success, <0 for error (see enum fe_error_e)
  */
@@ -485,6 +491,8 @@ int fe_process_frames_ext(fe_t *fe,
  * @param inout_nframes Input: Pointer to maximum number of frames to
  *                      generate.
  *                      Output: Number of frames actually generated.
+ * @param out_frameidx Index of the first frame returned in a stream
+ *
  * @return 0 for success, <0 for failure (see enum fe_error_e)
  */
 SPHINXBASE_EXPORT
@@ -492,7 +500,8 @@ int fe_process_frames(fe_t *fe,
                       int16 const **inout_spch,
                       size_t *inout_nsamps,
                       mfcc_t **buf_cep,
-                      int32 *inout_nframes);
+                      int32 *inout_nframes,
+                      int32 *out_frameidx);
 
 /** 
  * Process a block of samples, returning as many frames as possible.

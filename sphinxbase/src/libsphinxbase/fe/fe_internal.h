@@ -117,7 +117,6 @@ typedef struct ringbuf_s {
 
 typedef struct vad_data_s {
     uint8 global_state;
-    uint8 local_state;
     uint8 state_changed;
     uint8 store_pcm;
     int16 prespch_num;

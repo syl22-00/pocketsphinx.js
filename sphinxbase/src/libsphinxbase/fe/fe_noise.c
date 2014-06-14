@@ -101,7 +101,7 @@ struct noise_stats_s {
 };
 
 static void
-fe_low_envelope(noise_stats_t *noise_stats, powspec_t * buf, powspec_t * floor_buf, int32 num_filt)
+fe_lower_envelope(noise_stats_t *noise_stats, powspec_t * buf, powspec_t * floor_buf, int32 num_filt)
 {
     int i;
 
@@ -260,7 +260,7 @@ fe_free_noisestats(noise_stats_t * noise_stats)
  * so we have to add many processing cases.
  */
 void
-fe_track_snr(fe_t * fe)
+fe_track_snr(fe_t * fe, int32 *in_speech)
 {
     powspec_t *signal;
     powspec_t *gain;
@@ -271,9 +271,7 @@ fe_track_snr(fe_t * fe)
     float lrt, snr;
 
     if (!(fe->remove_noise || fe->remove_silence)) {
-        //than nothing to do here,
-        //vad decision is always 1, to process everything
-        fe->vad_data->local_state = 1;
+        *in_speech = TRUE;
         return;
     }
 
@@ -310,7 +308,7 @@ fe_track_snr(fe_t * fe)
     }
 
     /* Noise estimation and vad decision */
-    fe_low_envelope(noise_stats, noise_stats->power, noise_stats->noise, num_filts);
+    fe_lower_envelope(noise_stats, noise_stats->power, noise_stats->noise, num_filts);
 
     lrt = 0.0;
     for (i = 0; i < num_filts; i++) {
@@ -328,12 +326,11 @@ fe_track_snr(fe_t * fe)
     }
 
     if (fe->remove_silence && (lrt < fe->vad_threshold))
-        fe->vad_data->local_state = 0;
+        *in_speech = FALSE;
     else
-	fe->vad_data->local_state = 1;
-	
+	*in_speech = TRUE;
 
-    fe_low_envelope(noise_stats, signal, noise_stats->floor, num_filts);
+    fe_lower_envelope(noise_stats, signal, noise_stats->floor, num_filts);
 
     fe_temp_masking(noise_stats, signal, noise_stats->peak, num_filts);
 

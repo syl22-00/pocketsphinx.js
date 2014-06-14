@@ -104,6 +104,7 @@ typedef struct {
     int32 ascr;
     int32 lscr;
     int32 lback;
+    int32 prob;
     int start_frame;
     int end_frame;
 } Segment;
@@ -133,26 +134,33 @@ typedef struct {} SegmentList;
         Hypothesis *h = ckd_malloc(sizeof *h);
         if (hypstr)
             h->hypstr = ckd_salloc(hypstr);
+        else
+    	    h->hypstr = NULL;
         if (uttid)
             h->uttid = ckd_salloc(uttid);
+        else
+    	    h->uttid = NULL;
         h->best_score = best_score;
         return h;  
     }
 
     ~Hypothesis() {
-        ckd_free($self->hypstr);
-        ckd_free($self->uttid);
+        if ($self->hypstr)
+    	    ckd_free($self->hypstr);
+    	if ($self->uttid)
+    	    ckd_free($self->uttid);
         ckd_free($self);
     }
 }
 
 %extend Segment {
+
     static Segment* fromIter(ps_seg_t *itor) {
 	Segment *seg = ckd_malloc(sizeof(Segment));
 	if (!itor)
 	    return NULL;
 	seg->word = ckd_salloc(ps_seg_word(itor));
-	ps_seg_prob(itor, &(seg->ascr), &(seg->lscr), &(seg->lback));
+	seg->prob = ps_seg_prob(itor, &(seg->ascr), &(seg->lscr), &(seg->lback));
 	ps_seg_frames(itor, &seg->start_frame, &seg->end_frame);
 	return seg;
     }
@@ -163,12 +171,14 @@ typedef struct {} SegmentList;
 }
 
 %extend NBest {
+
     static NBest* fromIter(ps_nbest_t *itor) {
 	NBest *nbest = ckd_malloc(sizeof(NBest));
 	nbest->nbest = itor;
 	return nbest;
     }
     
+    %newobject hyp;
     Hypothesis* hyp (){
         char const *hyp;
         int32 best_score;

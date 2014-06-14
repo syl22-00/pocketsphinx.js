@@ -62,6 +62,7 @@
 #include "ngram_search.h"
 #include "ngram_search_fwdtree.h"
 #include "ngram_search_fwdflat.h"
+#include "allphone_search.h"
 
 static const arg_t ps_args_def[] = {
     POCKETSPHINX_OPTIONS,
@@ -314,7 +315,14 @@ ps_reinit(ps_decoder_t *ps, cmd_ln_t *config)
             return -1;
     }
 
-    if ((path = cmd_ln_str_r(ps->config, "-lm"))) {
+    if ((path = cmd_ln_str_r(ps->config, "-allphone"))) {
+        if (ps_set_allphone_file(ps, PS_DEFAULT_SEARCH, path)
+                || ps_set_search(ps, PS_DEFAULT_SEARCH))
+                return -1;
+    }
+
+    if ((path = cmd_ln_str_r(ps->config, "-lm")) && 
+        !cmd_ln_boolean_r(ps->config, "-allphone")) {
         if (ps_set_lm_file(ps, PS_DEFAULT_SEARCH, path)
             || ps_set_search(ps, PS_DEFAULT_SEARCH))
             return -1;
@@ -565,6 +573,29 @@ ps_set_lm_file(ps_decoder_t *ps, const char *name, const char *path)
 }
 
 int
+ps_set_allphone(ps_decoder_t *ps, const char *name, ngram_model_t *lm)
+{
+    ps_search_t *search;
+    search = allphone_search_init(lm, ps->config, ps->acmod, ps->dict, ps->d2p);
+    return set_search_internal(ps, name, search);
+}
+
+int
+ps_set_allphone_file(ps_decoder_t *ps, const char *name, const char *path)
+{
+  ngram_model_t *lm;
+  int result;
+
+  lm = NULL;
+  if (path)
+    lm = ngram_model_read(ps->config, path, NGRAM_AUTO, ps->lmath);
+  result = ps_set_allphone(ps, name, lm);
+  if (lm)
+      ngram_model_free(lm);
+  return result;
+}
+
+int
 ps_set_kws(ps_decoder_t *ps, const char *name, const char *keyfile)
 {
     ps_search_t *search;
@@ -808,6 +839,13 @@ ps_decode_raw(ps_decoder_t *ps, FILE *rawfh,
 }
 
 int
+ps_start_stream(ps_decoder_t *ps)
+{
+    acmod_start_stream(ps->acmod);
+    return 0;
+}
+
+int
 ps_start_utt(ps_decoder_t *ps, char const *uttid)
 {
     int rv;
@@ -944,8 +982,8 @@ ps_process_raw(ps_decoder_t *ps,
     int n_searchfr = 0;
 
     if (ps->acmod->state == ACMOD_IDLE) {
-    E_ERROR("Failed to process data, utterance is not started. Use start_utt to start it\n");
-    return 0;
+	E_ERROR("Failed to process data, utterance is not started. Use start_utt to start it\n");
+	return 0;
     }
 
     if (no_search)
@@ -1038,21 +1076,24 @@ ps_end_utt(ps_decoder_t *ps)
         int32 score;
 
         hyp = ps_get_hyp(ps, &score, &uttid);
-        E_INFO("%s: %s (%d)\n", uttid, hyp, score);
-        E_INFO_NOFN("%-20s %-5s %-5s %-5s %-10s %-10s %-3s\n",
+        
+        if (hyp != NULL) {
+    	    E_INFO("%s: %s (%d)\n", uttid, hyp, score);
+    	    E_INFO_NOFN("%-20s %-5s %-5s %-5s %-10s %-10s %-3s\n",
                     "word", "start", "end", "pprob", "ascr", "lscr", "lback");
-        for (seg = ps_seg_iter(ps, &score); seg;
-             seg = ps_seg_next(seg)) {
-            char const *word;
-            int sf, ef;
-            int32 post, lscr, ascr, lback;
+    	    for (seg = ps_seg_iter(ps, &score); seg;
+        	 seg = ps_seg_next(seg)) {
+    	        char const *word;
+        	int sf, ef;
+        	int32 post, lscr, ascr, lback;
 
-            word = ps_seg_word(seg);
-            ps_seg_frames(seg, &sf, &ef);
-            post = ps_seg_prob(seg, &ascr, &lscr, &lback);
-            E_INFO_NOFN("%-20s %-5d %-5d %-1.3f %-10d %-10d %-3d\n",
-                        word, sf, ef, logmath_exp(ps_get_logmath(ps), post),
-                        ascr, lscr, lback);
+        	word = ps_seg_word(seg);
+        	ps_seg_frames(seg, &sf, &ef);
+        	post = ps_seg_prob(seg, &ascr, &lscr, &lback);
+        	E_INFO_NOFN("%-20s %-5d %-5d %-1.3f %-10d %-10d %-3d\n",
+                    	    word, sf, ef, logmath_exp(ps_get_logmath(ps), post),
+                    	ascr, lscr, lback);
+    	    }
         }
     }
     return rv;
@@ -1122,8 +1163,10 @@ ps_seg_word(ps_seg_t *seg)
 void
 ps_seg_frames(ps_seg_t *seg, int *out_sf, int *out_ef)
 {
-    if (out_sf) *out_sf = seg->sf;
-    if (out_ef) *out_ef = seg->ef;
+    int uf;
+    uf = acmod_stream_offset(seg->search->acmod);
+    if (out_sf) *out_sf = seg->sf + uf;
+    if (out_ef) *out_ef = seg->ef + uf;
 }
 
 int32
@@ -1317,4 +1360,3 @@ ps_search_deinit(ps_search_t *search)
     ps_lattice_free(search->dag);
 }
 
-/* vim: set ts=4 sw=4: */

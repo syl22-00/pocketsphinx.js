@@ -72,7 +72,7 @@ struct prespch_buf_s {
 };
 
 prespch_buf_t *
-fe_init_prespch(int num_frames, int num_cepstra, int num_samples)
+fe_prespch_init(int num_frames, int num_cepstra, int num_samples)
 {
     prespch_buf_t *prespch_buf;
 
@@ -95,7 +95,7 @@ fe_init_prespch(int num_frames, int num_cepstra, int num_samples)
 }
 
 void 
-fe_reinit_prespch_pcm(prespch_buf_t* prespch_buf, int num_frames_pcm)
+fe_prespch_reinit_pcm(prespch_buf_t* prespch_buf, int num_frames_pcm)
 {
     num_frames_pcm += prespch_buf->num_frames_cep;
     if (num_frames_pcm > prespch_buf->num_frames_pcm) {
@@ -157,24 +157,30 @@ fe_prespch_write_pcm(prespch_buf_t * prespch_buf, int16 * samples)
 }
 
 void
-fe_reset_prespch_cep(prespch_buf_t * prespch_buf)
+fe_prespch_reset_cep(prespch_buf_t * prespch_buf)
 {
     prespch_buf->cep_read_ptr = 0;
     prespch_buf->cep_write_ptr = 0;
 }
 
 void
-fe_reset_prespch_pcm(prespch_buf_t * prespch_buf)
+fe_prespch_reset_pcm(prespch_buf_t * prespch_buf)
 {
     prespch_buf->pcm_write_ptr = 0;
 }
 
 void
-fe_free_prespch(prespch_buf_t * prespch_buf)
+fe_prespch_free(prespch_buf_t * prespch_buf)
 {
     if (prespch_buf->cep_buf)
         ckd_free_2d((void **) prespch_buf->cep_buf);
     if (prespch_buf->pcm_init && prespch_buf->pcm_buf)
         ckd_free(prespch_buf->pcm_buf);
     ckd_free(prespch_buf);
+}
+
+int32 
+fe_prespch_ncep(prespch_buf_t * prespch_buf)
+{
+    return prespch_buf->cep_write_ptr - prespch_buf->cep_read_ptr;
 }

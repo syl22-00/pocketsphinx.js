@@ -63,6 +63,7 @@ typedef struct {
     ckd_free($self);
   }
 
+  %newobject next;
   VALUE_TYPE * next() {
     if ($self->ptr) {
       VALUE_TYPE *value = ##VALUE_TYPE##_fromIter($self->ptr);

@@ -52,17 +52,15 @@ typedef struct noise_stats_s noise_stats_t;
 noise_stats_t *fe_init_noisestats(int num_filters);
 
 /* Resets collected noise statistics */
-void
- fe_reset_noisestats(noise_stats_t * noise_stats);
+void fe_reset_noisestats(noise_stats_t * noise_stats);
 
 /* Frees allocated data */
-void
- fe_free_noisestats(noise_stats_t * noise_stats);
+void fe_free_noisestats(noise_stats_t * noise_stats);
 
-/* Process frame, update noise statistics, 
-   remove noise components if needed, 
-   makes local vad decision*/
-void
- fe_track_snr(fe_t * fe);
+/**
+ * Process frame, update noise statistics, remove noise components if needed, 
+ * and return local vad decision 
+ */
+void fe_track_snr(fe_t * fe, int32 *in_speech);
 
 #endif                          /* FE_NOISE_H */

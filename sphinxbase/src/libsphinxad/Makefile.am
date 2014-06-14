@@ -8,7 +8,7 @@ lib_LTLIBRARIES = libsphinxad.la
 # This is API version 2, software release 1, which also supports API version 1
 libsphinxad_la_LDFLAGS = -version-info 0:1:0
 
-libsphinxad_la_SOURCES = cont_ad_base.c
+libsphinxad_la_SOURCES = 
 
 EXTRA_libsphinxad_la_SOURCES = ad_base.c \
 	ad_oss.c \

@@ -36,45 +36,7 @@
  */
 /*
  * feat.h -- Cepstral features computation.
- *
- * **********************************************
- * CMU ARPA Speech Project
- *
- * Copyright (c) 1999 Carnegie Mellon University.
- * ALL RIGHTS RESERVED.
- * **********************************************
- * 
- * HISTORY
- * $Log$
- * Revision 1.1  2006/04/05  20:27:30  dhdfu
- * A Great Reorganzation of header files and executables
- * 
- * Revision 1.17  2006/02/23 03:59:40  arthchan2003
- * Merged from branch SPHINX3_5_2_RCI_IRII_BRANCH: a, Free buffers correctly. b, Fixed dox-doc.
- *
- * Revision 1.16.4.1  2005/07/05 06:25:08  arthchan2003
- * Fixed dox-doc.
- *
- * Revision 1.16  2005/06/22 03:29:35  arthchan2003
- * Makefile.am s  for all subdirectory of libs3decoder/
- *
- * Revision 1.5  2005/06/13 04:02:56  archan
- * Fixed most doxygen-style documentation under libs3decoder.
- *
- * Revision 1.4  2005/04/21 23:50:26  archan
- * Some more refactoring on the how reporting of structures inside kbcore_t is done, it is now 50% nice. Also added class-based LM test case into test-decode.sh.in.  At this moment, everything in search mode 5 is already done.  It is time to test the idea whether the search can really be used.
- *
- * Revision 1.3  2005/03/30 01:22:46  archan
- * Fixed mistakes in last updates. Add
- *
- * 
- * 20.Apr.2001  RAH (rhoughton@mediasite.com, ricky.houghton@cs.cmu.edu)
- *              Adding feat_free() to free allocated memory
- * 
- * 04-Jan-1999	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University
- * 		Started.
  */
-
 
 #ifndef _S3_FEAT_H_
 #define _S3_FEAT_H_

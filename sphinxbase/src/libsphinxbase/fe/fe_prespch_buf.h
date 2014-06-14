@@ -35,6 +35,8 @@
  *
  */
 
+/* Buffer that maintains both features and raw audio for the VAD implementation */
+
 #ifndef FE_INTERNAL_H
 #define FE_INTERNAL_H
 
@@ -47,11 +49,11 @@
 typedef struct prespch_buf_s prespch_buf_t;
 
 /* Creates prespeech buffer */
-prespch_buf_t *fe_init_prespch(int num_frames, int num_cepstra,
+prespch_buf_t *fe_prespch_init(int num_frames, int num_cepstra,
                                int num_samples);
 
 /* initialize pcm prespeech buffer with specified amount of frames */
-void fe_reinit_prespch_pcm(prespch_buf_t* prespch_buf, int num_frames_pcm);
+void fe_prespch_reinit_pcm(prespch_buf_t* prespch_buf, int num_frames_pcm);
 
 /* Reads mfcc frame from prespeech buffer */
 int fe_prespch_read_cep(prespch_buf_t * prespch_buf, mfcc_t * fea);
@@ -67,12 +69,15 @@ void fe_prespch_read_pcm(prespch_buf_t * prespch_buf, int16 ** samples,
 void fe_prespch_write_pcm(prespch_buf_t * prespch_buf, int16 * samples);
 
 /* Resets read/write pointers for cepstrum buffer */
-void fe_reset_prespch_cep(prespch_buf_t * prespch_buf);
+void fe_prespch_reset_cep(prespch_buf_t * prespch_buf);
 
 /* Resets read/write pointer for pcm audio buffer */
-void fe_reset_prespch_pcm(prespch_buf_t * prespch_buf);
+void fe_prespch_reset_pcm(prespch_buf_t * prespch_buf);
 
 /* Releases prespeech buffer */
-void fe_free_prespch(prespch_buf_t * prespch_buf);
+void fe_prespch_free(prespch_buf_t * prespch_buf);
+
+/* Returns number of accumulated frames */
+int32 fe_prespch_ncep(prespch_buf_t * prespch_buf);
 
 #endif                          /* FE_INTERNAL_H */

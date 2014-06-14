@@ -70,11 +70,6 @@ endforeach(cfile)
 set(ps_lib_js "pocketsphinx.js")
 set(ps_lib "pocketsphinx")
 
-if ((NOT HMM_BASE) OR (NOT HMM_FOLDERS))
-  set(HMM_BASE "${sphinx_root}/am")
-  set(HMM_FOLDERS "rm1_200")
-endif()
-
 # We are using the C++ binding utility of emscripten, this needs to be added to the compilation command
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMODELDIR=\"\"")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --bind")

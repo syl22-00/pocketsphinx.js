@@ -92,16 +92,16 @@ For Emscripten parameters, see the wiki page on Github, which explain what they 
 Please note that:
 
 * If you want to package files, you need to set both `..._BASE` and `..._FOLDERS` or `..._FILES`.
-* If you do not specify an acoustic model to package, the default model will be packaged (the model is in `am/rm1_200/`).
-* By default, the first provided acoustic model will be loaded if none is specified before the recognizer is initialized. The model can be selected by giving the `"-hmm"` parameter. See upcoming sections for how to specify recognizer parameters.
-* Make sure you optimize the size of your acoustic models (`mdef` in binary format, `sendump` instead of `mixture_weights`, see PocketSphinx docs).
-* Statistical language models and dictionary files are optional. As explained later, grammars and dictionary words can be added at runtime.
+* If you do not specify an acoustic model to package, make sure you load one from external JavaScript files as described in a later section.
+* By default, the first provided packaged acoustic model will be loaded if none is specified before the recognizer is initialized. If you attempt to initialize the recognizer without the `"-hmm"` parameter given in the config and no packaged acoustic model, initialization will fail. The model can be selected by giving the `"-hmm"` parameter. See upcoming sections for how to specify recognizer parameters.
+* Make sure you optimize the size of your acoustic models (for instance, package `sendump` or `mixture_weights`, not both, see PocketSphinx docs).
+* Statistical language models and dictionary files are optional at init time. As explained later, grammars and dictionary words can be added at runtime.
 * If you want to package statistical language models, you must provide a dictionary that contains all words used in the SLMs.
 * The PocketSphinx parameter for dictionary files is `"-dict"` and for language models `"-lm"`. See next sections for how to specify recognizer parameters.
 
 ### ii. Package model files outside the main JavaScript
 
-Unless you are using a small acoustic model and no large dictionary nor statistical language model, you would probably want to have these files packaged into separate JavaScript files, that should be loaded before `pocketsphinx.js`. To do that, give the `-DHMM_EMBED=OFF` option when running cmake to skip the embedding of the acoustic model files. This way, the build will set the internal `HMM_BASE` and `HMM_FOLDERS` to the value you provided (or the default value), but the files won't be packaged.
+Unless you are using a small acoustic model and no large dictionary nor statistical language model, you would probably want to have these files packaged into separate JavaScript files, that should be loaded before `pocketsphinx.js`. To do that, give the `-DHMM_EMBED=OFF` option when running cmake to skip the embedding of the acoustic model files. You can still set `HMM_BASE` and `HMM_FOLDERS` which would be used to determine the default acoustic model to load.
 
 For the dictionary and statistical language model, just ignore them when running cmake.
 
@@ -112,7 +112,7 @@ To generate the JavaScript files that contain these files, use emscripten's `too
     # python .../emscripten/tools/file_packager.py .../pocketsphinx.js/build/pocketsphinx.js --embed hub4wsj_sc_8k/variances --js-output=variances.js
     ... and so on
 
-This assumes that you have compiled `pocketsphinx.js` with `-DHMM_BASE=.../cmusphinx/pocketsphinx/model/hmm/en_US/ -DHMM_FOLDERS=hub4wsj_sc_8k -DHMM_EMBED=off`. Then, make sure you load all these generated JavaScript files (`mdef.js`, `variances.js`, etc.) before you load `pocketsphinx.js`.
+Then, make sure you load all these generated JavaScript files (`mdef.js`, `variances.js`, etc.) before you load `pocketsphinx.js`.
 
 # 3. API of `pocketsphinx.js`
 
@@ -486,6 +486,24 @@ recognizer.postMessage({command: 'stop'});
 ```
 
 It will then send a last message with the hypothesis, marked as final (which means that it is more accurate as it comes after a second pass that was triggered by the `stop` command). It would look like: `{hyp: "FINAL RECOGNIZED STRING", final: true}`.
+
+### h. Loading files (such as acoustic models packaged outside `pocketsphinx.js`
+
+The recognizer worker can load any JavaScript file. This is especially useful to load the files of acoustic models, language models or dictionaries, so that they are available when the recognizer is initialized or re-initialized with specific values of `-hmm`, `-lm` or `-dict`.
+
+```javascript
+recognizer.postMessage({command: 'load',
+                        callbackId: id,
+                        data: ["mymodel/mdef.js",
+                               "mymodel/transition_matrices.js",
+                               ...
+                               "mymodel/variances.js"]
+                       });
+```
+
+The path is relative to the location of `recognizer.js`, and in this example, the model can be loaded by using a `config` object with `["-hmm", "mymodel"]`.
+
+There will be an error callback with `NETWORK_ERROR` if any of the files can't be loaded.
 
 ## 4.4 Using `CallbackManager`
 

@@ -171,7 +171,9 @@ namespace pocketsphinxjs {
   }
 
   ReturnType Recognizer::init(const Config& config) {
+#ifdef HMM_FOLDERS
     parseStringList(HMM_FOLDERS, &acoustic_models, &default_acoustic_model);
+#endif /* HMM_FOLDERS */
 #ifdef LM_FILES
     parseStringList(LM_FILES, &language_models, &default_language_model);
 #endif /* LM_FILES */
@@ -204,7 +206,7 @@ namespace pocketsphinxjs {
     for (int i=0 ; i< config.size() ; ++i)
       parameters[config[i].key] = config[i].value;
     
-    if ((parameters.find("-hmm") == parameters.end()) || (acoustic_models.find(parameters["-hmm"]) == acoustic_models.end()))
+    if (parameters.find("-hmm") == parameters.end())
       parameters["-hmm"] = default_acoustic_model;
     if (parameters.find("-bestpath") == parameters.end())
       parameters["-bestpath"] = "no";

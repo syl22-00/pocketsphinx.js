@@ -12,6 +12,9 @@ startup(function(event) {
     case 'initialize':
 	initialize(event.data.data, event.data.callbackId);
 	break;
+    case 'load':
+	load(event.data.data, event.data.callbackId);
+	break;
     case 'addWords':
 	addWords(event.data.data, event.data.callbackId);
 	break;
@@ -66,6 +69,15 @@ function initialize(data, clbId) {
 	else post({status: "done", command: "initialize", id: clbId});
     }
     config.delete();
+};
+
+function load(data, clbId) {
+    try {
+	importScripts.apply(this, data);
+	post({status: "done", command: "load", id: clbId});
+    } catch(e) {
+	post({status: "error", command: "load", code: "NETWORK_ERROR"});
+    }
 };
 
 function addWords(data, clbId) {

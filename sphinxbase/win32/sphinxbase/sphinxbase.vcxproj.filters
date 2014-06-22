@@ -38,9 +38,6 @@
     <ClCompile Include="..\..\src\libsphinxbase\feat\cmn_prior.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libsphinxad\cont_ad_base.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\libsphinxbase\util\dtoa.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -206,9 +203,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\win32\config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\cont_ad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\err.h">

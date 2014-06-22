@@ -1350,47 +1350,6 @@ fe_dct3(fe_t * fe, const mfcc_t * mfcep, powspec_t * mflogspec)
     }
 }
 
-static void
-fe_vad_hangover(fe_t * fe, mfcc_t * fea, int32 is_speech)
-{
-    /* track vad state and deal with cepstrum prespeech buffer */
-    fe->vad_data->state_changed = 0;
-    if (is_speech) {
-        fe->vad_data->postspch_num = 0;
-        if (!fe->vad_data->global_state) {
-            fe->vad_data->prespch_num++;
-            fe_prespch_write_cep(fe->vad_data->prespch_buf, fea);
-            /* check for transition sil->speech */
-            if (fe->vad_data->prespch_num >= fe->prespch_len) {
-                fe->vad_data->prespch_num = 0;
-                fe->vad_data->global_state = 1;
-                /* transition silence->speech occurred */
-                fe->vad_data->state_changed = 1;
-            }
-        }
-    } else {
-        fe->vad_data->prespch_num = 0;
-        fe_prespch_reset_cep(fe->vad_data->prespch_buf);
-        if (fe->vad_data->global_state) {
-            fe->vad_data->postspch_num++;
-            /* check for transition speech->sil */
-            if (fe->vad_data->postspch_num >= fe->postspch_len) {
-                fe->vad_data->postspch_num = 0;
-                fe->vad_data->global_state = 0;
-                /* transition speech->silence occurred */
-                fe->vad_data->state_changed = 1;
-            }
-        }
-    }
-
-    if (fe->vad_data->store_pcm) {
-        if (is_speech || fe->vad_data->global_state)
-            fe_prespch_write_pcm(fe->vad_data->prespch_buf, fe->spch);
-        if (!is_speech && !fe->vad_data->global_state)
-            fe_prespch_reset_pcm(fe->vad_data->prespch_buf);
-    }
-}
-
 void
 fe_write_frame(fe_t * fe, mfcc_t * fea)
 {

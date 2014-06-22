@@ -198,12 +198,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="..\..\src\libsphinxad\cont_ad_base.c">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
     <ClCompile Include="..\..\src\libsphinxbase\util\dtoa.c" />
     <ClCompile Include="..\..\src\libsphinxbase\util\err.c">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -380,7 +374,6 @@
     <ClInclude Include="..\..\include\cmn.h" />
     <ClInclude Include="..\..\include\sphinxbase\fe.h" />
     <ClInclude Include="..\..\include\win32\config.h" />
-    <ClInclude Include="..\..\include\cont_ad.h" />
     <ClInclude Include="..\..\include\err.h" />
     <ClInclude Include="..\..\include\f2c.h" />
     <ClInclude Include="..\..\src\libsphinxbase\fe\fe_internal.h" />

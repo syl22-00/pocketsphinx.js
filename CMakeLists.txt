@@ -81,6 +81,10 @@ include_directories("${CMAKE_BINARY_DIR}/include")
 add_library(${ps_lib} SHARED "src/psRecognizer.cpp" ${pocketsphinx_srcs}  ${fe_srcs} ${feat_srcs} ${lm_srcs} ${util_srcs})
 
 if(HMM_EMBED)
+  if ((NOT HMM_BASE) OR (NOT HMM_FOLDERS))
+    set(HMM_BASE "${sphinx_root}/am")
+    set(HMM_FOLDERS "rm1_200")
+  endif()
   # Copying acoustic models into the build tree
   foreach(model ${HMM_FOLDERS})
     message("Copying ${HMM_BASE}/${model} to binary dir")

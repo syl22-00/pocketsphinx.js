@@ -92,9 +92,9 @@ extern "C" {
 /** Default number of filter bands used to generate MFCCs. */
 #define DEFAULT_NUM_FILTERS 40
 /** Default prespeech state length */
-#define DEFAULT_PRESPCH_STATE_LEN 25
+#define DEFAULT_PRESPCH_STATE_LEN 10
 /** Default postspeech state length */
-#define DEFAULT_POSTSPCH_STATE_LEN 25
+#define DEFAULT_POSTSPCH_STATE_LEN 50
 /** Default lower edge of mel filter bank. */
 #define DEFAULT_LOWER_FILT_FREQ 133.33334
 /** Default upper edge of mel filter bank. */

@@ -217,11 +217,9 @@ namespace pocketsphinxjs {
     char ** argv = new char*[argc];
     int index = 0;
     for (StringsMapIterator i = parameters.begin() ; i != parameters.end(); ++i) {
-      if (isValidParameter(i->first, i->second)) {
-	if (i->first == "-lm") is_fsg = false;
-	argv[index++] = (char*) i->first.c_str();
-	argv[index++] = (char*) i->second.c_str();
-      }
+      if (i->first == "-lm") is_fsg = false;
+      argv[index++] = (char*) i->first.c_str();
+      argv[index++] = (char*) i->second.c_str();
     }
 
     cmd_ln_t * cmd_line = cmd_ln_parse_r(NULL, cont_args_def, argc, argv, FALSE);
@@ -239,12 +237,6 @@ namespace pocketsphinxjs {
       return RUNTIME_ERROR;
     }
     return SUCCESS;
-  }
-
-  bool Recognizer::isValidParameter(const std::string & key, const std::string & value) {
-    if ((key == "-dict") && (dictionaries.find(value) == dictionaries.end())) return false;
-    if ((key == "-lm") && (language_models.find(value) == language_models.end())) return false;
-    return true;
   }
 
   /*******************************************

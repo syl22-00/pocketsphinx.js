@@ -112,7 +112,7 @@ endif()
 
 # Adding custom target for the JavaScript library.
 add_custom_target(${ps_lib_js} ALL
-  COMMAND ${CMAKE_C_COMPILER} -O2 -s TOTAL_MEMORY=33554432 --bind ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
+  COMMAND ${CMAKE_C_COMPILER} -O2 -s TOTAL_MEMORY=50331648 --bind ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
   DEPENDS ${ps_lib}
   )
 

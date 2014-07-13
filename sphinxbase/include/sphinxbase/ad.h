@@ -108,7 +108,7 @@
 #if defined (__CYGWIN__)
 #include <w32api/windows.h>
 #include <w32api/mmsystem.h>
-#elif (defined(WIN32) && !defined(GNUWINCE)) || defined(_WIN32_WCE)
+#elif (defined(_WIN32) && !defined(GNUWINCE)) || defined(_WIN32_WCE)
 #include <windows.h>
 #include <mmsystem.h>
 #elif defined(AD_BACKEND_JACK)
@@ -148,7 +148,7 @@ extern "C" {
 #define AD_ERR_WAVE	-3
 
 
-#if  (defined(WIN32) || defined(AD_BACKEND_WIN32)) && !defined(GNUWINCE)
+#if (defined(_WIN32) || defined(AD_BACKEND_WIN32)) && !defined(GNUWINCE)
 typedef struct {
     HGLOBAL h_whdr;
     LPWAVEHDR p_whdr;
@@ -164,7 +164,7 @@ typedef struct {
  * NOTE: ad_rec_t and ad_play_t are READ-ONLY structures for the user.
  */
 
-#if (defined(WIN32) || defined(AD_BACKEND_WIN32)) && !defined(GNUWINCE)
+#if (defined(_WIN32) || defined(AD_BACKEND_WIN32)) && !defined(GNUWINCE)
 
 #define DEFAULT_DEVICE (char*)DEV_MAPPER
 
@@ -292,7 +292,7 @@ SPHINXBASE_EXPORT
 ad_rec_t *ad_open ( void );
 
 
-#if defined(WIN32) && !defined(GNUWINCE)
+#if defined(_WIN32) && !defined(GNUWINCE)
 /*
  * Like ad_open_sps but specifies buffering required within driver.  This function is
  * useful if the default (5000 msec worth) is too small and results in loss of data.
@@ -328,7 +328,7 @@ int32 ad_read (ad_rec_t *, int16 *buf, int32 max);
 
 /* ------ PLAYBACK; SIMILAR TO RECORDING ------- */
 
-#if defined(WIN32) && !defined(GNUWINCE)
+#if defined(_WIN32) && !defined(GNUWINCE)
 
 typedef struct {
     HWAVEOUT h_waveout;	/* "HANDLE" to the audio output device */

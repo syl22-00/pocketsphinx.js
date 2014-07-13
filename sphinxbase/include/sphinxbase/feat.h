@@ -431,6 +431,14 @@ int32 feat_s2mfc2feat_live(feat_t  *fcb,     /**< In: Descriptor from feat_init(
 
 
 /**
+ * Update the normalization stats, possibly in the end of utterance
+ *
+ */
+SPHINXBASE_EXPORT
+void feat_update_stats(feat_t *fcb);
+
+
+/**
  * Retain ownership of feat_t.
  *
  * @return pointer to retained feat_t.

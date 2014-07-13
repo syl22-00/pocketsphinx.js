@@ -44,6 +44,7 @@
 /* System headers. */
 #include <assert.h>
 #include <string.h>
+#include <math.h>
 
 /* SphinxBase headers. */
 #include <sphinxbase/prim_type.h>
@@ -464,8 +465,12 @@ acmod_end_utt(acmod_t *acmod)
         /* nfr is always either zero or one. */
         fe_end_utt(acmod->fe, acmod->mfc_buf[inptr], &nfr);
         acmod->n_mfc_frame += nfr;
-        /* Process whatever's left, and any leadout. */
-        nfr = acmod_process_mfcbuf(acmod);
+        
+        /* Process whatever's left, and any leadout or update stats if needed. */
+        if (nfr)
+            nfr = acmod_process_mfcbuf(acmod);
+        else
+            feat_update_stats(acmod->fcb);
     }
     if (acmod->mfcfh) {
         int32 outlen, rv;
@@ -855,7 +860,7 @@ acmod_read_senfh_header(acmod_t *acmod)
         }
 
         if (!strcmp(name[i], "logbase")) {
-            if (abs(atof(val[i]) - logmath_get_base(acmod->lmath)) > 0.001) {
+            if (fabs(atof(val[i]) - logmath_get_base(acmod->lmath)) > 0.001) {
                 E_ERROR("Logbase in senone file (%f) does not match acmod "
                         "(%f)\n", atof(val[i]),
                         logmath_get_base(acmod->lmath));

@@ -135,7 +135,7 @@ load_tginfo(NGRAM_MODEL_TYPE *model, int32 lw1, int32 lw2)
 
 /* Similar to find_bg */
 static int32
-find_tg(trigram_t * tg, int32 n, int32 w)
+find_tg(trigram_t * tg, int32 n, uint32 w)
 {
     int32 i, b, e;
 
@@ -289,7 +289,7 @@ lm3g_template_iter(ngram_model_t *base, int32 wid,
                    int32 *history, int32 n_hist)
 {
     NGRAM_MODEL_TYPE *model = (NGRAM_MODEL_TYPE *)base;
-    lm3g_iter_t *itor = ckd_calloc(1, sizeof(*itor));
+    lm3g_iter_t *itor = (lm3g_iter_t *)ckd_calloc(1, sizeof(*itor));
 
     ngram_iter_init((ngram_iter_t *)itor, base, n_hist, FALSE);
 
@@ -369,7 +369,7 @@ static ngram_iter_t *
 lm3g_template_mgrams(ngram_model_t *base, int m)
 {
     NGRAM_MODEL_TYPE *model = (NGRAM_MODEL_TYPE *)base;
-    lm3g_iter_t *itor = ckd_calloc(1, sizeof(*itor));
+    lm3g_iter_t *itor = (lm3g_iter_t *)ckd_calloc(1, sizeof(*itor));
     ngram_iter_init((ngram_iter_t *)itor, base, m, FALSE);
 
     itor->ug = model->lm3g.unigrams;
@@ -397,7 +397,7 @@ lm3g_template_successors(ngram_iter_t *bitor)
 {
     NGRAM_MODEL_TYPE *model = (NGRAM_MODEL_TYPE *)bitor->model;
     lm3g_iter_t *from = (lm3g_iter_t *)bitor;
-    lm3g_iter_t *itor = ckd_calloc(1, sizeof(*itor));
+    lm3g_iter_t *itor = (lm3g_iter_t *)ckd_calloc(1, sizeof(*itor));
 
     itor->ug = from->ug;
     switch (bitor->m) {

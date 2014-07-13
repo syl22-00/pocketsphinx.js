@@ -277,7 +277,7 @@ int
 feat_set_subvecs(feat_t *fcb, int32 **subvecs)
 {
     int32 **sv;
-    int32 n_sv, n_dim, i;
+    uint32 n_sv, n_dim, i;
 
     if (subvecs == NULL) {
         subvecs_free(fcb->subvecs);
@@ -314,8 +314,8 @@ feat_set_subvecs(feat_t *fcb, int32 **subvecs)
 
     fcb->n_sv = n_sv;
     fcb->subvecs = subvecs;
-    fcb->sv_len = ckd_calloc(n_sv, sizeof(*fcb->sv_len));
-    fcb->sv_buf = ckd_calloc(n_dim, sizeof(*fcb->sv_buf));
+    fcb->sv_len = (uint32 *)ckd_calloc(n_sv, sizeof(*fcb->sv_len));
+    fcb->sv_buf = (mfcc_t *)ckd_calloc(n_dim, sizeof(*fcb->sv_buf));
     fcb->sv_dim = n_dim;
     for (i = 0; i < n_sv; ++i) {
         int32 *d;
@@ -884,7 +884,7 @@ feat_init(char const *type, cmn_type_t cmn, int32 varnorm,
                                             sizeof(mfcc_t));
     /* This one is actually just an array of pointers to "flatten out"
      * wraparounds. */
-    fcb->tmpcepbuf = ckd_calloc(2 * feat_window_size(fcb) + 1,
+    fcb->tmpcepbuf = (mfcc_t** )ckd_calloc(2 * feat_window_size(fcb) + 1,
                                 sizeof(*fcb->tmpcepbuf));
 
     return fcb;
@@ -894,7 +894,7 @@ feat_init(char const *type, cmn_type_t cmn, int32 varnorm,
 void
 feat_print(feat_t * fcb, mfcc_t *** feat, int32 nfr, FILE * fp)
 {
-    int32 i, j, k;
+    uint32 i, j, k;
 
     for (i = 0; i < nfr; i++) {
         fprintf(fp, "%8d:\n", i);
@@ -918,7 +918,7 @@ feat_cmn(feat_t *fcb, mfcc_t **mfc, int32 nfr, int32 beginutt, int32 endutt)
 
     if (!(beginutt && endutt)
         && cmn_type != CMN_NONE) /* Only cmn_prior in block computation mode. */
-        cmn_type = CMN_PRIOR;
+        fcb->cmn = cmn_type = CMN_PRIOR;
 
     switch (cmn_type) {
     case CMN_CURRENT:
@@ -1283,7 +1283,7 @@ feat_s2mfc2feat_block_utt(feat_t * fcb, mfcc_t ** uttcep,
     /* Copy and pad out the utterance (this requires that the
      * feature computation functions always access the buffer via
      * the frame pointers, which they do)  */
-    cepbuf = ckd_calloc(nfr + win * 2, sizeof(mfcc_t *));
+    cepbuf = (mfcc_t **)ckd_calloc(nfr + win * 2, sizeof(mfcc_t *));
     memcpy(cepbuf + win, uttcep, nfr * sizeof(mfcc_t *));
 
     /* Do normalization before we interpolate on the boundary */    
@@ -1417,6 +1417,13 @@ feat_s2mfc2feat_live(feat_t * fcb, mfcc_t ** uttcep, int32 *inout_ncep,
         feat_subvec_project(fcb, ofeat, nfeatvec);
 
     return nfeatvec;
+}
+
+void 
+feat_update_stats(feat_t *fcb)
+{
+    if (fcb->cmn == CMN_PRIOR)
+        cmn_prior_update(fcb->cmn_struct);
 }
 
 feat_t *

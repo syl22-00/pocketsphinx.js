@@ -634,9 +634,9 @@ ngram_prob(ngram_model_t *model, const char *const *words, size_t n)
     int32 nused;
     int32 prob;
     int32 wid;
-    int i;
+    uint32 i;
 
-    ctx_id = ckd_calloc(n - 1, sizeof(*ctx_id));
+    ctx_id = (int32 *)ckd_calloc(n - 1, sizeof(*ctx_id));
     for (i = 1; i < n; ++i)
       ctx_id[i] = ngram_wid(model, words[i]);
 

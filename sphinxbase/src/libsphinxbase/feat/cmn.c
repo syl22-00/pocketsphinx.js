@@ -152,6 +152,7 @@ cmn(cmn_t *cmn, mfcc_t ** mfc, int32 varnorm, int32 n_frame)
     mfcc_t *mfcp;
     mfcc_t t;
     int32 i, f;
+    int32 n_pos_frame;
 
     assert(mfc != NULL);
 
@@ -162,15 +163,22 @@ cmn(cmn_t *cmn, mfcc_t ** mfc, int32 varnorm, int32 n_frame)
     memset(cmn->cmn_mean, 0, cmn->veclen * sizeof(mfcc_t));
 
     /* Find mean cep vector for this utterance */
-    for (f = 0; f < n_frame; f++) {
+    for (f = 0, n_pos_frame = 0; f < n_frame; f++) {
         mfcp = mfc[f];
+
+        /* Skip zero energy frames */
+        if (mfc[0] < 0)
+    	    continue;
+
         for (i = 0; i < cmn->veclen; i++) {
             cmn->cmn_mean[i] += mfcp[i];
         }
+
+        n_pos_frame++;
     }
 
     for (i = 0; i < cmn->veclen; i++)
-        cmn->cmn_mean[i] /= n_frame;
+        cmn->cmn_mean[i] /= n_pos_frame;
 
     E_INFO("CMN: ");
     for (i = 0; i < cmn->veclen; i++)

@@ -85,7 +85,7 @@
 #include "sphinxbase/err.h"
 #include "sphinxbase/ckd_alloc.h"
 
-#ifdef _WIN32_WCE
+#if defined(_WIN32_WCE) || defined(_WIN32_WP)
 DWORD unlink(const char *filename)
 {
 	WCHAR *wfilename;
@@ -189,6 +189,9 @@ ptmr_start(ptmr_t * tm)
     /* Unix + HP */
     gettimeofday(&e_start, 0);
     tm->start_elapsed = make_sec(&e_start);
+#elif defined(_WIN32_WP)
+    tm->start_cpu = GetTickCount64() / 1000;
+    tm->start_elapsed = GetTickCount64() / 1000;
 #elif defined(_WIN32_WCE)
     /* No GetProcessTimes() on WinCE.  (Note CPU time will be bogus) */
     tm->start_cpu = GetTickCount() / 1000;
@@ -229,10 +232,13 @@ ptmr_stop(ptmr_t * tm)
     /* Unix + HP */
     gettimeofday(&e_stop, 0);
     dt_elapsed = (make_sec(&e_stop) - tm->start_elapsed);
+#elif defined(_WIN32_WP)
+    dt_cpu = GetTickCount64() / 1000 - tm->start_cpu;
+    dt_elapsed = GetTickCount64() / 1000 - tm->start_elapsed;
 #elif defined(_WIN32_WCE)
-	/* No GetProcessTimes() on WinCE.  (Note CPU time will be bogus) */
-	dt_cpu = GetTickCount() / 1000 - tm->start_cpu;
-	dt_elapsed = GetTickCount() / 1000 - tm->start_elapsed;
+    /* No GetProcessTimes() on WinCE.  (Note CPU time will be bogus) */
+    dt_cpu = GetTickCount() / 1000 - tm->start_cpu;
+    dt_elapsed = GetTickCount() / 1000 - tm->start_elapsed;
 #else
     HANDLE pid;
     FILETIME t_create, t_exit, kst, ust;

@@ -256,8 +256,8 @@ lineiter_start(FILE *fh)
 {
     lineiter_t *li;
 
-    li = ckd_calloc(1, sizeof(*li));
-    li->buf = ckd_malloc(128);
+    li = (lineiter_t *)ckd_calloc(1, sizeof(*li));
+    li->buf = (char *)ckd_malloc(128);
     li->buf[0] = '\0';
     li->bsiz = 128;
     li->len = 0;
@@ -317,7 +317,7 @@ lineiter_next_plain(lineiter_t *li)
     /* Otherwise we have to reallocate and keep going. */
     while (1) {
         li->bsiz *= 2;
-        li->buf = ckd_realloc(li->buf, li->bsiz);
+        li->buf = (char *)ckd_realloc(li->buf, li->bsiz);
         /* If we get an EOF, we are obviously done. */
         if (fgets(li->buf + li->len, li->bsiz - li->len, li->fh) == NULL) {
             li->len += strlen(li->buf + li->len);
@@ -374,12 +374,12 @@ fread_line(FILE *stream, size_t *out_len)
         size_t len = strlen(buf);
         /* Append this data to the buffer. */
         if (output == NULL) {
-            output = ckd_malloc(len + 1);
+            output = (char *)ckd_malloc(len + 1);
             outptr = output;
         }
         else {
             size_t cur = outptr - output;
-            output = ckd_realloc(output, cur + len + 1);
+            output = (char *)ckd_realloc(output, cur + len + 1);
             outptr = output + cur;
         }
         memcpy(outptr, buf, len + 1);
@@ -405,7 +405,7 @@ fread_retry(void *pointer, int32 size, int32 num_items, FILE * stream)
 
     n_retry_rem = FREAD_RETRY_COUNT;
 
-    data = pointer;
+    data = (char *)pointer;
     loc = 0;
     n_items_rem = num_items;
 
@@ -538,7 +538,7 @@ bit_encode_attach(FILE *outfh)
 {
     bit_encode_t *be;
 
-    be = ckd_calloc(1, sizeof(*be));
+    be = (bit_encode_t *)ckd_calloc(1, sizeof(*be));
     be->refcount = 1;
     be->fh = outfh;
     return be;
@@ -612,7 +612,15 @@ bit_encode_flush(bit_encode_t *be)
     return 0;
 }
 
-#if defined(HAVE_SYS_STAT_H) && !defined(__MINGW32__) /* Unix, Cygwin, doesn't work on MINGW */
+#if defined(_WIN32) && !defined(CYGWIN)
+/* FIXME: Implement this. */
+int
+build_directory(const char *path)
+{
+    E_ERROR("build_directory() unimplemented on your platform!\n");
+    return -1;
+}
+#elif defined(HAVE_SYS_STAT_H) /* Unix, Cygwin, doesn't work on MINGW */
 int
 build_directory(const char *path)
 {
@@ -639,14 +647,7 @@ build_directory(const char *path)
         return mkdir(path, 0777);
     }
 }
-#elif defined(_WIN32)
-/* FIXME: Implement this. */
-int
-build_directory(const char *path)
-{
-    E_ERROR("build_directory() unimplemented on your platform!\n");
-    return -1;
-}
+
 #else
 int
 build_directory(const char *path)

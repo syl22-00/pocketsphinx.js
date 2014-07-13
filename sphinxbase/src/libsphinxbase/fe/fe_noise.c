@@ -215,7 +215,7 @@ fe_init_noisestats(int num_filters)
     noise_stats->max_gain = MAX_GAIN;
     noise_stats->inv_max_gain = 1.0 / MAX_GAIN;
     
-    for (i = 0; i < 2 * SMOOTH_WINDOW + 1; i++) {
+    for (i = 1; i < 2 * SMOOTH_WINDOW + 1; i++) {
         noise_stats->smooth_scaling[i] = 1.0 / i;
     }
 #else
@@ -267,7 +267,7 @@ fe_track_snr(fe_t * fe, int32 *in_speech)
     noise_stats_t *noise_stats;
     powspec_t *mfspec;
     int32 i, num_filts;
-    powspec_t lrt, snr;
+    powspec_t lrt, snr, max_signal, log_signal;
 
     if (!(fe->remove_noise || fe->remove_silence)) {
         *in_speech = TRUE;
@@ -309,26 +309,37 @@ fe_track_snr(fe_t * fe, int32 *in_speech)
     /* Noise estimation and vad decision */
     fe_lower_envelope(noise_stats, noise_stats->power, noise_stats->noise, num_filts);
 
-    lrt = FLOAT2MFCC(-10.0);
+    lrt = FLOAT2FIX(0.0f);
+    max_signal = FLOAT2FIX(0.0f);
     for (i = 0; i < num_filts; i++) {
 #ifndef FIXED_POINT
         signal[i] = noise_stats->power[i] - noise_stats->noise[i];
-            if (signal[i] < 0)
-                signal[i] = 0;
+        if (signal[i] < 1.0)
+            signal[i] = 1.0;
         snr = log(noise_stats->power[i] / noise_stats->noise[i]);
-
+        log_signal = log(signal[i]);
 #else
         signal[i] = fe_log_sub(noise_stats->power[i], noise_stats->noise[i]);
-        snr = MFCC2FLOAT(noise_stats->power[i] - noise_stats->noise[i]);
+        snr = noise_stats->power[i] - noise_stats->noise[i];
+        log_signal = signal[i];
 #endif    
-        if (snr > lrt)
+        if (snr > lrt) {
             lrt = snr;
+            if (log_signal > max_signal) {
+		max_signal = log_signal;
+    	    }
+    	}
     }
 
-    if (fe->remove_silence && (lrt < fe->vad_threshold))
+#ifndef FIXED_POINT
+    if (fe->remove_silence && (lrt < fe->vad_threshold || max_signal < fe->vad_threshold)) {
+#else
+    if (fe->remove_silence && (lrt < FLOAT2FIX(fe->vad_threshold) || max_signal < FLOAT2FIX(fe->vad_threshold))) {
+#endif
         *in_speech = FALSE;
-    else
+    } else {
 	*in_speech = TRUE;
+    }
 
     fe_lower_envelope(noise_stats, signal, noise_stats->floor, num_filts);
 

@@ -241,11 +241,11 @@ fe_init_auto_r(cmd_ln_t *config)
     assert (fe->frame_shift > 1);
 
     if (fe->frame_size > (fe->fft_size)) {
-        E_WARN
-            ("Number of FFT points has to be a power of 2 higher than %d\n",
-             (fe->frame_size));
+        E_ERROR
+            ("Number of FFT points has to be a power of 2 higher than %d, it is %d\n",
+             fe->frame_size, fe->fft_size);
         fe_free(fe);
-        return (NULL);
+        return NULL;
     }
 
     if (fe->dither)
@@ -263,6 +263,14 @@ fe_init_auto_r(cmd_ln_t *config)
 
     /* transfer params to mel fb */
     fe_parse_melfb_params(config, fe, fe->mel_fb);
+    
+    if (fe->mel_fb->upper_filt_freq > fe->sampling_rate / 2 + 1.0) {
+	E_ERROR("Upper frequency %.1f is higher than samprate/2 (%.1f)\n", 
+		fe->mel_fb->upper_filt_freq, fe->sampling_rate / 2);
+	fe_free(fe);
+	return NULL;
+    }
+    
     fe_build_melfilters(fe->mel_fb);
 
     fe_compute_melcosine(fe->mel_fb);
@@ -562,17 +570,22 @@ fe_process_frames_ext(fe_t *fe,
                   mfcc_t **buf_cep,
                   int32 *inout_nframes,
                   int16 **voiced_spch,
-                  int32 *voiced_spch_nsamps)
+                  int32 *voiced_spch_nsamps,
+                  int32 *out_frameidx)
 {
     int proc_result;
 
-    fe->vad_data->store_pcm = 1;
-    *voiced_spch_nsamps = 0;
-    fe_prespch_reinit_pcm(fe->vad_data->prespch_buf, *inout_nframes);
-    proc_result = fe_process_frames(fe, inout_spch, inout_nsamps, buf_cep, inout_nframes, NULL);
+    fe_prespch_extend_pcm(fe->vad_data->prespch_buf, *inout_nframes);
+
+    fe->vad_data->store_pcm = TRUE;
+    proc_result = fe_process_frames(fe, inout_spch, inout_nsamps, buf_cep, inout_nframes, out_frameidx);
+    fe->vad_data->store_pcm = FALSE;
+
     if (fe->vad_data->global_state)
         fe_prespch_read_pcm(fe->vad_data->prespch_buf, voiced_spch, voiced_spch_nsamps);
-    fe->vad_data->store_pcm = 0;
+    else
+	*voiced_spch_nsamps = 0;
+
     return proc_result;
 }
 
@@ -652,11 +665,13 @@ fe_free(fe_t * fe)
     ckd_free(fe->overflow_samps);
     ckd_free(fe->hamming_window);
 
-    if (fe->remove_noise || fe->remove_silence)
+    if (fe->noise_stats)
         fe_free_noisestats(fe->noise_stats);
 
-    fe_prespch_free(fe->vad_data->prespch_buf);
-    ckd_free(fe->vad_data);
+    if (fe->vad_data) {
+        fe_prespch_free(fe->vad_data->prespch_buf);
+	ckd_free(fe->vad_data);
+    }
 
     cmd_ln_free_r(fe->config);
     ckd_free(fe);

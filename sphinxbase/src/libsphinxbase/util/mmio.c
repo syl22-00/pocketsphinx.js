@@ -126,7 +126,7 @@ mmio_file_ptr(mmio_file_t *mf)
     return (void *)mf;
 }
 
-#elif defined(WIN32) /* !WINCE */
+#elif defined(WIN32) && !defined(_WIN32_WP) /* !WINCE */
 struct mmio_file_s {
 	int dummy;
 };
@@ -171,7 +171,8 @@ mmio_file_ptr(mmio_file_t *mf)
 }
 
 #else /* !WIN32, !WINCE */
-#if defined(__ADSPBLACKFIN__) /* This is true for both uClinux and VisualDSP++,
+#if defined(__ADSPBLACKFIN__) || defined(_WIN32_WP) 
+				/* This is true for both uClinux and VisualDSP++,
                                  but actually we need a better way to detect it. */
 struct mmio_file_s {
     int dummy;
@@ -180,20 +181,20 @@ struct mmio_file_s {
 mmio_file_t *
 mmio_file_read(const char *filename)
 {
- 	E_FATAL("mmio is not implemented on this platform!");
+    E_ERROR("mmio is not implemented on this platform!");
     return NULL;
 }
 
 void
 mmio_file_unmap(mmio_file_t *mf)
 {
- 	E_FATAL("mmio is not implemented on this platform!");
+    E_ERROR("mmio is not implemented on this platform!");
 }
 
 void *
 mmio_file_ptr(mmio_file_t *mf)
 {
- 	E_FATAL("mmio is not implemented on this platform!");
+    E_ERROR("mmio is not implemented on this platform!");
     return NULL;
 }
 #else /* !__ADSPBLACKFIN__ */

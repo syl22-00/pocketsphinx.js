@@ -1407,7 +1407,7 @@ sb_strtod(const char *s00, char **se)
     U rv, rv0, aadj1;
     Long L;
     ULong y, z;
-    Bigint *bb, *bb1, *bd, *bd0, *bs, *delta;
+    Bigint *bb = NULL, *bb1, *bd = NULL, *bd0, *bs = NULL, *delta = NULL;
 #ifdef SET_INEXACT
     int inexact, oldinexact;
 #endif

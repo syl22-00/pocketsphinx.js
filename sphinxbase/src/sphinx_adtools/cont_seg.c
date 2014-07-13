@@ -87,7 +87,7 @@ static FILE *infile;
 static void
 sleep_msec(int32 ms)
 {
-#if (defined(WIN32) && !defined(GNUWINCE)) || defined(_WIN32_WCE)
+#if (defined(_WIN32) && !defined(GNUWINCE)) || defined(_WIN32_WCE)
     Sleep(ms);
 #else
     /* ------------------- Unix ------------------ */
@@ -133,15 +133,16 @@ segment_audio()
     int16 pcm_buf[BLOCKSIZE];
     mfcc_t **cep_buf;
     int16 *voiced_buf;
-    int32 voiced_nsamps;
+    int32 voiced_nsamps, out_frameidx, uttstart;
     char file_name[1024];
     uint8 cur_vad_state, vad_state, writing;
     int uttno, uttlen, sample_rate;
     int32 nframes, nframes_tmp;
-    int16 frame_size, frame_shift;
+    int16 frame_size, frame_shift, frame_rate;
     size_t k;
 
     sample_rate = (int) cmd_ln_float32_r(config, "-samprate");
+    frame_rate = cmd_ln_int32_r(config, "-frate");
     frame_size =
         (int32) (cmd_ln_float32_r(config, "-wlen") * sample_rate + 0.5);
     frame_shift =
@@ -158,6 +159,7 @@ segment_audio()
     writing = 0;
     file = NULL;
     voiced_buf = NULL;
+    fe_start_stream(fe);
     fe_start_utt(fe);
     while ((k = read_audio(pcm_buf, BLOCKSIZE)) > 0) {
         int16 const *pcm_buf_tmp;
@@ -166,7 +168,10 @@ segment_audio()
             nframes_tmp = nframes;
             fe_process_frames_ext(fe, &pcm_buf_tmp, &k, cep_buf,
                                   &nframes_tmp, &voiced_buf,
-                                  &voiced_nsamps);
+                                  &voiced_nsamps, &out_frameidx);
+            if (out_frameidx > 0) {
+        	uttstart = out_frameidx;
+            }
             vad_state = fe_get_vad_state(fe);
             if (!cur_vad_state && vad_state) {
                 /* silence->speech transition, time to start new file */
@@ -175,8 +180,6 @@ segment_audio()
                 if ((file = fopen(file_name, "wb")) == NULL)
                     E_FATAL_SYSTEM("Failed to open '%s' for reading",
                                    file_name);
-                printf("Utterance %04d, logging to %s\n", uttno,
-                       file_name);
                 writing = 1;
             }
 
@@ -188,9 +191,12 @@ segment_audio()
             if (cur_vad_state && !vad_state) {
                 /* speech -> silence transition, time to finish file */
                 fclose(file);
-                printf("\tUtterance %04d = %d samples (%.1fsec)\n\n",
-                       uttno, uttlen,
-                       (double) uttlen / (double) sample_rate);
+	        printf("Utterance %04d: file %s start %.1f sec length %d samples ( %.2f sec )\n",
+    		       uttno,
+    		       file_name,
+    	    	       ((double) uttstart) / frame_rate,
+            	        uttlen,
+            	       ((double) uttlen) / sample_rate);
                 fflush(stdout);
                 fe_end_utt(fe, cep_buf[0], &nframes_tmp);
                 writing = 0;
@@ -204,8 +210,12 @@ segment_audio()
 
     if (writing) {
         fclose(file);
-        printf("\tUtterance %04d = %d samples (%.1fsec)\n\n",
-               uttno, uttlen, (double) uttlen / (double) sample_rate);
+	printf("Utterance %04d: file %s start %.1f sec length %d samples ( %.2f sec )\n",
+    	        uttno,
+    		file_name,
+    	    	((double) uttstart) / frame_rate,
+            	uttlen,
+                ((double) uttlen) / sample_rate);
         fflush(stdout);
     }
     fe_end_utt(fe, cep_buf[0], &nframes);
@@ -276,5 +286,6 @@ main(int argc, char *argv[])
         fclose(infile);
 
     fe_free(fe);
+    cmd_ln_free_r(config);
     return 0;
 }

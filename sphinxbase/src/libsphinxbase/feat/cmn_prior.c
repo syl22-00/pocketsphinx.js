@@ -157,18 +157,24 @@ cmn_prior(cmn_t *cmn, mfcc_t **incep, int32 varnorm, int32 nfr)
 {
     int32 i, j;
 
+    if (nfr <= 0)
+        return;
+
     if (varnorm)
         E_FATAL
             ("Variance normalization not implemented in live mode decode\n");
 
-    if (nfr <= 0)
-        return;
-
     for (i = 0; i < nfr; i++) {
+
+	/* Skip zero energy frames */
+	if (incep[i][0] < 0)
+	    continue;
+
         for (j = 0; j < cmn->veclen; j++) {
             cmn->sum[j] += incep[i][j];
             incep[i][j] -= cmn->cmn_mean[j];
         }
+
         ++cmn->nframe;
     }
 

@@ -139,13 +139,13 @@ cmp_name(const void *a, const void *b)
              (* (arg_t**) b)->name));
 }
 
-static const arg_t **
+static arg_t const **
 arg_sort(const arg_t * defn, int32 n)
 {
     const arg_t ** pos;
     int32 i;
 
-    pos = (const arg_t **) ckd_calloc(n, sizeof(arg_t *));
+    pos = (arg_t const **) ckd_calloc(n, sizeof(arg_t *));
     for (i = 0; i < n; ++i)
         pos[i] = &defn[i];
     qsort(pos, n, sizeof(arg_t *), cmp_name);
@@ -173,9 +173,9 @@ strnappend(char **dest, size_t *dest_allocation,
     required_allocation = (*dest ? strlen(*dest) : 0) + source_len + 1;
     if (*dest_allocation < required_allocation) {
         if (*dest_allocation == 0) {
-            *dest = ckd_calloc(required_allocation * 2, 1);
+            *dest = (char *)ckd_calloc(required_allocation * 2, 1);
         } else {
-            *dest = ckd_realloc(*dest, required_allocation * 2);
+            *dest = (char *)ckd_realloc(*dest, required_allocation * 2);
         }
         *dest_allocation = required_allocation * 2;
     }
@@ -240,7 +240,7 @@ arg_resolve_env(const char *str)
 static void
 arg_dump_r(cmd_ln_t *cmdln, FILE *fp, const arg_t * defn, int32 doc)
 {
-    const arg_t **pos;
+    arg_t const **pos;
     int32 i, l, n;
     int32 namelen, deflen;
     anytype_t *vp;
@@ -352,7 +352,7 @@ parse_string_list(const char *str)
     p = str;
     for (i = 0; i < count; i++) {
 	for (j = 0; p[j] != ',' && p[j] != 0; j++);
-	result[i] = ckd_calloc(j + 1, sizeof(char));
+	result[i] = (char *)ckd_calloc(j + 1, sizeof(char));
         strncpy( result[i], p, j);
         p = p + j + 1;
     }
@@ -419,7 +419,7 @@ cmd_ln_val_init(int t, const char *str)
             return NULL;
     }
 
-    v = ckd_calloc(1, sizeof(*v));
+    v = (cmd_ln_val_t *)ckd_calloc(1, sizeof(*v));
     memcpy(v, &val, sizeof(val));
     v->type = t;
 
@@ -450,7 +450,7 @@ parse_options(cmd_ln_t *cmdln, const arg_t *defn, int32 argc, char* argv[], int3
     if (new_cmdln == cmdln) {
         /* If we are adding to a previously passed-in cmdln, then
          * store our allocated strings in its f_argv. */
-        new_cmdln->f_argv = ckd_realloc(new_cmdln->f_argv,
+        new_cmdln->f_argv = (char **)ckd_realloc(new_cmdln->f_argv,
                                         (new_cmdln->f_argc + argc)
                                         * sizeof(*new_cmdln->f_argv));
         memcpy(new_cmdln->f_argv + new_cmdln->f_argc, argv,
@@ -557,7 +557,7 @@ cmd_ln_parse_r(cmd_ln_t *inout_cmdln, const arg_t * defn, int32 argc, char *argv
 
     /* Construct command-line object */
     if (inout_cmdln == NULL) {
-        cmdln = ckd_calloc(1, sizeof(*cmdln));
+        cmdln = (cmd_ln_t*)ckd_calloc(1, sizeof(*cmdln));
         cmdln->refcount = 1;
     }
     else
@@ -608,7 +608,7 @@ cmd_ln_parse_r(cmd_ln_t *inout_cmdln, const arg_t * defn, int32 argc, char *argv
             else
                 continue;
         }
-        argdef = v;
+        argdef = (arg_t *)v;
 
         /* Enter argument value */
         if (j + 1 >= argc) {
@@ -740,7 +740,7 @@ cmd_ln_init(cmd_ln_t *inout_cmdln, const arg_t *defn, int32 strict, ...)
     va_end(args);
 
     /* Now allocate f_argv */
-    f_argv = ckd_calloc(f_argc, sizeof(*f_argv));
+    f_argv = (char**)ckd_calloc(f_argc, sizeof(*f_argv));
     va_start(args, strict);
     f_argc = 0;
     while ((arg = va_arg(args, const char *))) {
@@ -807,9 +807,9 @@ cmd_ln_parse_file_r(cmd_ln_t *inout_cmdln, const arg_t * defn, const char *filen
      */
     argv_size = 10;
     argc = 0;
-    f_argv = ckd_calloc(argv_size, sizeof(char *));
+    f_argv = (char **)ckd_calloc(argv_size, sizeof(char *));
     /* Silently make room for \0 */
-    str = ckd_calloc(arg_max_length + 1, sizeof(char));
+    str = (char* )ckd_calloc(arg_max_length + 1, sizeof(char));
     quoting = 0;
 
     do {
@@ -844,7 +844,7 @@ cmd_ln_parse_file_r(cmd_ln_t *inout_cmdln, const arg_t * defn, const char *filen
             if (argc >= argv_size) {
                 char **tmp_argv;
                 if (!(tmp_argv =
-                       ckd_realloc(f_argv, argv_size * 2 * sizeof(char *)))) {
+                       (char **)ckd_realloc(f_argv, argv_size * 2 * sizeof(char *)))) {
                     rv = 1;
                     break;
                 }
@@ -873,7 +873,7 @@ cmd_ln_parse_file_r(cmd_ln_t *inout_cmdln, const arg_t * defn, const char *filen
             if (len >= arg_max_length) {
                 /* Make room for more chars (including the \0 !) */
                 char *tmp_str = str;
-                if ((tmp_str = ckd_realloc(str, (1 + arg_max_length * 2) * sizeof(char))) == NULL) {
+                if ((tmp_str = (char *)ckd_realloc(str, (1 + arg_max_length * 2) * sizeof(char))) == NULL) {
                     rv = 1;
                     break;
                 }
@@ -1050,7 +1050,7 @@ cmd_ln_free_r(cmd_ln_t *cmdln)
 
         entries = hash_table_tolist(cmdln->ht, &n);
         for (gn = entries; gn; gn = gnode_next(gn)) {
-            hash_entry_t *e = gnode_ptr(gn);
+            hash_entry_t *e = (hash_entry_t *)gnode_ptr(gn);
             cmd_ln_val_free((cmd_ln_val_t *)e->val);
         }
         glist_free(entries);

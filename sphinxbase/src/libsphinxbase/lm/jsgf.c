@@ -330,7 +330,7 @@ expand_rhs(jsgf_t *grammar, jsgf_rule_t *rule, jsgf_rhs_t *rhs,
             jsgf_rule_t *subrule;
             char *fullname;
             gnode_t *subnode;
-            jsgf_rule_stack_t *rule_stack_entry;
+            jsgf_rule_stack_t *rule_stack_entry = NULL;
 
             /* Special case for <NULL> and <VOID> pseudo-rules             
                If this is the only atom in the rhs, and it's the 

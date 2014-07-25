@@ -114,6 +114,8 @@ To generate the JavaScript files that contain these files, use emscripten's `too
 
 Then, make sure you load all these generated JavaScript files (`mdef.js`, `variances.js`, etc.) before you load `pocketsphinx.js`.
 
+There is an issue with `file_packager.py` when trying to compile large files, which is often the case with acoustic models. The generated JavaScript code has very long lines which seem to be longer than what is allowed by interpreters. We have a modified version of the tool that gets around that issue. Until it is resolved upstream, you can use our modified version: https://github.com/syl22-00/emscripten/blob/master/tools/file_packager.py
+
 # 3. API of `pocketsphinx.js`
 
 You can interact with `pocketsphinx.js` directly if you need to, but it is probably easier to build your application against the API of `recognizer.js` described in a later section.

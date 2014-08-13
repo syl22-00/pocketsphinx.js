@@ -318,7 +318,7 @@ The recognition process also produces the segmentation, called hypseg in Sphinx 
 ```javascript
 var seg = new Module.Segmentation();
 if (recognizer.getHypseg(seg) == Module.ReturnType.SUCCESS) {
-    for (var i = 0 ; i < seg.size ; i++) {
+    for (var i = 0 ; i < seg.size(); i++) {
         var segItem = seg.get(i);
         console.log("Word " + segItem.word +
                     " starts at frame " + segItem.start +

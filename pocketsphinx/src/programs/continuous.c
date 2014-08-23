@@ -118,29 +118,57 @@ print_word_times()
     }
 }
 
+static int
+check_wav_header(char *header, int expected_sr)
+{
+    int sr;
+
+    if (header[34] != 0x10) {
+        E_ERROR("Input audio file has [%d] bits per sample instead of 16\n", header[34]);
+        return 0;
+    }
+    if (header[20] != 0x1) {
+        E_ERROR("Input audio file has compression [%d] and not required PCM\n", header[20]);
+        return 0;
+    }
+    if (header[22] != 0x1) {
+        E_ERROR("Input audio file has [%d] channels, expected single channel mono\n", header[22]);
+        return 0;
+    }
+    sr = ((header[24] & 0xFF) | ((header[25] & 0xFF) << 8) | ((header[26] & 0xFF) << 16) | ((header[27] & 0xFF) << 24));
+    if (sr != expected_sr) {
+        E_ERROR("Input audio file has sample rate [%d], but decoder expects [%d]\n", sr, expected_sr);
+        return 0;
+    }
+    return 1;
+}
+
 /*
  * Continuous recognition from a file
  */
 static void
 recognize_from_file()
 {
-
     int16 adbuf[4096];
-
+    const char *fname;
     const char *hyp;
     const char *uttid;
-
     int32 k;
     uint8 utt_started, in_speech;
-
-    char waveheader[44];
     int32 print_times = cmd_ln_boolean_r(config, "-time");
 
-    if ((rawfd = fopen(cmd_ln_str_r(config, "-infile"), "rb")) == NULL) {
+    fname = cmd_ln_str_r(config, "-infile");
+    if ((rawfd = fopen(fname, "rb")) == NULL) {
         E_FATAL_SYSTEM("Failed to open file '%s' for reading",
-                       cmd_ln_str_r(config, "-infile"));
+                       fname);
     }
-    fread(waveheader, 1, 44, rawfd);
+    
+    if (strlen(fname) > 4 && strcmp(fname + strlen(fname) - 4, ".wav") == 0) {
+        char waveheader[44];
+	fread(waveheader, 1, 44, rawfd);
+	if (!check_wav_header(waveheader, (int)cmd_ln_float32_r(config, "-samprate")))
+    	    E_FATAL("Failed to process file '%s' due to format mismatch.\n", fname);
+    }
     
     utt_started = FALSE;
     ps_start_utt(ps, NULL);
@@ -148,14 +176,14 @@ recognize_from_file()
         ps_process_raw(ps, adbuf, k, FALSE, FALSE);
         in_speech = ps_get_in_speech(ps);
         if (in_speech && !utt_started) {
-    	    utt_started = TRUE;
+            utt_started = TRUE;
         } 
         if (!in_speech && utt_started) {
             ps_end_utt(ps);
             hyp = ps_get_hyp(ps, NULL, &uttid);
             printf("%s: %s\n", uttid, hyp);
             if (print_times)
-        	print_word_times();
+            print_word_times();
             ps_start_utt(ps, NULL);
             utt_started = FALSE;
         }
@@ -165,8 +193,8 @@ recognize_from_file()
         hyp = ps_get_hyp(ps, NULL, &uttid);
         printf("%s: %s\n", uttid, hyp);
         if (print_times) {
-		print_word_times();
-	}
+        print_word_times();
+    }
     }
     
     fclose(rawfd);
@@ -192,9 +220,9 @@ sleep_msec(int32 ms)
 /*
  * Main utterance processing loop:
  *     for (;;) {
- * 	   start utterance and wait for speech to process
+ *        start utterance and wait for speech to process
  *     decoding till end-of-utterance silence will be detected
- * 	   print utterance result;
+ *        print utterance result;
  *     }
  */
 static void
@@ -226,7 +254,7 @@ recognize_from_microphone()
         ps_process_raw(ps, adbuf, k, FALSE, FALSE);
         in_speech = ps_get_in_speech(ps);
         if (in_speech && !utt_started) {
-    	    utt_started = TRUE;
+            utt_started = TRUE;
             printf("Listening...\n");
         }
         if (!in_speech && utt_started) {
@@ -265,15 +293,15 @@ main(int argc, char *argv[])
     }
 
     if (config == NULL || (cmd_ln_str_r(config, "-infile") == NULL && cmd_ln_boolean_r(config, "-inmic") == FALSE)) {
-	E_INFO("Specify '-infile <file.wav>' to recognize from file or '-inmic yes' to recognize from microphone.");
-	cmd_ln_free_r(config);
-	return 1;
+    E_INFO("Specify '-infile <file.wav>' to recognize from file or '-inmic yes' to recognize from microphone.");
+    cmd_ln_free_r(config);
+    return 1;
     }
 
     ps_default_search_args(config);
     ps = ps_init(config);
     if (ps == NULL) {
-	cmd_ln_free_r(config);
+    cmd_ln_free_r(config);
         return 1;
     }
 
@@ -282,14 +310,14 @@ main(int argc, char *argv[])
     if (cmd_ln_str_r(config, "-infile") != NULL) {
         recognize_from_file();
     } else if (cmd_ln_boolean_r(config, "-inmic")) {
-	/* Make sure we exit cleanly (needed for profiling among other things) */
-    	/* Signals seem to be broken in arm-wince-pe. */
+    /* Make sure we exit cleanly (needed for profiling among other things) */
+        /* Signals seem to be broken in arm-wince-pe. */
 #if !defined(GNUWINCE) && !defined(_WIN32_WCE) && !defined(__SYMBIAN32__)
-    	signal(SIGINT, &sighandler);
+        signal(SIGINT, &sighandler);
 #endif
         if (setjmp(jbuf) == 0) {
-    	    recognize_from_microphone();
-    	}
+            recognize_from_microphone();
+        }
     }
 
     ps_free(ps);

@@ -1,6 +1,7 @@
 #ifndef _POCKETSPHINXJS_CONFIG_H_
 #define _POCKETSPHINXJS_CONFIG_H_
 
+#define HAVE_CONFIG_H 1
 #cmakedefine HMM_FOLDERS "@HMM_FOLDERS@"
 #cmakedefine DICT_FILES "@DICT_FILES@"
 #cmakedefine LM_FILES "@LM_FILES@"

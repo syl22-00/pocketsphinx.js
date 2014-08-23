@@ -35,7 +35,9 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
 #include <config.h>
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -454,7 +456,7 @@ stat_retry(const char *file, struct stat * statbuf)
         return -1;
     }
     ckd_free(wfile);
-    memset(statbuf, 0, sizeof(statbuf));
+    memset(statbuf, 0, sizeof(*statbuf));
     statbuf->st_mtime = file_data.ftLastWriteTime.dwLowDateTime;
     statbuf->st_size = file_data.nFileSizeLow;
     FindClose(h);

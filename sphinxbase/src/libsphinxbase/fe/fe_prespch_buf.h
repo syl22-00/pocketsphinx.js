@@ -40,10 +40,6 @@
 #ifndef FE_INTERNAL_H
 #define FE_INTERNAL_H
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include "sphinxbase/fe.h"
 
 typedef struct prespch_buf_s prespch_buf_t;

@@ -40,6 +40,15 @@ main(int argc, char *argv[])
 	TEST_ASSERT(jsgf);
 	jsgf_grammar_free(jsgf);
 
+	jsgf = jsgf_parse_string("#JSGF V1.0; grammar test; public <choice> = yes | no;", NULL);
+	TEST_ASSERT(jsgf);
+	rule = jsgf_get_rule(jsgf, "<test.choice>");
+	TEST_ASSERT(rule);
+	fsg = jsgf_build_fsg(jsgf, rule, lmath, 7.5);
+	fsg_model_write(fsg, stdout);
+	fsg_model_free(fsg);
+	jsgf_grammar_free(jsgf);
+
 	logmath_free(lmath);
 
 	return 0;

@@ -52,7 +52,7 @@ The build is a classic CMake cross-compilation, using the toolchain provided by 
     $ cd .../pocketsphinx.js # This folder
     $ mkdir build
     $ cd build
-    $ cmake -DEMSCRIPTEN=1 -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Platform/Emscripten.cmake ..
+    $ cmake -DEMSCRIPTEN=1 -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Modules/Platform/Emscripten.cmake ..
     $ make
 
 This generates `pocketsphinx.js`. At this point, optimization level and other compilation parameters are hard-coded, so modify `CMakeLists.txt` directly if you would like to change them.
@@ -65,11 +65,11 @@ The compilation process can package the acoustic models inside the resulting Jav
 
 For instance, to package acoustic models, place them inside a `HMM_BASE` folder. Each model being in its own folder inside `HMM_BASE`:
 
-    $ cmake -DEMSCRIPTEN=1 -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Platform/Emscripten.cmake -DHMM_BASE=/path/to/models -DHMM_FOLDERS="model1;model2;..." ..
+    $ cmake -DEMSCRIPTEN=1 -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Modules/Platform/Emscripten.cmake -DHMM_BASE=/path/to/models -DHMM_FOLDERS="model1;model2;..." ..
 
 If you only need to package one model, you can also do:
 
-    $ cmake -DEMSCRIPTEN=1 -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Platform/Emscripten.cmake -DHMM_BASE=/path/to/models -DHMM_FOLDERS=model ..
+    $ cmake -DEMSCRIPTEN=1 -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Modules/Platform/Emscripten.cmake -DHMM_BASE=/path/to/models -DHMM_FOLDERS=model ..
 
 Make sure the files of the acoustic model are directly inside the `HMM_FOLDERS`:
 
@@ -113,8 +113,6 @@ To generate the JavaScript files that contain these files, use emscripten's `too
     ... and so on
 
 Then, make sure you load all these generated JavaScript files (`mdef.js`, `variances.js`, etc.) before you load `pocketsphinx.js`.
-
-There is an issue with `file_packager.py` when trying to compile large files, which is often the case with acoustic models. The generated JavaScript code has very long lines which seem to be longer than what is allowed by interpreters. We have a modified version of the tool that gets around that issue. Until it is resolved upstream, you can use our modified version: https://github.com/syl22-00/emscripten/blob/master/tools/file_packager.py
 
 # 3. API of `pocketsphinx.js`
 

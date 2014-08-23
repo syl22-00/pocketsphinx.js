@@ -40,7 +40,9 @@
  * Author: David Huggins-Daines, much code taken from sphinx3/src/libs3decoder/liblm
  */
 
+#ifdef HAVE_CONFIG_H
 #include <config.h>
+#endif
 
 #include <string.h>
 #include <assert.h>

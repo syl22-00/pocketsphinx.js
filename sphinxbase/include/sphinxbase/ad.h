@@ -166,7 +166,7 @@ typedef struct {
 
 #if (defined(_WIN32) || defined(AD_BACKEND_WIN32)) && !defined(GNUWINCE)
 
-#define DEFAULT_DEVICE (char*)DEV_MAPPER
+#define DEFAULT_DEVICE NULL
 
 /**
  * Audio recording structure. 

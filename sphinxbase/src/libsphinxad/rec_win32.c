@@ -183,7 +183,7 @@ wavein_enqueue_buf(HWAVEIN h, LPWAVEHDR whdr)
 
 
 static HWAVEIN
-wavein_open(int32 samples_per_sec, int32 bytes_per_sample)
+wavein_open(int32 samples_per_sec, int32 bytes_per_sample, unsigned int device_id)
 {
     WAVEFORMATEX wfmt;
     int32 st;
@@ -203,7 +203,7 @@ wavein_open(int32 samples_per_sec, int32 bytes_per_sample)
 
     /* There should be a check here for a device of the desired type; later... */
 
-    st = waveInOpen((LPHWAVEIN) & h, WAVE_MAPPER,
+    st = waveInOpen((LPHWAVEIN) & h, device_id,
                     (LPWAVEFORMATEX) & wfmt, (DWORD) 0L, 0L,
                     (DWORD) CALLBACK_NULL);
     if (st != 0) {
@@ -252,13 +252,13 @@ wavein_close(ad_rec_t * r)
 
 
 ad_rec_t *
-ad_open_sps_bufsize(int32 sps, int32 bufsize_msec)
+ad_open_sps_bufsize(int32 sps, int32 bufsize_msec, unsigned int device_id)
 {
     ad_rec_t *r;
     int32 i, j;
     HWAVEIN h;
 
-    if ((h = wavein_open(sps, sizeof(int16))) == NULL)
+    if ((h = wavein_open(sps, sizeof(int16), device_id)) == NULL)
         return NULL;
 
     if ((r = (ad_rec_t *) malloc(sizeof(ad_rec_t))) == NULL) {
@@ -306,12 +306,20 @@ ad_open_sps_bufsize(int32 sps, int32 bufsize_msec)
     return r;
 }
 
-/* FIXME: Dummy function, doesn't actually use dev. */
 ad_rec_t *
 ad_open_dev(const char *dev, int32 sps)
 {
+    unsigned int device_num = WAVE_MAPPER;
+ 
+    /* Convert given deviceId parameter to int */
+    if (dev != NULL && sscanf(dev, "%d", &device_num) != EOF) {
+        if (device_num >= waveInGetNumDevs()) {
+	    device_num = WAVE_MAPPER;
+	}
+    }
+
     return (ad_open_sps_bufsize
-            (sps, WI_BUFSIZE * DEFAULT_N_WI_BUF * 1000 / sps));
+            (sps, WI_BUFSIZE * DEFAULT_N_WI_BUF * 1000 / sps, device_num));
 }
 
 
@@ -319,7 +327,7 @@ ad_rec_t *
 ad_open_sps(int32 sps)
 {
     return (ad_open_sps_bufsize
-            (sps, WI_BUFSIZE * DEFAULT_N_WI_BUF * 1000 / sps));
+            (sps, WI_BUFSIZE * DEFAULT_N_WI_BUF * 1000 / sps, WAVE_MAPPER));
 }
 
 

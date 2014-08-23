@@ -70,7 +70,11 @@
 
 /* Added by dhuggins@cs.cmu.edu to use autoconf results. */
 /* We do not care about the VAX. */
+#ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+
+
 #ifdef WORDS_BIGENDIAN
 #define IEEE_MC68k
 #else

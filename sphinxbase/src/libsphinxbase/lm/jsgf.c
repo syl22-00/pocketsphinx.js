@@ -618,6 +618,39 @@ jsgf_read_file(const char *file, logmath_t * lmath, float32 lw)
     return fsg;
 }
 
+fsg_model_t *
+jsgf_read_string(const char *string, logmath_t * lmath, float32 lw)
+{
+    fsg_model_t *fsg;
+    jsgf_rule_t *rule;
+    jsgf_t *jsgf;
+    jsgf_rule_iter_t *itor;
+
+    if ((jsgf = jsgf_parse_string(string, NULL)) == NULL) {
+        E_ERROR("Error parsing input string\n");
+        return NULL;
+    }
+
+    rule = NULL;
+    for (itor = jsgf_rule_iter(jsgf); itor;
+         itor = jsgf_rule_iter_next(itor)) {
+        rule = jsgf_rule_iter_rule(itor);
+        if (jsgf_rule_public(rule)) {
+            jsgf_rule_iter_free(itor);
+            break;
+        }
+    }
+    if (rule == NULL) {
+        jsgf_grammar_free(jsgf);
+        E_ERROR("No public rules found in input string\n");
+        return NULL;
+    }
+    fsg = jsgf_build_fsg(jsgf, rule, lmath, lw);
+    jsgf_grammar_free(jsgf);
+    return fsg;
+}
+
+
 int
 jsgf_write_fsg(jsgf_t *grammar, jsgf_rule_t *rule, FILE *outfh)
 {
@@ -842,6 +875,32 @@ jsgf_parse_file(const char *filename, jsgf_t *parent)
     }
     if (in)
         fclose(in);
+    yylex_destroy(yyscanner);
+
+    return jsgf;
+}
+
+jsgf_t *
+jsgf_parse_string(const char *string, jsgf_t * parent)
+{
+    yyscan_t yyscanner;
+    jsgf_t *jsgf;
+    int yyrv;
+    YY_BUFFER_STATE buf;
+
+    yylex_init(&yyscanner);
+    buf = yy_scan_string(string, yyscanner);
+
+    jsgf = jsgf_grammar_new(parent);
+    yyrv = yyparse(yyscanner, jsgf);
+    if (yyrv != 0) {
+        E_ERROR("Failed to parse JSGF grammar from input string\n");
+        jsgf_grammar_free(jsgf);
+        yy_delete_buffer(buf, yyscanner);
+        yylex_destroy(yyscanner);
+        return NULL;
+    }
+    yy_delete_buffer(buf, yyscanner);
     yylex_destroy(yyscanner);
 
     return jsgf;

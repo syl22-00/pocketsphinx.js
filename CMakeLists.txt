@@ -67,6 +67,8 @@ foreach(cfile ${pocketsphinx_src_files})
     set(pocketsphinx_srcs ${pocketsphinx_srcs} "${pocketsphinx_folder}/${cfile}")
 endforeach(cfile)
 
+add_definitions(-DHAVE_CONFIG_H)
+
 set(ps_lib_js "pocketsphinx.js")
 set(ps_lib "pocketsphinx")
 
@@ -116,7 +118,7 @@ endif()
 
 # Adding custom target for the JavaScript library.
 add_custom_target(${ps_lib_js} ALL
-  COMMAND ${CMAKE_C_COMPILER} -O2 -s TOTAL_MEMORY=100663296 --bind ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
+  COMMAND ${CMAKE_C_COMPILER} -O2 -s TOTAL_MEMORY=100663296 --bind --memory-init-file 0 ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
   DEPENDS ${ps_lib}
   )
 

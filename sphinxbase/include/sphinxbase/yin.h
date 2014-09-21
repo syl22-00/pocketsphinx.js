@@ -84,6 +84,16 @@ SPHINXBASE_EXPORT
 void yin_end(yin_t *pe);
 
 /**
+ * Store a frame of data to the pitch estimator.
+ *
+ * @param pe Pitch estimator.
+ * @param frame Frame of <code>frame_size</code> (see
+ * yin_init()) samples of audio data.
+ */
+SPHINXBASE_EXPORT
+void yin_store(yin_t *pe, int16 const *frame);
+
+/**
  * Feed a frame of data to the pitch estimator.
  *
  * @param pe Pitch estimator.
@@ -92,6 +102,15 @@ void yin_end(yin_t *pe);
  */
 SPHINXBASE_EXPORT
 void yin_write(yin_t *pe, int16 const *frame);
+
+/**
+ * Feed stored frame of data to the pitch estimator.
+ * (see yin_store())
+ *
+ * @param pe Pitch estimator.
+ */
+SPHINXBASE_EXPORT
+void yin_write_stored(yin_t *pe);
 
 /**
  * Read a raw estimated pitch value from the pitch estimator.
@@ -107,7 +126,7 @@ void yin_write(yin_t *pe, int16 const *frame);
  *         estimate, zero otherwise.
  */
 SPHINXBASE_EXPORT
-int yin_read(yin_t *pe, uint16 *out_period, uint16 *out_bestdiff);
+int yin_read(yin_t *pe, uint16 *out_period, float *out_bestdiff);
 
 #ifdef __cplusplus
 }

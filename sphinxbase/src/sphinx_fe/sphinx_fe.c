@@ -441,8 +441,8 @@ static int
 decode_pcm(sphinx_wave2feat_t *wtf)
 {
     size_t nsamp;
-    int32 nfr, nchans, whichchan;
-    uint32 nfloat, n;
+    int32 n, nfr, nchans, whichchan;
+    uint32 nfloat;
 
     nchans = cmd_ln_int32_r(wtf->config, "-nchans");
     whichchan = cmd_ln_int32_r(wtf->config, "-whichchan");

@@ -46,11 +46,17 @@
 #include "sphinxbase/yin.h"
 
 #include <stdio.h>
+#include <string.h>
 
 struct yin_s {
     uint16 frame_size;       /** Size of analysis frame. */
+#ifndef FIXED_POINT
+    float search_threshold; /**< Threshold for finding period */
+    float search_range;     /**< Range around best local estimate to search */
+#else
     uint16 search_threshold; /**< Threshold for finding period, in Q15 */
     uint16 search_range;     /**< Range around best local estimate to search, in Q15 */
+#endif
     uint16 nfr;              /**< Number of frames read so far. */
 
     unsigned char wsize;    /**< Size of smoothing window. */
@@ -58,13 +64,40 @@ struct yin_s {
     unsigned char wcur;     /**< Current frame of analysis. */
     unsigned char endut;    /**< Hoch Hech! Are we at the utterance end? */
 
+#ifndef FIXED_POINT
+    float **diff_window;    /**< Window of difference function outputs. */
+#else
     fixed32 **diff_window;  /**< Window of difference function outputs. */
+#endif
     uint16 *period_window;  /**< Window of best period estimates. */
+    int16 *frame;           /**< Storage for frame */
 };
 
 /**
  * The core of YIN: cumulative mean normalized difference function.
  */
+#ifndef FIXED_POINT
+static void
+cmn_diff(int16 const *signal, float *out_diff, int ndiff)
+{
+    double cum;
+    int t, j;
+
+    cum = 0.0f;
+    out_diff[0] = 1.0f;
+
+    for (t = 1; t < ndiff; ++t) {
+        float dd;
+        dd = 0.0f;
+        for (j = 0; j < ndiff; ++j) {
+             int diff = signal[j] - signal[t + j];
+             dd += (diff * diff);
+        }
+        cum += dd;
+        out_diff[t] = (float)(dd * t / cum);
+    }
+}
+#else
 static void
 cmn_diff(int16 const *signal, int32 *out_diff, int ndiff)
 {
@@ -125,6 +158,7 @@ cmn_diff(int16 const *signal, int32 *out_diff, int ndiff)
            dd, cshift, dshift, (t<<tscale), cum, norm, out_diff[t]); */
     }
 }
+#endif
 
 yin_t *
 yin_init(int frame_size, float search_threshold,
@@ -134,14 +168,20 @@ yin_init(int frame_size, float search_threshold,
 
     pe = ckd_calloc(1, sizeof(*pe));
     pe->frame_size = frame_size;
+#ifndef FIXED_POINT
+    pe->search_threshold = search_threshold;
+    pe->search_range = search_range;
+#else
     pe->search_threshold = (uint16)(search_threshold * 32768);
     pe->search_range = (uint16)(search_range * 32768);
+#endif
     pe->wsize = smooth_window * 2 + 1;
     pe->diff_window = ckd_calloc_2d(pe->wsize,
                                     pe->frame_size / 2,
                                     sizeof(**pe->diff_window));
     pe->period_window = ckd_calloc(pe->wsize,
                                    sizeof(*pe->period_window));
+    pe->frame = ckd_calloc(pe->frame_size, sizeof(*pe->frame));
     return pe;
 }
 
@@ -168,14 +208,27 @@ yin_end(yin_t *pe)
 }
 
 int
+#ifndef FIXED_POINT
+thresholded_search(float *diff_window, float threshold, int start, int end)
+#else
 thresholded_search(int32 *diff_window, fixed32 threshold, int start, int end)
+#endif
 {
-    int i, min, argmin;
+    int i, argmin;
+#ifndef FIXED_POINT
+    float min;
+#else
+    int min;
+#endif
 
-    min = INT_MAX;
-    argmin = 0;
-    for (i = start; i < end; ++i) {
+    min = diff_window[start];
+    argmin = start;
+    for (i = start + 1; i < end; ++i) {
+#ifndef FIXED_POINT
+        float diff = diff_window[i];
+#else
         int diff = diff_window[i];
+#endif
 
         if (diff < threshold) {
             min = diff;
@@ -188,6 +241,12 @@ thresholded_search(int32 *diff_window, fixed32 threshold, int start, int end)
         }
     }
     return argmin;
+}
+
+void 
+yin_store(yin_t *pe, int16 const *frame)
+{
+    memcpy(pe->frame, frame, pe->frame_size * sizeof(*pe->frame));
 }
 
 void
@@ -217,11 +276,22 @@ yin_write(yin_t *pe, int16 const *frame)
     ++pe->nfr;
 }
 
+void 
+yin_write_stored(yin_t *pe)
+{
+    yin_write(pe, pe->frame);
+}
+
 int
-yin_read(yin_t *pe, uint16 *out_period, uint16 *out_bestdiff)
+yin_read(yin_t *pe, uint16 *out_period, float *out_bestdiff)
 {
     int wstart, wlen, half_wsize, i;
-    int best, best_diff, search_width, low_period, high_period;
+    int best, search_width, low_period, high_period;
+#ifndef FIXED_POINT
+    float best_diff;
+#else
+    int best_diff;
+#endif
 
     half_wsize = (pe->wsize-1)/2;
     /* Without any smoothing, just return the current value (don't
@@ -230,7 +300,11 @@ yin_read(yin_t *pe, uint16 *out_period, uint16 *out_bestdiff)
         if (pe->endut)
             return 0;
         *out_period = pe->period_window[0];
+#ifndef FIXED_POINT
         *out_bestdiff = pe->diff_window[0][pe->period_window[0]];
+#else
+        *out_bestdiff = pe->diff_window[0][pe->period_window[0]] / 32768.0f;
+#endif
         return 1;
     }
 
@@ -272,7 +346,11 @@ yin_read(yin_t *pe, uint16 *out_period, uint16 *out_bestdiff)
     best_diff = pe->diff_window[pe->wcur][best];
     for (i = 0; i < wlen; ++i) {
         int j = wstart + i;
+#ifndef FIXED_POINT
+        float diff;
+#else
         int diff;
+#endif
 
         j %= pe->wsize;
         diff = pe->diff_window[j][pe->period_window[j]];
@@ -291,11 +369,19 @@ yin_read(yin_t *pe, uint16 *out_period, uint16 *out_bestdiff)
         if (++pe->wcur == pe->wsize)
             pe->wcur = 0;
         *out_period = best;
+#ifndef FIXED_POINT
         *out_bestdiff = best_diff;
+#else
+        *out_bestdiff = best_diff / 32768.0f;
+#endif
         return 1;
     }
     /* Otherwise, redo the search inside a narrower range. */
+#ifndef FIXED_POINT
+    search_width = (int)(best * pe->search_range);
+#else
     search_width = best * pe->search_range / 32768;
+#endif
     /* printf("Search width = %d * %.2f = %d\n",
        best, (double)pe->search_range/32768, search_width); */
     if (search_width == 0) search_width = 1;
@@ -311,8 +397,13 @@ yin_read(yin_t *pe, uint16 *out_period, uint16 *out_bestdiff)
 
     if (out_period)
         *out_period = (best > 65535) ? 65535 : best;
-    if (out_bestdiff)
-        *out_bestdiff = (best_diff > 65535) ? 65535 : best_diff;
+    if (out_bestdiff) {
+#ifndef FIXED_POINT
+        *out_bestdiff = (best_diff > 1.0f) ? 1.0f : best_diff;
+#else
+        *out_bestdiff = (best_diff > 32768) ? 1.0f : best_diff / 32768.0f;
+#endif
+    }
 
     /* Increment the current pointer. */
     if (++pe->wcur == pe->wsize)

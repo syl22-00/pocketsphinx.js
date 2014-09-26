@@ -9,27 +9,10 @@ AC_CONFIG_MACRO_DIR([m4])
 CFLAGS=${CFLAGS:--g -O2 -Wall}
 
 AC_CANONICAL_HOST
-
-dnl
-dnl Set proper compiler flags and such for some platforms
-dnl
-case $host in
-     arm-wince-pe*)
-	CFLAGS=${CFLAGS:--march=armv4 -mapcs-32 -malignment-traps}
-	LIBS='-lc -lgcc -lwinsock -lcoredll'
-	CFLAGS="$CFLAGS -DNEWLIB -DSARM -DWIN32 -DGNUWINCE"
-	;;
-     *uclinux*)
-	# uClinux needs special "flat" binaries
-	LDFLAGS="$LDFLAGS -Wl,-elf2flt"
-	;;
-     *)
-     ;;
-esac     
-
 AC_ISC_POSIX
 AC_PROG_CC
 AC_PROG_CC_STDC
+AC_PROG_LIBTOOL
 
 # We don't bother ourselves with flex checks until the rest of the world has an up-to-date Flex
 # We need specific bison extensions, so check for bison
@@ -186,10 +169,22 @@ case $host in
                 ])
 		;;
 	*-*-*cygwin*|*-*-*mingw*)
-		ad_files="play_win32.lo rec_win32.lo"
+		ad_files="ad_win32.lo"
 		ad_libs="-lwinmm"
 		ad_backend="AD_BACKEND_WIN32"
 		AC_DEFINE(AD_BACKEND_WIN32, [], [Use WinMM interface for sound I/O])
+		;;
+	*-apple-*darwin*)
+		sdkpath=`xcodebuild -version -sdk  | grep MacOSX | grep "^Path:" | cut -d" " -f2`
+		ad_cppflags="-I$sdkpath/System/Library/Frameworks/OpenAL.framework/Versions/A/Headers/"
+		backup_CPPFLAGS="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $ad_cppflags"
+		AC_CHECK_HEADER("alc.h", [], AC_MSG_ERROR([OpenAL not found]))
+		CPPFLAGS="$backup_CPPFLAGS"
+		ad_files="ad_openal.lo"
+		ad_libs="-framework OpenAL"
+		ad_backend="AD_BACKEND_OPENAL"
+		AC_DEFINE(AD_BACKEND_OPENAL, [], [Use OpenAL for sound I/O])
 		;;
 	*)
 		ad_files="ad_base.lo"
@@ -199,11 +194,10 @@ case $host in
 		;;
 esac
 
+AC_SUBST(ad_cppflags)
 AC_SUBST(ad_files)
 AC_SUBST(ad_libs)
 AC_SUBST(ad_backend)
-
-AM_PROG_LIBTOOL
 
 dnl
 dnl Check for Doxygen, and build dox if present

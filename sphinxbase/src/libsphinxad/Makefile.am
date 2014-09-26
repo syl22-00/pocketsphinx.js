@@ -16,9 +16,9 @@ EXTRA_libsphinxad_la_SOURCES = ad_base.c \
 	ad_pulse.c \
 	ad_jack.c
 
-EXTRA_DIST = ad_s60.cpp \
-	play_win32.c \
-	rec_win32.c
+EXTRA_DIST = \
+	ad_s60.cpp \
+	ad_win32.c
 
 libsphinxad_la_DEPENDENCIES = @ad_files@
 
@@ -29,7 +29,7 @@ libsphinxad_la_LIBADD = \
 	$(top_builddir)/src/libsphinxbase/libsphinxbase.la
 
 INCLUDES = \
-	@SAMPLERATE_CFLAGS@ \
+	@ad_cppflags@ \
 	-I$(top_srcdir)/include/sphinxbase \
 	-I$(top_srcdir)/include \
 	-I$(top_builddir)/include

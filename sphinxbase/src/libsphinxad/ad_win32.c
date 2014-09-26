@@ -55,8 +55,6 @@
  */
 
 
-#include <windows.h>
-#include <mmsystem.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,6 +62,30 @@
 #include "sphinxbase/prim_type.h"
 #include "sphinxbase/ad.h"
 
+#if defined (__CYGWIN__)
+#include <w32api/windows.h>
+#include <w32api/mmsystem.h>
+#elif (defined(_WIN32) && !defined(GNUWINCE)) || defined(_WIN32_WCE)
+#include <windows.h>
+#include <mmsystem.h>
+#endif
+
+/**
+ * Audio recording structure. 
+ */
+struct ad_rec_s {
+    HWAVEIN h_wavein;	/* "HANDLE" to the audio input device */
+    ad_wbuf_t *wi_buf;	/* Recording buffers provided to system */
+    int32 n_buf;	/* #Recording buffers provided to system */
+    int32 opened;	/* Flag; A/D opened for recording */
+    int32 recording;
+    int32 curbuf;	/* Current buffer with data for application */
+    int32 curoff;	/* Start of data for application in curbuf */
+    int32 curlen;	/* #samples of data from curoff in curbuf */
+    int32 lastbuf;	/* Last buffer containing data after recording stopped */
+    int32 sps;		/* Samples/sec */
+    int32 bps;		/* Bytes/sample */
+};
 
 #define DEFAULT_N_WI_BUF	32      /* #Recording bufs */
 #define WI_BUFSIZE		2500    /* Samples/buf (Why this specific value??

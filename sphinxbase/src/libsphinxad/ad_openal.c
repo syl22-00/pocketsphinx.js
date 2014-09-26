@@ -1,6 +1,6 @@
 /* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
- * Copyright (c) 1999-2001 Carnegie Mellon University.  All rights
+ * Copyright (c) 1999-2014 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,45 +34,45 @@
  * ====================================================================
  *
  */
-
-/*
- * ad.c -- Wraps a "sphinx-II standard" audio interface around the basic audio
- * 		utilities.
- *
- * HISTORY
- * 
- * 11-Jun-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
- * 		Modified to conform to new A/D API.
- * 
- * 12-May-96	M K Ravishankar (rkm@cs.cmu.edu) at Carnegie Mellon University.
- * 		Dummy template created.
- */
-
-#include <stdio.h>
-#include <string.h>
 #include <config.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-#include "prim_type.h"
 #include "ad.h"
 
-ad_rec_s {
-    int32 sps;		/**< Samples/sec */
-    int32 bps;		/**< Bytes/sample */
+#include <al.h>
+#include <alc.h>
+
+struct ad_rec_s {
+    ALCdevice * device;
 };
 
 ad_rec_t *
-ad_open_dev(const char *dev, int32 samples_per_sec)
+ad_open_dev(const char * dev, int32 samples_per_sec)
 {
-    fprintf(stderr, "A/D library not implemented\n");
-    return NULL;
+    ad_rec_t * handle = malloc(sizeof(ad_rec_t));
+
+    if (handle == NULL) {
+        fprintf(stderr, "%s\n", "failed to allocate memory");
+        abort();
+    }
+
+    handle -> device = alcCaptureOpenDevice(dev, samples_per_sec, AL_FORMAT_MONO16, samples_per_sec * 10);
+
+    if (handle -> device == NULL) {
+        free(handle);
+        fprintf(stderr, "%s\n", "failed to open capture device");
+        abort();
+    }
+
+    return handle;
 }
 
 
 ad_rec_t *
 ad_open_sps(int32 samples_per_sec)
 {
-    fprintf(stderr, "A/D library not implemented\n");
-    return NULL;
+    return ad_open_dev(NULL, samples_per_sec);
 }
 
 ad_rec_t *
@@ -85,26 +85,44 @@ ad_open(void)
 int32
 ad_start_rec(ad_rec_t * r)
 {
-    return -1;
+    alcCaptureStart(r -> device);
+    return 0;
 }
 
 
 int32
 ad_stop_rec(ad_rec_t * r)
 {
-    return -1;
+    alcCaptureStop(r -> device);
+    return 0;
 }
 
 
 int32
 ad_read(ad_rec_t * r, int16 * buf, int32 max)
 {
-    return -1;
+    ALCint number;
+
+    alcGetIntegerv(r -> device, ALC_CAPTURE_SAMPLES, sizeof(number), &number);
+    if (number >= 0) {
+        number = (number < max ? number : max);
+        alcCaptureSamples(r -> device, buf, number);
+    }
+
+    return number;
 }
 
 
 int32
 ad_close(ad_rec_t * r)
 {
-    return 0;
+    ALCboolean isClosed;
+
+    isClosed = alcCaptureCloseDevice(r -> device);
+
+    if (isClosed) {
+        return 0;
+    } else {
+        return -1;
+    }
 }

@@ -48,6 +48,7 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#include <sys/select.h>
 
 #include <sphinxbase/prim_type.h>
 #include <sphinxbase/ad.h>

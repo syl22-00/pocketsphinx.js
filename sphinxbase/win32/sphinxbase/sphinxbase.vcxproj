@@ -172,9 +172,8 @@
     <ClCompile Include="..\..\src\libsphinxbase\lm\ngram_model_dmp32.c" />
     <ClCompile Include="..\..\src\libsphinxbase\lm\ngram_model_set.c" />
     <ClCompile Include="..\..\src\libsphinxbase\util\pio.c" />
-    <ClCompile Include="..\..\src\libsphinxad\play_win32.c" />
     <ClCompile Include="..\..\src\libsphinxbase\util\profile.c" />
-    <ClCompile Include="..\..\src\libsphinxad\rec_win32.c" />
+    <ClCompile Include="..\..\src\libsphinxad\ad_win32.c" />
     <ClCompile Include="..\..\src\libsphinxbase\util\sbthread.c" />
     <ClCompile Include="..\..\src\libsphinxbase\util\slamch.c" />
     <ClCompile Include="..\..\src\libsphinxbase\util\slapack_lite.c" />

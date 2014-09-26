@@ -81,10 +81,16 @@
 #include "prim_type.h"
 #include "ad.h"
 
-
 #define AUDIO_FORMAT SND_PCM_SFMT_S16_LE        /* 16-bit signed, little endian */
-#define INPUT_GAIN   (85)
-#define SPS_EPSILON   200
+#define INPUT_GAIN 85
+#define SPS_EPSILON 200
+
+struct ad_rec_s {
+    snd_pcm_t *dspH;
+    int32 recording;
+    int32 sps;
+    int32 bps;
+};
 
 static int
 setparams(int32 sps, snd_pcm_t * handle)

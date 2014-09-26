@@ -10,6 +10,13 @@
 
 #if defined(AD_BACKEND_S60)
 
+struct ad_rec_s {
+    void* recorder;
+    int32 recording;
+    int32 sps;
+    int32 bps;
+};
+
 /*
     S60 Sphinx audio backend.
     Currently it is limited to recording 8kHz PCM16 mono audio data.

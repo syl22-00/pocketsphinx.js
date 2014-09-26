@@ -75,6 +75,18 @@
 #define SPS_EPSILON   200
 #define SAMPLERATE_TOLERANCE 0.01
 
+#define DEFAULT_DEVICE "/dev/dsp"
+
+/** \struct ad_rec_t
+ *  \brief Audio recording structure. 
+ */
+struct ad_rec_s {
+    int32 dspFD;	/* Audio device descriptor */
+    int32 recording;
+    int32 sps;		/* Samples/sec */
+    int32 bps;		/* Bytes/sample */
+};
+
 ad_rec_t *
 ad_open_dev(const char *dev, int32 sps)
 {

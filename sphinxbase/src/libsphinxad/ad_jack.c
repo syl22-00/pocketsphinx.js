@@ -29,13 +29,10 @@
  * ====================================================================
  *
  */
-/* Sphinx II libad (Linux)
- * ^^^^^^^^^^^^^^^^^^^^^^^
- *
- *
- * Glenn Pierce (glennpierce@gmail.com)
- * ********************************************************************
- */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -43,16 +40,35 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <config.h>
 #include <limits.h>
 
 #include "prim_type.h"
 #include "ad.h"
 
 #include <jack/jack.h>
+#include <jack/jack.h>
+#include <jack/ringbuffer.h>
+#ifdef HAVE_SAMPLERATE_H
+#include <samplerate.h>
+#endif
 
 #define DEFAULT_DEVICE "system:capture_1"
 #define BUFFER_SIZE 352800
+
+struct ad_rec_s {
+    jack_client_t *client;
+    jack_port_t *input_port;
+    jack_port_t *output_port;
+    jack_ringbuffer_t* rbuffer;
+    jack_default_audio_sample_t* sample_buffer;    
+    int32 recording;
+    int32 sps;
+    int32 bps;
+#ifdef HAVE_SAMPLERATE_H
+    SRC_STATE *resample_state;
+    jack_default_audio_sample_t *resample_buffer;
+#endif
+};
 
 /* #define MIC_SPEAKER_PASSTHROUGH_DEBUG */
 

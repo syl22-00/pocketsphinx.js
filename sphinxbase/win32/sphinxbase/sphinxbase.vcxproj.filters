@@ -134,13 +134,10 @@
     <ClCompile Include="..\..\src\libsphinxbase\util\pio.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libsphinxad\play_win32.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\libsphinxbase\util\profile.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\libsphinxad\rec_win32.c">
+    <ClCompile Include="..\..\src\libsphinxad\ad_win32.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\libsphinxbase\util\sbthread.c">

@@ -1,6 +1,6 @@
 /* -*- c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /* ====================================================================
- * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights 
+ * Copyright (c) 1996-2004 Carnegie Mellon University.  All rights
  * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -8,27 +8,27 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
  *
- * This work was supported in part by funding from the Defense Advanced 
- * Research Projects Agency and the National Science Foundation of the 
+ * This work was supported in part by funding from the Defense Advanced
+ * Research Projects Agency and the National Science Foundation of the
  * United States of America, and the CMU Sphinx Speech Consortium.
  *
- * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND 
- * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THIS SOFTWARE IS PROVIDED BY CARNEGIE MELLON UNIVERSITY ``AS IS'' AND
+ * ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
  * NOR ITS EMPLOYEES BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * ====================================================================
@@ -313,7 +313,7 @@ detect_sphinx_mfc(sphinx_wave2feat_t *wtf)
                          (0 == strcmp("big", cmd_ln_str_r(wtf->config, "-mach_endian"))
                           ? "little" : "big"));
     }
-    
+
     fseek(fh, 4, SEEK_SET);
     wtf->infh = fh;
     if (cmd_ln_boolean_r(wtf->config, "-spec2cep")) {
@@ -328,7 +328,7 @@ detect_sphinx_mfc(sphinx_wave2feat_t *wtf)
         E_ERROR("Sphinx MFCC file reading requested but -spec2cep/-cep2spec not given\n");
         assert(FALSE);
     }
-            
+
     return TRUE;
 }
 
@@ -448,7 +448,7 @@ decode_pcm(sphinx_wave2feat_t *wtf)
     whichchan = cmd_ln_int32_r(wtf->config, "-whichchan");
     fe_start_utt(wtf->fe);
     nfloat = 0;
-    while ((nsamp = fread(wtf->audio, 2, wtf->blocksize, wtf->infh)) != 0) {
+    while ((nsamp = fread(wtf->audio, sizeof(int16), wtf->blocksize, wtf->infh)) != 0) {
         size_t nvec;
         int16 const *inspeech;
 
@@ -461,7 +461,7 @@ decode_pcm(sphinx_wave2feat_t *wtf)
         /* Mix or pick channels. */
         if (nchans > 1)
             nsamp = mixnpick_channels(wtf->audio, nsamp, nchans, whichchan);
-            
+
         inspeech = wtf->audio;
         nvec = wtf->featsize;
         /* Consume all samples. */
@@ -899,7 +899,7 @@ sphinx_wave2feat_convert_file(sphinx_wave2feat_t *wtf,
     /* Use the maximum of the input and output frame sizes to allocate this. */
     veclen = wtf->veclen;
     if (wtf->in_veclen > veclen) veclen = wtf->in_veclen;
-    
+
     wtf->feat = (mfcc_t**)ckd_calloc_2d(wtf->featsize, veclen, sizeof(**wtf->feat));
 
     /* Let's go! */
@@ -930,7 +930,7 @@ sphinx_wave2feat_convert_file(sphinx_wave2feat_t *wtf,
             goto error_out;
         }
     }
-    
+
 
     if (wtf->audio)
 	ckd_free(wtf->audio);

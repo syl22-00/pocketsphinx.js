@@ -47,6 +47,13 @@
 #include "prim_type.h"
 #include "ad.h"
 
+struct ad_rec_s {
+    pa_simple* pa;
+    int32 recording;
+    int32 sps;
+    int32 bps;
+};
+
 ad_rec_t *
 ad_open_dev(const char *dev, int32 samples_per_sec)
 {

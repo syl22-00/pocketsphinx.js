@@ -172,9 +172,7 @@ typedef double          uint64;
 #define MIN_IEEE_NORM_NEG_FLOAT64       -1.8e+307
 
 /* Will the following really work?? */
-#define MAX_NEG_FLOAT32		((float32) (-MAX_POS_FLOAT32))
 #define MIN_NEG_FLOAT32		((float32) (-MIN_POS_FLOAT32))
-#define MAX_NEG_FLOAT64		((float64) (-MAX_POS_FLOAT64))
 #define MIN_NEG_FLOAT64		((float64) (-MIN_POS_FLOAT64))
 
 

@@ -796,7 +796,7 @@ sphinx_wave2feat_retain(sphinx_wave2feat_t *wtf)
 static audio_type_t const *
 detect_audio_type(sphinx_wave2feat_t *wtf)
 {
-    audio_type_t const *atype;
+    audio_type_t const *atype = NULL;
     int i;
 
     /* Special case audio type for Sphinx MFCC inputs. */
@@ -847,7 +847,7 @@ sphinx_wave2feat_convert_file(sphinx_wave2feat_t *wtf,
                               char const *infile, char const *outfile)
 {
     int nchans, minfft, nfft, nfloat, veclen;
-    audio_type_t const *atype;
+    audio_type_t const *atype = NULL;
     int fshift, fsize;
 
     if (cmd_ln_boolean_r(wtf->config, "-verbose"))

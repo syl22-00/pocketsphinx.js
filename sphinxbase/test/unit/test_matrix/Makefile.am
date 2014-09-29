@@ -5,7 +5,7 @@ test_solve_SRCS = test_solve.c
 test_invert_SRCS = test_invert.c
 test_determinant_SRCS = test_determinant.c
 
-INCLUDES = \
+AM_CFLAGS =\
 	-I$(top_srcdir)/include/sphinxbase \
 	-I$(top_srcdir)/include \
 	-I$(top_builddir)/include

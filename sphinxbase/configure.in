@@ -115,7 +115,7 @@ fi])
 AM_CONDITIONAL(FIXED_POINT, test x$fixed_point = xtrue)
 
 dnl
-dnl Enable 16-bit fixed-point (Q15) format for MFCC (less accurate, more fast)
+dnl Enable 16-bit fixed-point (Q15) format for MFCC (less accurate, faster)
 dnl
 AC_ARG_ENABLE(fixed16,
 	AS_HELP_STRING([--enable-fixed16],
@@ -141,29 +141,18 @@ case $host in
 	*-*-linux*|*-*-uclinux*|*-*-freebsd*|*-*-netbsd*|*-*-openbsd*)
 		# Check for PulseAudio, JACK, then fallback ALSA, then fall back to OSS
 		AC_CHECK_HEADER(pulse/pulseaudio.h,[
-			AC_DEFINE(AD_BACKEND_PULSEAUDIO, [],
-				 [Use PulseAudio library for sound I/O])
 			ad_files="ad_pulse.lo"
-			ad_backend="AD_BACKEND_PULSEAUDIO"
 			AC_CHECK_LIB(pulse-simple, pa_simple_new)
 			AC_CHECK_LIB(pulse, pa_strerror)
                         ],[
                 AC_CHECK_HEADER(jack/jack.h,[
-                        AC_DEFINE(AD_BACKEND_JACK, [],
-                                 [Use Jack library for sound I/O])
                         ad_files="ad_jack.lo"
-                        ad_backend="AD_BACKEND_JACK"
                         AC_CHECK_LIB(jack, jack_connect)],[
 		AC_CHECK_HEADER(alsa/asoundlib.h,[
-			AC_DEFINE(AD_BACKEND_ALSA, [],
-				 [Use ALSA library for sound I/O])
 			ad_files="ad_alsa.lo"
 			ad_backend="AD_BACKEND_ALSA"
 			AC_CHECK_LIB(asound, snd_pcm_open)],[
-		AC_DEFINE(AD_BACKEND_OSS, [],
-				 [Use OSS for sound I/O])
 			ad_files="ad_oss.lo"
-			ad_backend="AD_BACKEND_OSS"
 			])
 		])
                 ])
@@ -171,8 +160,6 @@ case $host in
 	*-*-*cygwin*|*-*-*mingw*)
 		ad_files="ad_win32.lo"
 		ad_libs="-lwinmm"
-		ad_backend="AD_BACKEND_WIN32"
-		AC_DEFINE(AD_BACKEND_WIN32, [], [Use WinMM interface for sound I/O])
 		;;
 	*-apple-*darwin*)
 		sdkpath=`xcodebuild -version -sdk  | grep MacOSX | grep "^Path:" | cut -d" " -f2`
@@ -183,21 +170,16 @@ case $host in
 		CPPFLAGS="$backup_CPPFLAGS"
 		ad_files="ad_openal.lo"
 		ad_libs="-framework OpenAL"
-		ad_backend="AD_BACKEND_OPENAL"
-		AC_DEFINE(AD_BACKEND_OPENAL, [], [Use OpenAL for sound I/O])
 		;;
 	*)
 		ad_files="ad_base.lo"
-		ad_backend="AD_BACKEND_NONE"
 		AC_MSG_RESULT([No audio interface for host type $host.])
-		AC_DEFINE(AD_BACKEND_NONE, [], [No interface for sound I/O])
 		;;
 esac
 
 AC_SUBST(ad_cppflags)
 AC_SUBST(ad_files)
 AC_SUBST(ad_libs)
-AC_SUBST(ad_backend)
 
 dnl
 dnl Check for Doxygen, and build dox if present

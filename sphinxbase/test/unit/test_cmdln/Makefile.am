@@ -1,6 +1,6 @@
 check_PROGRAMS = cmdln_parse cmdln_parse_multiple cmdln_parse_r
 
-INCLUDES = \
+AM_CFLAGS =\
 	-I$(top_srcdir)/include/sphinxbase \
 	-I$(top_srcdir)/include \
 	-I$(top_builddir)/include

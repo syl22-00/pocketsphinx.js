@@ -203,13 +203,15 @@ agc_noise(agc_t *agc,
             noise_frames++;
         }
     }
-    noise_level /= noise_frames;
 
-    E_INFO("AGC NOISE: max= %6.3f\n", MFCC2FLOAT(noise_level));
-
-    /* Subtract noise_level from all log_energy values */
-    for (i = 0; i < nfr; ++i)
-        cep[i][0] -= noise_level;
+    if (noise_frames > 0) {
+        noise_level /= noise_frames;
+        E_INFO("AGC NOISE: max= %6.3f\n", MFCC2FLOAT(noise_level));
+        /* Subtract noise_level from all log_energy values */
+        for (i = 0; i < nfr; i++) {
+            cep[i][0] -= noise_level;
+        }
+    }
 }
 
 void

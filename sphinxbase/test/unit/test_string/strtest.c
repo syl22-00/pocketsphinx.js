@@ -36,7 +36,7 @@ main(int argc, char *argv[])
             return 1;
         }
         line = fread_line(fp, &len);
-        printf("len = %d orig = %d\n", len,
+        printf("len = %zd orig = %zd\n", len,
                strlen("Hello world!\n"));
         if (strcmp(line, "Hello world!\n") != 0) {
             printf("'%s' != 'Hello world!\\n'\n", line);
@@ -45,7 +45,7 @@ main(int argc, char *argv[])
         ckd_free(line);
         line = fread_line(fp, &len);
         /* A line of exactly 127 characters. */
-        printf("len = %d orig = %d\n", len,
+        printf("len = %zd orig = %zd\n", len,
                strlen("123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456\n"));
         if (strcmp(line, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456\n") != 0) {
             printf("'%s' != '123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456\\n'\n", line);
@@ -54,7 +54,7 @@ main(int argc, char *argv[])
         ckd_free(line);
         /* A very long line. */
         line = fread_line(fp, &len);
-        printf("len = %d orig = %d\n", len,
+        printf("len = %zd orig = %zd\n", len,
                strlen("All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  \n"));
         if (strcmp(line, "All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  \n") != 0) {
             printf("'%s' != 'All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  All work and no play makes Jack a very dull boy.  \\n'\n", line);

@@ -3,7 +3,7 @@ check_PROGRAMS = test_ckd_alloc test_ckd_alloc_catch test_ckd_alloc_fail test_ck
 
 TESTS = test_ckd_alloc test_ckd_alloc_catch test_ckd_alloc_fail.sh test_ckd_alloc_abort.sh \
 	test_listelem_alloc
-INCLUDES = \
+AM_CFLAGS =\
 	-I$(top_srcdir)/include/sphinxbase \
 	-I$(top_srcdir)/include \
 	-I$(top_builddir)/include \

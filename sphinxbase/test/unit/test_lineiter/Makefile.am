@@ -1,7 +1,7 @@
 check_PROGRAMS = test_lineiter
 TESTS = test_lineiter
 
-INCLUDES = \
+AM_CFLAGS =\
 	-I$(top_srcdir)/include/sphinxbase \
 	-I$(top_srcdir)/include \
 	-I$(top_builddir)/include \

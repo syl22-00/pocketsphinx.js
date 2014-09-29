@@ -5,4 +5,4 @@ sphinx_cont_seg_SOURCES = cont_seg.c
 LDADD = $(top_builddir)/src/libsphinxbase/libsphinxbase.la \
 	 $(top_builddir)/src/libsphinxad/libsphinxad.la
 
-INCLUDES = -I$(top_srcdir)/include -I$(top_builddir)/include
+AM_CFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include

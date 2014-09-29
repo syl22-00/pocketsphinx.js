@@ -28,7 +28,7 @@ libsphinxad_la_LIBADD = \
 	@SAMPLERATE_LIBS@ \
 	$(top_builddir)/src/libsphinxbase/libsphinxbase.la
 
-INCLUDES = \
+AM_CFLAGS =\
 	@ad_cppflags@ \
 	-I$(top_srcdir)/include/sphinxbase \
 	-I$(top_srcdir)/include \

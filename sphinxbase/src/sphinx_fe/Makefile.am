@@ -9,7 +9,7 @@ sphinx_fe_LDADD = \
 	$(top_builddir)/src/libsphinxbase/libsphinxbase.la \
 	@SNDFILE_LIBS@
 
-INCLUDES = -I$(top_srcdir)/include \
+AM_CFLAGS =-I$(top_srcdir)/include \
 	-I$(top_builddir)/include \
 	-I$(top_srcdir)/src/libsphinxbase/fe \
 	@SNDFILE_CFLAGS@

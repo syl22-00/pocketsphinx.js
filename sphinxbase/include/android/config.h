@@ -1,21 +1,6 @@
 /* include/config.h.  Generated from config.h.in by configure.  */
 /* include/config.h.in.  Generated from configure.in by autoheader.  */
 
-/* Define if building universal (internal helper macro) */
-/* #undef AC_APPLE_UNIVERSAL_BUILD */
-
-/* Use ALSA library for sound I/O */
-/* #define AD_BACKEND_ALSA */
-
-/* No interface for sound I/O */
-#undef AD_BACKEND_NONE
-
-/* Use OSS for sound I/O */
-/* #undef AD_BACKEND_OSS */
-
-/* Use WinMM interface for sound I/O */
-/* #undef AD_BACKEND_WIN32 */
-
 /* Default radix point for fixed-point */
 /* #undef DEFAULT_RADIX */
 

@@ -2,7 +2,7 @@ check_PROGRAMS = displayhash deletehash test_hash_iter
 
 noinst_HEADERS = test_macros.h
 
-INCLUDES = \
+AM_CFLAGS =\
 	-I$(top_srcdir)/include/sphinxbase \
 	-I$(top_srcdir)/include \
 	-I$(top_builddir)/include

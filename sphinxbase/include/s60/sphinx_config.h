@@ -3,9 +3,6 @@
  * SphinxBase.
  */
 
-/* Use S60 interface for sound I/O */
-#define AD_BACKEND_S60
-
 /* The size of `long', as computed by sizeof. */
 #define SIZEOF_LONG 4
 

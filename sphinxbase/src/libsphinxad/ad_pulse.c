@@ -47,6 +47,8 @@
 #include "prim_type.h"
 #include "ad.h"
 
+#define DEFAULT_DEVICE NULL
+
 struct ad_rec_s {
     pa_simple* pa;
     int32 recording;

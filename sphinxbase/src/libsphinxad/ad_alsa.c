@@ -85,6 +85,8 @@
 #define INPUT_GAIN 85
 #define SPS_EPSILON 200
 
+#define DEFAULT_DEVICE "default"
+
 struct ad_rec_s {
     snd_pcm_t *dspH;
     int32 recording;

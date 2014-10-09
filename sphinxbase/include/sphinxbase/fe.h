@@ -195,7 +195,7 @@ extern "C" {
   { "-vad_postspeech", \
     ARG_INT32, \
     ARG_STRINGIFY(DEFAULT_POSTSPCH_STATE_LEN), \
-    "Num of speech frames to trigger vad from speech to silence." }, \
+    "Num of silence frames to trigger vad from speech to silence." }, \
    \
   { "-vad_threshold", \
     ARG_FLOAT32, \

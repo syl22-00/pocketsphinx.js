@@ -169,43 +169,43 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\ad.h">
+    <ClInclude Include="..\..\include\sphinxbase\ad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\agc.h">
+    <ClInclude Include="..\..\include\sphinxbase\agc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bio.h">
+    <ClInclude Include="..\..\include\sphinxbase\bio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\bitvec.h">
+    <ClInclude Include="..\..\include\sphinxbase\bitvec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\byteorder.h">
+    <ClInclude Include="..\..\include\sphinxbase\byteorder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\case.h">
+    <ClInclude Include="..\..\include\sphinxbase\case.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\ckd_alloc.h">
+    <ClInclude Include="..\..\include\sphinxbase\ckd_alloc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\clapack_lite.h">
+    <ClInclude Include="..\..\include\sphinxbase\clapack_lite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\cmd_ln.h">
+    <ClInclude Include="..\..\include\sphinxbase\cmd_ln.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\cmn.h">
+    <ClInclude Include="..\..\include\sphinxbase\cmn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\win32\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\err.h">
+    <ClInclude Include="..\..\include\sphinxbase\err.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\f2c.h">
+    <ClInclude Include="..\..\include\sphinxbase\f2c.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libsphinxbase\fe\fe_internal.h">
@@ -223,49 +223,34 @@
     <ClInclude Include="..\..\src\libsphinxbase\fe\fe_warp_piecewise_linear.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\feat.h">
+    <ClInclude Include="..\..\include\sphinxbase\feat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\filename.h">
+    <ClInclude Include="..\..\include\sphinxbase\filename.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\fixpoint.h">
+    <ClInclude Include="..\..\include\sphinxbase\fixpoint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\fsg_model.h">
+    <ClInclude Include="..\..\include\sphinxbase\fsg_model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\gau_cb.h">
+    <ClInclude Include="..\..\include\sphinxbase\genrand.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\gau_cb_float64.h">
+    <ClInclude Include="..\..\include\sphinxbase\glist.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\gau_cb_int32.h">
+    <ClInclude Include="..\..\include\sphinxbase\hash_table.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\gau_file.h">
+    <ClInclude Include="..\..\include\sphinxbase\heap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\gau_mix.h">
+    <ClInclude Include="..\..\include\sphinxbase\huff_code.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\genrand.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\glist.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\hash_table.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\heap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\huff_code.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\jsgf.h">
+    <ClInclude Include="..\..\include\sphinxbase\jsgf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libsphinxbase\lm\jsgf_internal.h">
@@ -277,25 +262,25 @@
     <ClInclude Include="..\..\src\libsphinxbase\lm\jsgf_scanner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\listelem_alloc.h">
+    <ClInclude Include="..\..\include\sphinxbase\listelem_alloc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libsphinxbase\lm\lm3g_model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\logmath.h">
+    <ClInclude Include="..\..\include\sphinxbase\logmath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\matrix.h">
+    <ClInclude Include="..\..\include\sphinxbase\matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\mmio.h">
+    <ClInclude Include="..\..\include\sphinxbase\mmio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\mulaw.h">
+    <ClInclude Include="..\..\include\sphinxbase\mulaw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\ngram_model.h">
+    <ClInclude Include="..\..\include\sphinxbase\ngram_model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libsphinxbase\lm\ngram_model_arpa.h">
@@ -310,34 +295,28 @@
     <ClInclude Include="..\..\src\libsphinxbase\lm\ngram_model_set.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\pio.h">
+    <ClInclude Include="..\..\include\sphinxbase\pio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\prim_type.h">
+    <ClInclude Include="..\..\include\sphinxbase\prim_type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\profile.h">
+    <ClInclude Include="..\..\include\sphinxbase\profile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\s3_arraylist.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\sbthread.h">
+    <ClInclude Include="..\..\include\sphinxbase\sbthread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\win32\sphinx_config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\sphinx_types.h">
+    <ClInclude Include="..\..\include\sphinxbase\sphinxbase_export.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\sphinxbase_export.h">
+    <ClInclude Include="..\..\include\sphinxbase\strfuncs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\strfuncs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\yin.h">
+    <ClInclude Include="..\..\include\sphinxbase\yin.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\libsphinxbase\fe\fe_noise.h">

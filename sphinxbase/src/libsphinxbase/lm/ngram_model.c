@@ -898,7 +898,7 @@ ngram_class_new(ngram_model_t *model, int32 tag_wid, int32 start_wid, glist_t cl
         tprob += gnode_float32(gn);
     }
     if (tprob > 1.1 || tprob < 0.9) {
-        E_WARN("Total class probability is %f, will normalize\n", tprob);
+        E_INFO("Total class probability is %f, will normalize\n", tprob);
         for (gn = classwords; gn; gn = gnode_next(gn)) {
             gn->data.fl /= tprob;
         }

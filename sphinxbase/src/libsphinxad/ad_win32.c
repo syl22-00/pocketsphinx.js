@@ -70,6 +70,13 @@
 #include <mmsystem.h>
 #endif
 
+typedef struct {
+    HGLOBAL h_whdr;
+    LPWAVEHDR p_whdr;
+    HGLOBAL h_buf;
+    LPSTR p_buf;
+} ad_wbuf_t;
+
 /**
  * Audio recording structure. 
  */

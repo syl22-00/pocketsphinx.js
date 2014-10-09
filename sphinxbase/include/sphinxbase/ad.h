@@ -55,7 +55,6 @@ extern "C" {
 #endif
 
 #define DEFAULT_SAMPLES_PER_SEC	16000
-#define DEFAULT_DEVICE NULL
 
 /* Return codes */
 #define AD_OK		0

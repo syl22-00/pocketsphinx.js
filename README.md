@@ -40,6 +40,13 @@ In addition to speech recognition, there is also a keyword spotting functionalit
 
 A prebuilt version of `pocketsphinx.js` is available in `webapp/js`, or you can build it yourself. Below is the procedure on Linux (and Mac OS X). On Windows, refer to the emscripten manual.
 
+The code of upstream `Pocketsphinx` is referenced as git submodules, so before you compile, you must make sure you have retrieved the content of the submodules. You can either clone `pocketsphinx.js` with the `--recursive` option, or run:
+
+```
+$ git submodule init
+$ git submodule update
+```
+
 ## 2.a Compilation with the default acoustic model
 
 You will need:

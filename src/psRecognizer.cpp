@@ -212,8 +212,8 @@ namespace pocketsphinxjs {
       parameters["-bestpath"] = "no";
     if (parameters.find("-remove_noise") == parameters.end())
       parameters["-remove_noise"] = "no";
-    if (parameters.find("-pl_window") == parameters.end())
-      parameters["-pl_window"] = "0";
+    if (parameters.find("-remove_silence") == parameters.end())
+      parameters["-remove_silence"] = "no";
 
     int argc = 2 * parameters.size();
     char ** argv = new char*[argc];

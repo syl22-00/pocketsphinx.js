@@ -87,7 +87,6 @@ namespace pocketsphinxjs {
     bool is_recording;
     std::string current_hyp;
     int32_t grammar_index;
-    char const * sentence_id;
     fsg_model_t * current_grammar;
     ps_decoder_t * decoder;
     logmath_t * logmath;

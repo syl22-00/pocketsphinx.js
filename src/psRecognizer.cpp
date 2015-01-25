@@ -84,11 +84,6 @@ namespace pocketsphinxjs {
       return RUNTIME_ERROR;
     }
     return SUCCESS;
-
-
-
-
-    return SUCCESS;
   }
 
 
@@ -108,7 +103,7 @@ namespace pocketsphinxjs {
 
   ReturnType Recognizer::start() {
     if ((decoder == NULL) || (is_recording)) return BAD_STATE;
-    if (ps_start_utt(decoder, NULL) < 0) {
+    if (ps_start_utt(decoder) < 0) {
       return RUNTIME_ERROR;
     }
     current_hyp = "";
@@ -121,7 +116,7 @@ namespace pocketsphinxjs {
     if (ps_end_utt(decoder) < 0) {
       return RUNTIME_ERROR;
     }
-    const char* h = ps_get_hyp(decoder, NULL, &sentence_id);
+    const char* h = ps_get_hyp(decoder, NULL);
     current_hyp = (h == NULL) ? "" : h;
     is_recording = false;
     return SUCCESS;
@@ -132,7 +127,7 @@ namespace pocketsphinxjs {
     if (buffer.size() == 0)
       return RUNTIME_ERROR;
     ps_process_raw(decoder, (short int *) &buffer[0], buffer.size(), 0, 0);
-    const char* h = ps_get_hyp(decoder, NULL, &sentence_id);
+    const char* h = ps_get_hyp(decoder, NULL);
     current_hyp = (h == NULL) ? "" : h;
     return SUCCESS;
   }

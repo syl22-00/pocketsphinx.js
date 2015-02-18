@@ -42,7 +42,7 @@ foreach(cfile ${feat_src_files})
     set(feat_srcs ${feat_srcs} "${feat_folder}/${cfile}")
 endforeach(cfile)
 
-set(util_src_files bio.c bitvec.c case.c ckd_alloc.c cmd_ln.c dtoa.c err.c errno.c f2c_lite.c filename.c genrand.c glist.c hash_table.c heap.c huff_code.c listelem_alloc.c logmath.c matrix.c mmio.c pio.c profile.c sbthread.c strfuncs.c utf8.c)
+set(util_src_files bio.c bitvec.c case.c ckd_alloc.c cmd_ln.c dtoa.c err.c errno.c f2c_lite.c filename.c genrand.c glist.c hash_table.c heap.c huff_code.c listelem_alloc.c logmath.c matrix.c mmio.c pio.c profile.c sbthread.c strfuncs.c)
 set(util_srcs "")
 foreach(cfile ${util_src_files})
     set(util_srcs ${util_srcs} "${util_folder}/${cfile}")

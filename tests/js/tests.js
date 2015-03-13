@@ -535,7 +535,6 @@ test( "Switching grammars", function() {
     ok(recognizer.getHyp().indexOf("B") < 0, "We should get an hyp that matches the grammar");
     ok(recognizer.getHyp().indexOf("C") < 0, "We should get an hyp that matches the grammar");
     ok(recognizer.getHyp().indexOf("D") >= 0, "We should get an hyp that matches the grammar");
-    return;
     equal(recognizer.switchGrammar(idA), Module.ReturnType.SUCCESS, "Recognizer should switch grammar successfully");
     recognizer.start();
     equal(recognizer.process(buffer), Module.ReturnType.SUCCESS, "Recognizer should process successfully");

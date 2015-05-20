@@ -76,6 +76,7 @@ namespace pocketsphinxjs {
     ReturnType start();
     ReturnType stop();
     ReturnType process(const std::vector<int16_t>&);
+    std::string lookupWord(const std::string&);
     ~Recognizer();
     
   private:
@@ -191,6 +192,7 @@ EMSCRIPTEN_BINDINGS(recognizer) {
     .function("getHypseg", &ps::Recognizer::getHypseg)
     .function("start", &ps::Recognizer::start)
     .function("stop", &ps::Recognizer::stop)
+    .function("lookupWord", &ps::Recognizer::lookupWord)
     .function("process", &ps::Recognizer::process);
 }
 

@@ -465,6 +465,12 @@ test("Dictionary words", function() {
     equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
 });
 
+test("Grammars", function() {
+    words.push_back(["A", "AH"]);
+    recognizer.addWords(words);
+    transitions.push_back({from: 0, to: 0, logp: 0, word: "A"});
+    equal(Module.ReturnType.SUCCESS, recognizer.addGrammar(ids, {numStates: 1, start: 0, end: 0, transitions: transitions}), "Grammar should be added successfully");
+});
 
 test( "Recognizing silence", function() {
     var num_samples = 1024;
@@ -599,30 +605,30 @@ test( "Recognizing audio", function() {
     equal(recognizer.getHypseg(segmentation), Module.ReturnType.SUCCESS);
     equal(segmentation.size(), 9, "Segmentation should not be empty after filled in");
     equal(segmentation.get(0).word, "<sil>", "Value stored in Segmentation should be the correct one");
-    equal(segmentation.get(0).start, 2, "Value stored in Segmentation should be the correct one");
-    equal(segmentation.get(0).end, 18, "Value stored in Segmentation should be the correct one");
+    equal(segmentation.get(0).start, 0, "Value stored in Segmentation should be the correct one");
+    equal(segmentation.get(0).end, 16, "Value stored in Segmentation should be the correct one");
     equal(segmentation.get(1).word, "WINDOWS");
-    equal(segmentation.get(1).start, 19);
-    equal(segmentation.get(1).end, 64);
+    equal(segmentation.get(1).start, 17);
+    equal(segmentation.get(1).end, 62);
     equal(segmentation.get(2).word, "SUCKS");
-    equal(segmentation.get(2).start, 65);
-    equal(segmentation.get(2).end, 121);
+    equal(segmentation.get(2).start, 63);
+    equal(segmentation.get(2).end, 119);
     equal(segmentation.get(3).word, "<sil>");
-    equal(segmentation.get(3).start, 122);
-    equal(segmentation.get(3).end, 131);
+    equal(segmentation.get(3).start, 120);
+    equal(segmentation.get(3).end, 129);
     equal(segmentation.get(4).word, "AND(2)");
-    equal(segmentation.get(4).start, 132);
-    equal(segmentation.get(4).end, 147);
+    equal(segmentation.get(4).start, 130);
+    equal(segmentation.get(4).end, 145);
     equal(segmentation.get(5).word, "LINUX");
-    equal(segmentation.get(5).start, 148);
-    equal(segmentation.get(5).end, 204);
+    equal(segmentation.get(5).start, 146);
+    equal(segmentation.get(5).end, 202);
     equal(segmentation.get(6).word, "IS");
-    equal(segmentation.get(6).start, 205);
-    equal(segmentation.get(6).end, 217);
+    equal(segmentation.get(6).start, 203);
+    equal(segmentation.get(6).end, 215);
     equal(segmentation.get(7).word, "GREAT");
-    equal(segmentation.get(7).start, 218);
-    equal(segmentation.get(7).end, 276);
+    equal(segmentation.get(7).start, 216);
+    equal(segmentation.get(7).end, 274);
     equal(segmentation.get(8).word, "<sil>");
-    equal(segmentation.get(8).start, 277);
-    equal(segmentation.get(8).end, 303);
+    equal(segmentation.get(8).start, 275);
+    equal(segmentation.get(8).end, 301);
 });

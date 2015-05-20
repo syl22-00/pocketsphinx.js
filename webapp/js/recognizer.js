@@ -21,6 +21,12 @@ startup(function(event) {
     case 'addGrammar':
 	addGrammar(event.data.data, event.data.callbackId);
 	break;
+    case 'lookupWord':
+	lookupWord(event.data.data, event.data.callbackId);
+	break;
+    case 'lookupWords':
+	lookupWords(event.data.data, event.data.callbackId);
+	break;
     case 'addKeyword':
 	addKeyword(event.data.data, event.data.callbackId);
 	break;
@@ -44,6 +50,16 @@ var post = function(message) {
 var recognizer = undefined;
 var buffer = undefined;
 var segmentation = undefined;
+
+function segToArray(segmentation) {
+    var output = [];
+    for (var i = 0 ; i < segmentation.size() ; i++)
+	output.push({'word': segmentation.get(i).word,
+		     'start': segmentation.get(i).start,
+		     'end': segmentation.get(i).end});
+    return output;
+};
+
 
 function initialize(data, clbId) {
     var config = new Module.Config();
@@ -121,6 +137,25 @@ function addGrammar(data, clbId) {
     } else post({status: "error", command: "addGrammar", code: "js-no-recognizer"});
 };
 
+function lookupWord(data, clbId) {
+    if (recognizer) {
+	var output = recognizer.lookupWord(data);
+	post({id: clbId, data: output, status: "done", command: "lookupWord"});
+    } else post({status: "error", command: "lookupWord", code: "js-no-recognizer"});
+};
+
+function lookupWords(data, clbId) {
+    if (recognizer) {
+	var output = [];
+	data.forEach(function(word) {
+	    var wid = recognizer.lookupWord(word);
+	    if(wid && (output.indexOf(word) == -1))
+		output.push(word);
+	});
+	post({id: clbId, data: output, status: "done", command: "lookupWords"});
+    } else post({status: "error", command: "lookupWords", code: "js-no-recognizer"});
+};
+
 function addKeyword(data, clbId) {
     var output;
     if (recognizer) {
@@ -162,7 +197,7 @@ function stop() {
 	else {
 	    recognizer.getHypseg(segmentation);
 	    post({hyp: recognizer.getHyp(),
-		  hypseg: segmentation,
+		  hypseg: segToArray(segmentation),
 		  final: true});
 	}
     } else {
@@ -182,7 +217,7 @@ function process(array) {
 	else {
 	    recognizer.getHypseg(segmentation);
 	    post({hyp: recognizer.getHyp(),
-		  hypseg: segmentation}); 
+		  hypseg: segToArray(segmentation)});
 	    }
     } else {
 	post({status: "error", command: "process", code: "js-no-recognizer"});

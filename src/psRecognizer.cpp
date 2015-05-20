@@ -47,10 +47,10 @@ namespace pocketsphinxjs {
     current_grammar->start_state = grammar.start;
     current_grammar->final_state = grammar.end;
     for (int i=0;i<grammar.transitions.size();i++) {
-      if (grammar.transitions.at(i).word.size() == 0)
-	fsg_model_null_trans_add(current_grammar, grammar.transitions.at(i).from, grammar.transitions.at(i).to, grammar.transitions.at(i).logp);
-      else
+      if ((grammar.transitions.at(i).word.size() > 0) && (ps_lookup_word(decoder, grammar.transitions.at(i).word.c_str())))
 	fsg_model_trans_add(current_grammar, grammar.transitions.at(i).from, grammar.transitions.at(i).to, grammar.transitions.at(i).logp, fsg_model_word_add(current_grammar, grammar.transitions.at(i).word.c_str()));
+      else
+	fsg_model_null_trans_add(current_grammar, grammar.transitions.at(i).from, grammar.transitions.at(i).to, grammar.transitions.at(i).logp);
     }
     fsg_model_add_silence(current_grammar, "<sil>", -1, 1.0);
 
@@ -132,6 +132,15 @@ namespace pocketsphinxjs {
     return SUCCESS;
   }
 
+    std::string Recognizer::lookupWord(const std::string& word) {
+      std::string output = "";
+      if (word.size() > 0) {
+	char * result = ps_lookup_word(decoder, word.c_str());
+	if (result != NULL)
+	  output = result;
+      }
+      return output;
+    }
   Recognizer::~Recognizer() {
     cleanup();
   }
@@ -141,12 +150,12 @@ namespace pocketsphinxjs {
   }
 
   ReturnType Recognizer::getHypseg(Segmentation& seg) {
-    if ((decoder == NULL) || (is_recording)) return BAD_STATE;
+    if (decoder == NULL) return BAD_STATE;
     seg.clear();
     int32 scoreh=0, sfh=0, efh=0;
     std::string hseg;
     ps_seg_t *itor = ps_seg_iter(decoder, &scoreh);
-    while (itor) { 
+    while (itor) {
       SegItem segItem;
       segItem.word = ps_seg_word(itor);
       ps_seg_frames(itor, &sfh, &efh);
@@ -204,7 +213,7 @@ namespace pocketsphinxjs {
     if (parameters.find("-hmm") == parameters.end())
       parameters["-hmm"] = default_acoustic_model;
     if (parameters.find("-bestpath") == parameters.end())
-      parameters["-bestpath"] = "no";
+      parameters["-bestpath"] = "yes";
     if (parameters.find("-remove_noise") == parameters.end())
       parameters["-remove_noise"] = "no";
     if (parameters.find("-remove_silence") == parameters.end())

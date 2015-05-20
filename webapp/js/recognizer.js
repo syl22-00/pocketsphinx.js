@@ -4,8 +4,8 @@ function startup(onMessage) {
 	importScripts(pocketsphinxJS);
 	self.onmessage = onMessage;
 	self.postMessage({});
-    }
-};
+    };
+}
 
 startup(function(event) {
     switch(event.data.command){
@@ -47,9 +47,9 @@ var post = function(message) {
     mySelf.postMessage(message);
 };
 
-var recognizer = undefined;
-var buffer = undefined;
-var segmentation = undefined;
+var recognizer;
+var buffer;
+var segmentation;
 
 function segToArray(segmentation) {
     var output = [];
@@ -81,11 +81,11 @@ function initialize(data, clbId) {
     } else {
 	recognizer = new Module.Recognizer(config);
 	segmentation = new Module.Segmentation();
-	if (recognizer == undefined) post({status: "error", command: "initialize", code: Module.ReturnType.RUNTIME_ERROR});
+	if (recognizer === undefined) post({status: "error", command: "initialize", code: Module.ReturnType.RUNTIME_ERROR});
 	else post({status: "done", command: "initialize", id: clbId});
     }
     config.delete();
-};
+}
 
 function load(data, clbId) {
     try {
@@ -94,7 +94,7 @@ function load(data, clbId) {
     } catch(e) {
 	post({status: "error", command: "load", code: "NETWORK_ERROR"});
     }
-};
+}
 
 function addWords(data, clbId) {
     if (recognizer) {
@@ -108,7 +108,7 @@ function addWords(data, clbId) {
 	else post({id: clbId});
 	words.delete();
     } else post({status: "error", command: "addWords", code: "js-no-recognizer"});
-};
+}
 
 function addGrammar(data, clbId) {
     var output;
@@ -133,9 +133,9 @@ function addGrammar(data, clbId) {
 	    transitions.delete();
 	    id_v.delete();
 	} else post({status: "error", command: "addGrammar", code: "js-data"});
-	
+
     } else post({status: "error", command: "addGrammar", code: "js-no-recognizer"});
-};
+}
 
 function lookupWord(data, clbId) {
     if (recognizer) {
@@ -166,9 +166,9 @@ function addKeyword(data, clbId) {
 	    else post({id: clbId, data: id_v.get(0), status: "done", command: "addKeyword"});
 	    id_v.delete();
 	} else post({status: "error", command: "addKeyword", code: "js-data"});
-	
+
     } else post({status: "error", command: "addKeyword", code: "js-no-recognizer"});
-};
+}
 
 function start(id) {
     if (recognizer) {
@@ -186,7 +186,7 @@ function start(id) {
     } else {
 	post({status: "error", command: "start", code: "js-no-recognizer"});
     }
-};
+}
 
 
 function stop() {
@@ -203,7 +203,7 @@ function stop() {
     } else {
 	post({status: "error", command: "stop", code: "js-no-recognizer"});
     }
-};
+}
 
 function process(array) {
     if (recognizer) {
@@ -222,4 +222,4 @@ function process(array) {
     } else {
 	post({status: "error", command: "process", code: "js-no-recognizer"});
     }
-};
+}

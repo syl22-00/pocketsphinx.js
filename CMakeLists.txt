@@ -73,8 +73,8 @@ set(ps_lib_js "pocketsphinx.js")
 set(ps_lib "pocketsphinx")
 
 # We are using the C++ binding utility of emscripten, this needs to be added to the compilation command
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DMODELDIR=\"\"")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --bind")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Oz -DMODELDIR=\"\"")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Oz --bind")
 
 # Add include dir in build tree as we'll place config header files there
 include_directories("${CMAKE_BINARY_DIR}/include")
@@ -118,7 +118,7 @@ endif()
 
 # Adding custom target for the JavaScript library.
 add_custom_target(${ps_lib_js} ALL
-  COMMAND ${CMAKE_C_COMPILER} -O2 -s TOTAL_MEMORY=100663296 --bind --memory-init-file 0 ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
+  COMMAND ${CMAKE_C_COMPILER} -Oz -s TOTAL_MEMORY=100663296 --bind --memory-init-file 0 ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
   DEPENDS ${ps_lib}
   )
 

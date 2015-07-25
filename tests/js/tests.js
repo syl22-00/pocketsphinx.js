@@ -388,7 +388,7 @@ test( "Recognizer and configs", function() {
     var words = new Module.VectorWords();
     words.push_back(["AH", "AH"]);
     equal(x.addWords(words), Module.ReturnType.SUCCESS, "Recognizer should be valid");
-    y.set(0, ["-fwdflat", "no"]);
+    y.push_back(["-fwdflat", "no"]);
     equal(x.reInit(y), Module.ReturnType.SUCCESS, "Re-init with valid config should work");
     equal(x.getHyp(), "", "Initial hyp should be empty");
     x.delete();

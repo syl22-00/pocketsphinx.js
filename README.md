@@ -229,6 +229,17 @@ words.push_back(["HELLO", "HH AH L OW"], ["HELLO", "HH EH L OW"]); // Invalid
 words.push_back(["HELLO(2)", "HH AH L OW"], ["HELLO", "HH EH L OW"]); // Invalid
 ```
 
+There is also a call to check whether a word is in the dictionary. It returns its pronunciation if it is, or an empty string if it is not:
+
+```javascript
+var recognizer = new Module.Recognizer();
+var words = new Module.VectorWords();
+words.push_back(["HELLO", "HH AH L OW"]);
+recognizer.addWords(words);
+var pronunciation = recognizer.lookupWord("HELLO"); // "HH AH L OW"
+var empty = recognizer.lookupWord("GOODBYE"); // ""
+```
+
 ### b. Adding grammars
 
 A FSG is a structure that includes an initial state, a last state as well as a set of transitions between these states. Again, make sure all words used in transitions are in the dictionary (either loaded through a packaged dictionary file or added at runtime using `addWords`). Here is an example of inputting one grammar:

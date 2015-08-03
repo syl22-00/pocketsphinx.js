@@ -465,6 +465,13 @@ test("Dictionary words", function() {
     equal(recognizer.addWords(words), Module.ReturnType.RUNTIME_ERROR, "Invalid words should not be added successfully");
 });
 
+test("Looking up words", function() {
+    words.push_back(["A", "AH"]);
+    equal(recognizer.addWords(words), Module.ReturnType.SUCCESS, "Valid words should be added successfully");
+    equal(recognizer.lookupWord("A"), "AH", "Words in the dictionary should be looked up correctly");
+    equal(recognizer.lookupWord("B"), "", "Words not in the dictionary should return empty strings");
+})
+
 test("Grammars", function() {
     words.push_back(["A", "AH"]);
     recognizer.addWords(words);

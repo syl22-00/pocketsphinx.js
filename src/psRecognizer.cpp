@@ -132,15 +132,16 @@ namespace pocketsphinxjs {
     return SUCCESS;
   }
 
-    std::string Recognizer::lookupWord(const std::string& word) {
-      std::string output = "";
-      if (word.size() > 0) {
-	char * result = ps_lookup_word(decoder, word.c_str());
-	if (result != NULL)
-	  output = result;
-      }
-      return output;
+  std::string Recognizer::lookupWord(const std::string& word) {
+    std::string output = "";
+    if (word.size() > 0) {
+      char * result = ps_lookup_word(decoder, word.c_str());
+      if (result != NULL)
+	output = result;
     }
+    return output;
+  }
+
   Recognizer::~Recognizer() {
     cleanup();
   }

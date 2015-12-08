@@ -32,6 +32,8 @@ This project includes several components that can be used independently:
 
 The file `webapp/live.html` illustrates how these work together in a real application, that is a good starting point. Make sure you load it through a web server or start Chrome with `--disable-web-security`. For instance, you can start a small web server with `python -m SimpleHTTPServer` in the base directory and open `http://localhost:8000/webapp/live.html` in your browser.
 
+Also Note that on very recent versions of Chrome, the app must be served through https (or localhost, or with `--disable-web-security`) to allow audio recording.
+
 There is also a live demo for Chinese. To try it, open `http://localhost:8000/webapp/live_zh.html` in your browser.
 
 In addition to speech recognition, there is also a keyword spotting functionality that detects a specific word or phrase in the audio input. There is also a live demo in `webapp/live_kws.html`.

@@ -153,9 +153,9 @@ namespace pocketsphinxjs {
   ReturnType Recognizer::getHypseg(Segmentation& seg) {
     if (decoder == NULL) return BAD_STATE;
     seg.clear();
-    int32 scoreh=0, sfh=0, efh=0;
+    int32 sfh=0, efh=0;
     std::string hseg;
-    ps_seg_t *itor = ps_seg_iter(decoder, &scoreh);
+    ps_seg_t *itor = ps_seg_iter(decoder);
     while (itor) {
       SegItem segItem;
       segItem.word = ps_seg_word(itor);

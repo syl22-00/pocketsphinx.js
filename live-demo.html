@@ -171,6 +171,8 @@
       };
 
       window.onload = function() {
+        if (window.location.protocol != "https:")
+          window.location.href = "https:" + window.location.href.substring(window.location.protocol.length);
         updateStatus("Initializing Web Audio and speech recognizer, waiting for approval to access your microphone");
         callbackManager = new CallbackManager();
         spawnWorker("js/recognizer.js", function(worker) {

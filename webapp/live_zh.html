@@ -24,7 +24,7 @@
       // These will be initialized later
       var recognizer, recorder, callbackManager, audioContext, outputContainer;
       // Only when both recorder and recognizer do we have a ready application
-      var recorderReady = recognizerReady = false;
+      var isRecorderReady = isRecognizerReady = false;
 
       // A convenience function to post a message to the recognizer and associate
       // a callback to its response
@@ -55,7 +55,7 @@
       // This updates the UI when the app might get ready
       // Only when both recorder and recognizer are ready do we enable the buttons
       function updateUI() {
-        if (recorderReady && recognizerReady) startBtn.disabled = stopBtn.disabled = false;
+        if (isRecorderReady && isRecognizerReady) startBtn.disabled = stopBtn.disabled = false;
       };
 
       // This is just a logging window where we display the status
@@ -84,7 +84,7 @@
         recorder = new AudioRecorder(input, audioRecorderConfig);
         // If a recognizer is ready, we pass it to the recorder
         if (recognizer) recorder.consumers = [recognizer];
-        recorderReady = true;
+        isRecorderReady = true;
         updateUI();
         updateStatus("Audio recorder ready");
       };
@@ -105,7 +105,7 @@
       // We then add the grammars to the input select tag and update the UI
       var recognizerReady = function() {
            updateGrammars();
-           recognizerReady = true;
+           isRecognizerReady = true;
            updateUI();
            updateStatus("Recognizer ready");
       };

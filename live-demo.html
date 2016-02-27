@@ -75,7 +75,7 @@
     <script>
 
       var recognizer, recorder, callbackManager, audio_context;
-      var recorderReady = recognizerReady = false;
+      var isRecorderReady = isRecognizerReady = false;
       function postRecognizerJob(message, callback) {
         var msg = message || {};
         if(callbackManager) msg.callbackId = callbackManager.add(callback);
@@ -95,7 +95,7 @@
       };
 
       function updateUI() {
-        if (recorderReady && recognizerReady) startBtn.disabled = stopBtn.disabled = false;
+        if (isRecorderReady && isRecognizerReady) startBtn.disabled = stopBtn.disabled = false;
       };
 
       function updateStatus(newStatus) {
@@ -114,7 +114,7 @@
         recorder = new AudioRecorder(input, audioRecorderConfig);
         // If a recognizer is ready, we pass it to the recorder
         if (recognizer) recorder.consumers = [recognizer];
-        recorderReady = true;
+        isRecorderReady = true;
         updateUI();
         updateStatus("Audio recorder ready");
       };
@@ -131,7 +131,7 @@
 
       var recognizerReady = function() {
            updateGrammars();
-           recognizerReady = true;
+           isRecognizerReady = true;
            updateUI();
            updateStatus("Recognizer ready");
       };

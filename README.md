@@ -724,7 +724,7 @@ The `am` folder contains an acoustic model trained with [SphinxTrain](http://cmu
 
 ## 8.2 PocketSphinx
 
-PocketSphinx.js ships with PocketSphinx and Sphinxbase as they appear in the trunk of the subversion tree, and we try to keep is regularly updated. There is no modification nor fixes. However, the `model` folder of PocketSphinx (which contains large acoustic and language models) was not included.
+PocketSphinx.js now uses PocketSphinx (and Sphinxbase) code as it is in its github repository, using git submodules.
 
 # 9. License
 
@@ -734,7 +734,7 @@ The files `webapp/js/audioRecorder.js` and `webapp/js/audioRecorderWorker.js` ar
 
 The remaining of this software is licensed under the MIT license:
 
-Copyright © 2013-2015 Sylvain Chevalier
+Copyright © 2013-2016 Sylvain Chevalier
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

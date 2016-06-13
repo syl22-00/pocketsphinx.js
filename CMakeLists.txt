@@ -36,7 +36,7 @@ foreach(cfile ${fe_src_files})
     set(fe_srcs ${fe_srcs} "${fe_folder}/${cfile}")
 endforeach(cfile)
 
-set(feat_src_files agc.c cmn.c cmn_prior.c feat.c lda.c)
+set(feat_src_files agc.c cmn.c cmn_live.c feat.c lda.c)
 set(feat_srcs "")
 foreach(cfile ${feat_src_files})
     set(feat_srcs ${feat_srcs} "${feat_folder}/${cfile}")

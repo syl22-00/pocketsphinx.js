@@ -639,3 +639,42 @@ test( "Recognizing audio", function() {
     equal(segmentation.get(8).start, 275);
     equal(segmentation.get(8).end, 301);
 });
+
+test( "Recognizing multiple utterances", function() {
+
+    for (var i = 0; i < wordList.length; i++) {
+	words.push_back(wordList[i]);
+    }
+
+    recognizer.addWords(words);
+    for (var i = 0; i < grammarOses.transitions.length; i++) {
+	transitions.push_back(grammarOses.transitions[i]);
+    }
+    recognizer.addGrammar(ids, {numStates: grammarOses.numStates, 
+				start: grammarOses.start, end: grammarOses.end,
+				transitions: transitions});
+    for (var i = 0 ; i < audio.length ; i++) buffer.push_back(audio[i]);
+
+    recognizer.start();
+    equal(recognizer.process(buffer), Module.ReturnType.SUCCESS, "Recognizer should process successfully");
+    equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully");
+    equal(recognizer.getHyp(), "WINDOWS SUCKS AND LINUX IS GREAT", "Recognizer should recognize the correct utterance");
+    equal(segmentation.size(), 0, "Segmentation should be initialized empty");
+    equal(recognizer.getHypseg(segmentation), Module.ReturnType.SUCCESS);
+    equal(segmentation.size(), 9, "Segmentation should not be empty after filled in");
+    equal(segmentation.get(0).word, "<sil>", "Value stored in Segmentation should be the correct one");
+    equal(segmentation.get(0).start, 0, "Value stored in Segmentation should be the correct one");
+    equal(segmentation.get(0).end, 16, "Value stored in Segmentation should be the correct one");
+    segmentation.delete();
+    segmentation = new Module.Segmentation();
+    recognizer.start();
+    equal(recognizer.process(buffer), Module.ReturnType.SUCCESS, "Recognizer should process successfully for the second utterance");
+    equal(recognizer.stop(), Module.ReturnType.SUCCESS, "Recognizer should stop successfully for the second utterance");
+    equal(recognizer.getHyp(), "WINDOWS SUCKS AND LINUX IS GREAT", "Recognizer should recognize the correct utterance for the second utterance");
+    equal(segmentation.size(), 0, "Segmentation should be initialized empty for the second utterance");
+    equal(recognizer.getHypseg(segmentation), Module.ReturnType.SUCCESS);
+    equal(segmentation.size(), 9, "Segmentation should not be empty after filled in for the second utterance");
+    equal(segmentation.get(0).word, "<sil>", "Value stored in Segmentation should be the correct one for the second utterance");
+    equal(segmentation.get(0).start, 0, "Value stored in Segmentation should be the correct one for the second utterance");
+    equal(segmentation.get(0).end, 13, "Value stored in Segmentation should be the correct one for the second utterance");
+});

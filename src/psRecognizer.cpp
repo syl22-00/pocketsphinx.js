@@ -103,7 +103,7 @@ namespace pocketsphinxjs {
 
   ReturnType Recognizer::start() {
     if ((decoder == NULL) || (is_recording)) return BAD_STATE;
-    if (ps_start_utt(decoder) < 0) {
+    if ((ps_start_utt(decoder) < 0) || (ps_start_stream(decoder) < 0)) {
       return RUNTIME_ERROR;
     }
     current_hyp = "";

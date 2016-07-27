@@ -350,6 +350,14 @@ seg.delete();
 
 In most cases you probably don't need to do that, but to free the memory used by the recognizer, you must call `recognizer.delete()`. Since you can re-initialize a recognizer with new parameters with a call to `reInit`, this should be only necessary if you're sure you don't need any recognizer object anymore.
 
+## 3.6 Strings encoding
+
+We have so far only dealt with words based on ASCII characters. We can also use unicode strings, but they must be manually encoded and decoded:
+
+* Words added to `VectorWords`, `VectorTransitions` or queried with `lookupWord` must be encoded if they use non-ASCII characters.
+* Words retrieved in `Segmentation` object or from `getHyp` calls must be decoded if they use non-ASCII characters.
+* There are unicode encoding and decoding functions in `recognizer.js`, you can re-use them and see where they are used.
+* If you use `pocketsphinx.js` via `recognizer.js`, you do not need to worry about encoding and decoding.
 
 # 4. Using `pocketsphinx.js` inside a Web Worker with `recognizer.js`
 
@@ -507,9 +515,18 @@ recognizer.postMessage({command: 'stop'});
 
 It will then send a last message with the hypothesis, marked as final (which means that it is more accurate as it comes after a second pass that was triggered by the `stop` command). It would look like: `{hyp: "FINAL RECOGNIZED STRING", final: true}`.
 
-### h. Loading files (such as acoustic models packaged outside `pocketsphinx.js`
+### h. Loading files (such as acoustic models packaged outside `pocketsphinx.js`)
 
-The recognizer worker can load any JavaScript file. This is especially useful to load the files of acoustic models, language models or dictionaries, so that they are available when the recognizer is initialized or re-initialized with specific values of `-hmm`, `-lm` or `-dict`.
+The recognizer worker can load any file to make them available to `pocketsphinx.js`. It can be an acoustic model, dictionary, language model or list of key phrases. There are two ways to do this:
+
+* package the files into JavaScript files and load them,
+* use raw (binary or text) files and lazy-load them.
+
+The second solution is probably wiser as binary files packaged into JavaScript will end up much larger.
+
+#### h1. Using packaged JavaScript files
+
+As shown in section 2.b.ii, Emscripten can package files inside JavaScript files so they can be accessed via the virtual file system. Use the `load` command with the list of JavaScript files to load them. As for other calls in the worker, this will not affect the UI thread, and will call back once all files are loaded. The files packaged inside those JavaScript files are available when the recognizer is initialized or re-initialized with specific values of `-hmm`, `-lm` or `-dict`.
 
 ```javascript
 recognizer.postMessage({command: 'load',
@@ -521,9 +538,34 @@ recognizer.postMessage({command: 'load',
                        });
 ```
 
-The path is relative to the location of `recognizer.js`, and in this example, the model can be loaded by using a `config` object with `["-hmm", "mymodel"]`.
+The path are relative to the location of `recognizer.js`, and in this example, the model can be loaded by using a `config` object with `["-hmm", "mymodel"]`.
 
 There will be an error callback with `NETWORK_ERROR` if any of the files can't be loaded.
+
+#### h2. Lazy loading raw files
+
+Emscripten provides a way to lazy-load files, actual HTTP request happen when files are accessed. We provide a way to add those files via `recognizer.js`. Use the `lazyLoad` command with `data` giving the folders to create on the virtual file system, the files to add to the file system and the mapping:
+
+```javascript
+recognizer.postMessage({command: 'lazyLoad',
+                        callbackId: id,
+                        data: {folders: [["/", "zh_broadcastnews_ptm256_8000"]],
+			       files: [["/zh_broadcastnews_ptm256_8000", "means", "../zh_broadcastnews_ptm256_8000/means"],
+			               ["/zh_broadcastnews_ptm256_8000", "variances", "../zh_broadcastnews_ptm256_8000/variances"],
+				       ["/zh_broadcastnews_ptm256_8000", "transition_matrices", "../zh_broadcastnews_ptm256_8000/transition_matrices"],
+				       ["/zh_broadcastnews_ptm256_8000", "sendump", "../zh_broadcastnews_ptm256_8000/sendump"],
+				       ["/zh_broadcastnews_ptm256_8000", "mdef", "../zh_broadcastnews_ptm256_8000/mdef"],
+				       ["/zh_broadcastnews_ptm256_8000", "feat.params", "../zh_broadcastnews_ptm256_8000/feat.params"],
+				       ["/zh_broadcastnews_ptm256_8000", "mixture_weights", "../zh_broadcastnews_ptm256_8000/mixture_weights"],
+				       ["/zh_broadcastnews_ptm256_8000", "noisedict", "../zh_broadcastnews_ptm256_8000/noisedict"]]
+			      }
+		       });
+```
+
+* `folders` is an array of pairs where the second element is the name of the folder to create and the first element is where this folder should be created in.
+* `files` is an array of triplets. The first element is the folder on the virtual file system where the virtual file will be created, the second element is the name of the virtual file and the third element is the actual raw file to add, with a path relative the the location of `recognizer.js`.
+
+The example given above adds the Chinese acoustic model provided by CMU Sphinx. If the URL of `recognizer.js` is `https://example.com/pocketsphinx/js/recognizer.js`, URLs of the models' binary files are `https://example.com/pocketsphinx/zh_broadcastnews_ptm256_8000/means`, etc. Then the model can be loaded with parameters `["-hmm", "zh_broadcastnews_ptm256_8000"]`.
 
 ## 4.4 Using `CallbackManager`
 

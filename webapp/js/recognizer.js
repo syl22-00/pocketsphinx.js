@@ -1,3 +1,48 @@
+var Module;
+if (typeof Module === 'undefined') Module = eval('(function() { try { return Module || {} } catch(e) { return {} } })()');
+
+/**
+*
+* We can not interact with emscripten using unicide strings
+* so we need to manually encode and decode them.
+* Thanks to:
+* https://gist.github.com/chrisveness/bcb00eb717e6382c5608
+*
+*/
+
+function Utf8Encode(strUni) {
+    var strUtf = strUni.replace(
+        /[\u0080-\u07ff]/g,  // U+0080 - U+07FF => 2 bytes 110yyyyy, 10zzzzzz
+        function(c) {
+            var cc = c.charCodeAt(0);
+            return String.fromCharCode(0xc0 | cc>>6, 0x80 | cc&0x3f); }
+    );
+    strUtf = strUtf.replace(
+        /[\u0800-\uffff]/g,  // U+0800 - U+FFFF => 3 bytes 1110xxxx, 10yyyyyy, 10zzzzzz
+        function(c) {
+            var cc = c.charCodeAt(0);
+            return String.fromCharCode(0xe0 | cc>>12, 0x80 | cc>>6&0x3F, 0x80 | cc&0x3f); }
+    );
+    return strUtf;
+}
+
+function Utf8Decode(strUtf) {
+    // note: decode 3-byte chars first as decoded 2-byte strings could appear to be 3-byte char!
+    var strUni = strUtf.replace(
+        /[\u00e0-\u00ef][\u0080-\u00bf][\u0080-\u00bf]/g,  // 3-byte chars
+        function(c) {  // (note parentheses for precedence)
+            var cc = ((c.charCodeAt(0)&0x0f)<<12) | ((c.charCodeAt(1)&0x3f)<<6) | ( c.charCodeAt(2)&0x3f);
+            return String.fromCharCode(cc); }
+    );
+    strUni = strUni.replace(
+        /[\u00c0-\u00df][\u0080-\u00bf]/g,                 // 2-byte chars
+        function(c) {  // (note parentheses for precedence)
+            var cc = (c.charCodeAt(0)&0x1f)<<6 | c.charCodeAt(1)&0x3f;
+            return String.fromCharCode(cc); }
+    );
+    return strUni;
+}
+
 function startup(onMessage) {
     self.onmessage = function(event) {
 	var pocketsphinxJS = (event.data && event.data.length && (event.data.length > 0)) ? event.data : 'pocketsphinx.js';
@@ -14,6 +59,9 @@ startup(function(event) {
 	break;
     case 'load':
 	load(event.data.data, event.data.callbackId);
+	break;
+    case 'lazyLoad':
+	lazyLoad(event.data.data, event.data.callbackId);
 	break;
     case 'addWords':
 	addWords(event.data.data, event.data.callbackId);
@@ -54,7 +102,7 @@ var segmentation;
 function segToArray(segmentation) {
     var output = [];
     for (var i = 0 ; i < segmentation.size() ; i++)
-	output.push({'word': segmentation.get(i).word,
+	output.push({'word': Utf8Decode(segmentation.get(i).word),
 		     'start': segmentation.get(i).start,
 		     'end': segmentation.get(i).end});
     return output;
@@ -96,12 +144,34 @@ function load(data, clbId) {
     }
 }
 
+function lazyLoad(data, clbId) {
+    var files = [];
+    var folders = [];
+    data['folders'].forEach(function(folder) {folders.push([folder[0], folder[1]]);});
+    data['files'].forEach(function(file) {files.push([file[0], file[1], file[2]]);});
+    var preloadFiles = function() {
+	folders.forEach(function(folder) {
+	    Module['FS_createPath'](folder[0], folder[1], true, true);
+	});
+	files.forEach(function(file) {
+	    Module['FS_createLazyFile'](file[0], file[1], file[2], true, true);
+	});
+    };
+    if (Module['calledRun']) {
+	preloadFiles();
+    } else {
+	if (!Module['preRun']) Module['preRun'] = [];
+	Module["preRun"].push(preloadFiles); // FS is not initialized yet, wait for it
+    }
+    post({status: "done", command: "lazyLoad", id: clbId});
+}
+
 function addWords(data, clbId) {
     if (recognizer) {
 	var words = new Module.VectorWords();
 	for (var i = 0 ; i < data.length ; i++) {
 	    var w = data[i];
-	    if (w.length == 2) words.push_back([w[0], w[1]]);
+	    if (w.length == 2) words.push_back([Utf8Encode(w[0]), w[1]]);
 	}
 	var output = recognizer.addWords(words);
 	if (output != Module.ReturnType.SUCCESS) post({status: "error", command: "addWords", code: output});
@@ -123,6 +193,7 @@ function addGrammar(data, clbId) {
 		if (t.hasOwnProperty('from') && t.hasOwnProperty('to')) {
 		    if (!t.hasOwnProperty('word')) t.word = "";
 		    if (!t.hasOwnProperty('logp')) t.logp = 0;
+		    t.word = Utf8Encode(t.word);
 		    transitions.push_back(t);
 		}
 	    }
@@ -139,7 +210,7 @@ function addGrammar(data, clbId) {
 
 function lookupWord(data, clbId) {
     if (recognizer) {
-	var output = recognizer.lookupWord(data);
+	var output = recognizer.lookupWord(Utf8Encode(data));
 	post({id: clbId, data: output, status: "done", command: "lookupWord"});
     } else post({status: "error", command: "lookupWord", code: "js-no-recognizer"});
 };
@@ -148,7 +219,7 @@ function lookupWords(data, clbId) {
     if (recognizer) {
 	var output = [];
 	data.forEach(function(word) {
-	    var wid = recognizer.lookupWord(word);
+	    var wid = recognizer.lookupWord(Utf8Encode(word));
 	    if(wid && (output.indexOf(word) == -1))
 		output.push(word);
 	});
@@ -188,7 +259,6 @@ function start(id) {
     }
 }
 
-
 function stop() {
     if (recognizer) {
 	var output = recognizer.stop();
@@ -196,7 +266,7 @@ function stop() {
 	    post({status: "error", command: "stop", code: output});
 	else {
 	    recognizer.getHypseg(segmentation);
-	    post({hyp: recognizer.getHyp(),
+	    post({hyp: Utf8Decode(recognizer.getHyp()),
 		  hypseg: segToArray(segmentation),
 		  final: true});
 	}
@@ -216,7 +286,7 @@ function process(array) {
 	    post({status: "error", command: "process", code: output});
 	else {
 	    recognizer.getHypseg(segmentation);
-	    post({hyp: recognizer.getHyp(),
+	    post({hyp: Utf8Decode(recognizer.getHyp()),
 		  hypseg: segToArray(segmentation)});
 	    }
     } else {

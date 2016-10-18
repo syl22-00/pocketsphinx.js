@@ -99,31 +99,33 @@ QUnit.test( "Segmentation type", function(assert) {
     assert.equal(error.name, "TypeError", "Should be a TypeError exception");
 
     error = undefined;
-    try {x.push_back({start: 0, end: 1, word: 2});}
+    try {x.push_back({start: 0, end: 1, word: 2, ascr: 3, lscr: 4});}
     catch (e) {error = e;}
     assert.ok(error != undefined, "Adding an invalid value to Segmentation should raise an exception");
     assert.equal(error.name, "BindingError", "Should be a BindingError exception");
 
-    x.push_back({start: 0, end: 0, word: ""});
+    x.push_back({start: 0, end: 0, word: "", ascr: 0, lscr: 0});
     assert.equal(x.size(), 1, "config size should grow");
-    x.push_back({start: 0, end: 0, word: ""});
-    x.push_back({start: 0, end: 0, word: ""});
-    x.push_back({start: 0, end: 0, word: ""});
-    x.push_back({start: 0, end: 0, word: ""});
-    x.push_back({start: 0, end: 0, word: ""});
-    x.push_back({start: 0, end: 0, word: ""});
-    x.push_back({start: 0, end: 0, word: ""});
-    x.push_back({start: 0, end: 0, word: ""});
-    x.push_back({start: 0, end: 0, word: ""});
-    x.push_back({start: 0, end: 0, word: ""});
+    x.push_back({start: 0, end: 0, word: "", ascr: 0, lscr: 0});
+    x.push_back({start: 0, end: 0, word: "", ascr: 0, lscr: 0});
+    x.push_back({start: 0, end: 0, word: "", ascr: 0, lscr: 0});
+    x.push_back({start: 0, end: 0, word: "", ascr: 0, lscr: 0});
+    x.push_back({start: 0, end: 0, word: "", ascr: 0, lscr: 0});
+    x.push_back({start: 0, end: 0, word: "", ascr: 0, lscr: 0});
+    x.push_back({start: 0, end: 0, word: "", ascr: 0, lscr: 0});
+    x.push_back({start: 0, end: 0, word: "", ascr: 0, lscr: 0});
+    x.push_back({start: 0, end: 0, word: "", ascr: 0, lscr: 0});
+    x.push_back({start: 0, end: 0, word: "", ascr: 0, lscr: 0});
     assert.equal(x.size(), 11, "Segmentation size should grow");
 
-    x.push_back({start: 12, end: 13, word: "hello, world!", hello: 0});
+    x.push_back({start: 12, end: 13, word: "hello, world!", hello: 0, ascr: 14, lscr: 15});
     assert.equal(x.size(), 12, "Extra fields in Segmentation item should not matter");
     assert.equal(x.get(11).start, 12, "stored segmentation item should have the correct value");
     assert.equal(x.get(11).end, 13, "stored segmentation item should have the correct value");
     assert.equal(x.get(11).word, "hello, world!", "stored segmentation item should have the correct value");
     assert.equal(x.get(11).hello, undefined, "stored segmentation item should have the correct value");
+    assert.equal(x.get(11).ascr, 14, "stored segmentation item should have the correct value");
+    assert.equal(x.get(11).lscr, 15, "stored segmentation item should have the correct value");
     
     x.delete();
     var error = undefined;

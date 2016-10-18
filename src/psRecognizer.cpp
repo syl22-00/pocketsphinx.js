@@ -154,14 +154,18 @@ namespace pocketsphinxjs {
     if (decoder == NULL) return BAD_STATE;
     seg.clear();
     int32 sfh=0, efh=0;
+    int32 ascr=0, lscr=0, lback=0;
     std::string hseg;
     ps_seg_t *itor = ps_seg_iter(decoder);
     while (itor) {
       SegItem segItem;
       segItem.word = ps_seg_word(itor);
       ps_seg_frames(itor, &sfh, &efh);
+      ps_seg_prob(itor, &ascr, &lscr, &lback);
       segItem.start = sfh;
       segItem.end = efh;
+      segItem.ascr = ascr;
+      segItem.lscr = lscr;
       seg.push_back(segItem);
       itor = ps_seg_next(itor);
     }

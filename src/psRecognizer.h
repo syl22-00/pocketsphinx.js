@@ -50,6 +50,8 @@ namespace pocketsphinxjs {
     std::string word;
     int start;
     int end;
+    int ascr;
+    int lscr;
   };
 
   typedef std::vector<std::string> StringsListType;
@@ -157,7 +159,9 @@ EMSCRIPTEN_BINDINGS(recognizer) {
   emscripten::value_object<ps::SegItem>("SegItem")
     .field("word", &ps::SegItem::word)
     .field("start", &ps::SegItem::start)
-    .field("end", &ps::SegItem::end);
+    .field("end", &ps::SegItem::end)
+    .field("ascr", &ps::SegItem::ascr)
+    .field("lscr", &ps::SegItem::lscr);
 
   emscripten::value_object<ps::Transition>("Transition")
     .field("from", &ps::Transition::from)

@@ -72,7 +72,7 @@
       function startUserMedia(stream) {
         var input = audioContext.createMediaStreamSource(stream);
         // Firefox hack https://support.mozilla.org/en-US/questions/984179
-        window.firefox_audio_hack = input; 
+        window.firefox_audio_hack = input;
         var audioRecorderConfig = {errorCallback: function(x) {updateStatus("Error from recorder: " + x);}};
         recorder = new AudioRecorder(input, audioRecorderConfig);
         // If a recognizer is ready, we pass it to the recorder
@@ -111,7 +111,7 @@
             newElt.value=keywordIds[i].id;
             newElt.innerHTML = keywordIds[i].title;
             selectTag.appendChild(newElt);
-        }                          
+        }
       };
 
       // This adds a keyword search from the array
@@ -139,7 +139,7 @@
       // This initializes the recognizer. When it calls back, we add words
       var initRecognizer = function() {
           // You can pass parameters to the recognizer, such as : {command: 'initialize', data: [["-hmm", "my_model"], ["-fwdflat", "no"]]}
-          postRecognizerJob({command: 'initialize', data: [["-kws_threshold", "2"]]},
+          postRecognizerJob({command: 'initialize', data: [["-kws_threshold", "1e-25"]]},
                             function() {
                                         if (recorder) recorder.consumers = [recognizer];
                                         feedWords(wordList);});
@@ -202,7 +202,7 @@
        // This is the list of words that need to be added to the recognizer
        // This follows the CMU dictionary format
       var wordList = [["ONE", "W AH N"], ["TWO", "T UW"], ["THREE", "TH R IY"], ["FOUR", "F AO R"], ["FIVE", "F AY V"], ["SIX", "S IH K S"], ["SEVEN", "S EH V AH N"], ["EIGHT", "EY T"], ["NINE", "N AY N"], ["ZERO", "Z IH R OW"], ["NEW-YORK", "N UW Y AO R K"], ["NEW-YORK-CITY", "N UW Y AO R K S IH T IY"], ["PARIS", "P AE R IH S"] , ["PARIS(2)", "P EH R IH S"], ["SHANGHAI", "SH AE NG HH AY"], ["SAN-FRANCISCO", "S AE N F R AE N S IH S K OW"], ["LONDON", "L AH N D AH N"], ["BERLIN", "B ER L IH N"], ["SUCKS", "S AH K S"], ["ROCKS", "R AA K S"], ["IS", "IH Z"], ["NOT", "N AA T"], ["GOOD", "G IH D"], ["GOOD(2)", "G UH D"], ["GREAT", "G R EY T"], ["WINDOWS", "W IH N D OW Z"], ["LINUX", "L IH N AH K S"], ["UNIX", "Y UW N IH K S"], ["MAC", "M AE K"], ["AND", "AE N D"], ["AND(2)", "AH N D"], ["O", "OW"], ["S", "EH S"], ["X", "EH K S"]];
-      var keywords = [{title: "ONE", g: "ONE"}, {title: "TWO", g: "TWO"}, {title: "NEW-YORK", g: "NEW-YORK"}];
+      var keywords = [{title: "SIX", g: "SIX"}, {title: "ROCKS", g: "ROCKS"}, {title: "GREAT", g: "GREAT"}];
       var keywordIds = [];
     </script>
     <!-- These are the two JavaScript files you must load in the HTML,

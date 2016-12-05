@@ -53,7 +53,7 @@ $ git submodule update
 
 You will need:
 
-* [emscripten](https://github.com/kripken/emscripten) (which implies also node.js and LLVM-fastcomp compiler, see emscripten docs for instructions on how to get it), 
+* [emscripten](https://github.com/kripken/emscripten) (which implies also node.js and LLVM-fastcomp compiler, see emscripten docs for instructions on how to get it),
 * [CMake](http://www.cmake.org/).
 
 The build is a classic CMake cross-compilation, using the toolchain provided by emscripten:
@@ -86,7 +86,7 @@ Make sure the files of the acoustic model are directly inside the `HMM_FOLDERS`:
     $ ls *
     model1:
     feat.params  mdef  means  sendump  transition_matrices  variances
-    
+
     model2:
     feat.params  mdef  means  sendump  transition_matrices  variances
 
@@ -131,7 +131,7 @@ You can interact with `pocketsphinx.js` directly if you need to, but it is proba
 
 The file `pocketsphinx.js` can be directly included into an HTML file but as it is fairly large (a few MB, depending on the optimization level used during compilation and packaged files), downloading and loading it will take time and affect the UI thread. So, as explained later, you should use it inside a Web worker, for instance using `recognizer.js`.
 
-This API is based on `embind`, you should probably have a look at that [section in emscripten's docs](https://github.com/kripken/emscripten/wiki/embind) to understand how to interact with emscripten-generated JavaScript. Earlier versions of Pocketsphinx.js used a C-style API which is now deprecated, but it is still available in the `OBSOLETE_API` branch. 
+This API is based on `embind`, you should probably have a look at that [section in emscripten's docs](https://github.com/kripken/emscripten/wiki/embind) to understand how to interact with emscripten-generated JavaScript. Earlier versions of Pocketsphinx.js used a C-style API which is now deprecated, but it is still available in the `OBSOLETE_API` branch.
 
 
 As a first example, to create a new recognizer:
@@ -281,7 +281,11 @@ var id = ids.get(0); // This is the id assigned to the search
 ids.delete();
 ```
 
-Note that there is a threshold that can be set to define how sensitive the search is. Add `["-kws_threshold", "2"]` for instance to the config object. Default value is 1, higher values means more likely to be spotted and more likely to get false positives.
+Note that there is a threshold that can be set to define how sensitive the search is. Add `["-kws_threshold", "1e-35"]` for instance to the config object. Values like "1e-50" mean that the keyword is more likely to be spotted but more likely to get false positives, while "1e-0" is restrictive and may miss actual keyword utterances. Experiment to find the ideal threshold. It varies greatly depending on the keyword itself, audio quality, and background noise.
+
+```javascript
+{command: 'initialize', data: [["-kws_threshold", "1e-35"]]}
+```
 
 ### d. Switching between grammars or keyword searches
 
@@ -452,7 +456,7 @@ Note that words can have several pronunciation alternatives as explained in Sect
 
 ### d. Adding grammars or key phrases
 
-As described previously, any number of grammars or keyword searches can be added. The recognizer can then switch between them. 
+As described previously, any number of grammars or keyword searches can be added. The recognizer can then switch between them.
 
 
 A grammar can be added at once using a JavaScript object that contains the number of states, the first and last states, and an array of transitions, for instance:
@@ -481,7 +485,7 @@ var keyphrase = "HELLO WORLD";
 recognizer.postMessage({command: 'addKeyword', data: keyphrase, callbackId: id});
 ```
 
-Just as like with grammars, words should already be in the recognizer, and the id of the newly added search is given in the callback. As explained previously, you might want to ajust the sensitivity threshold when initializing the recognizer, for example with providing `["-kws_threshold", "2"]`.
+Just as like with grammars, words should already be in the recognizer, and the id of the newly added search is given in the callback. As explained previously, you might want to ajust the sensitivity threshold when initializing the recognizer, for example with providing `["-kws_threshold", "1e-35"]`.
 
 
 ### e. Starting recognition
@@ -507,7 +511,7 @@ While data are processed, hypothesis will be sent back in a message in the form 
 
 ### g. Ending recognition
 
-Recognition can be simply stopped using the `stop` command: 
+Recognition can be simply stopped using the `stop` command:
 
 ```javascript
 recognizer.postMessage({command: 'stop'});
@@ -662,7 +666,7 @@ function startup(onMessage) {
 };
 // This function is called first, it triggers
 // a first postmessage, then adds the proper respond to
-// commands: 
+// commands:
 startup(function(event) {
     switch(event.data.command){
         //We deal with commands properly
@@ -770,7 +774,7 @@ PocketSphinx.js now uses PocketSphinx (and Sphinxbase) code as it is in its gith
 
 # 9. License
 
-PocketSphinx licensing terms are included in the `pocketsphinx` and `sphinxbase` folders. 
+PocketSphinx licensing terms are included in the `pocketsphinx` and `sphinxbase` folders.
 
 The files `webapp/js/audioRecorder.js` and `webapp/js/audioRecorderWorker.js` are based on [Recorder.js](https://github.com/mattdiamond/Recorderjs), which is under the MIT license (Copyright © 2013 Matt Diamond).
 

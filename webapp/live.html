@@ -122,10 +122,12 @@
       var feedGrammar = function(g, index, id) {
         if (id && (grammarIds.length > 0)) grammarIds[0].id = id.id;
         if (index < g.length) {
-          grammarIds.unshift({title: g[index].title})
-	  postRecognizerJob({command: 'addGrammar', data: g[index].g},
-                             function(id) {feedGrammar(grammars, index + 1, {id:id});});
+          grammarIds.unshift({title: g[index].title});
+          postRecognizerJob({command: 'addGrammar', data: g[index].g},
+                              function(id) {feedGrammar(grammars, index + 1, {id:id});});
         } else {
+          // We are adding keyword spotting which has id 0
+          grammarIds.push({"id":0, "title": "Keyword spotting"});
           recognizerReady();
         }
       };
@@ -139,7 +141,7 @@
       // This initializes the recognizer. When it calls back, we add words
       var initRecognizer = function() {
           // You can pass parameters to the recognizer, such as : {command: 'initialize', data: [["-hmm", "my_model"], ["-fwdflat", "no"]]}
-          postRecognizerJob({command: 'initialize'},
+          postRecognizerJob({command: 'initialize', data: [["-kws", "kws.txt"], ["-dict","kws.dict"]]},
                             function() {
                                         if (recorder) recorder.consumers = [recognizer];
                                         feedWords(wordList);});
@@ -173,7 +175,12 @@
                 }
             };
             // Once the worker is fully loaded, we can call the initialize function
-            initRecognizer();
+            // but before that we lazy-load two files for keyword spoting (key phrase
+            // file plus associated dictionary.
+            postRecognizerJob({command: 'lazyLoad',
+                               data: {folders: [], files: [["/", "kws.txt", "../kws.txt"],
+                                                           ["/", "kws.dict", "../kws.dict"]]}
+                              }, initRecognizer);
         });
 
         // The following is to initialize Web Audio

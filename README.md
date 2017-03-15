@@ -36,7 +36,7 @@ Also Note that on very recent versions of Chrome, the app must be served through
 
 There is also a live demo for Chinese. To try it, open `http://localhost:8000/webapp/live_zh.html` in your browser.
 
-In addition to speech recognition, there is also a keyword spotting functionality that detects a specific word or phrase in the audio input. There is also a live demo in `webapp/live_kws.html`.
+In addition to speech recognition, there is also a keyword spotting functionality that detects a specific word or phrase in the audio input. There are live demos in `webapp/live.html`  (via a key phrases file) and `webapp/live_kws.html` (via keyword spotting API).
 
 # 2. Compilation of `pocketsphinx.js`
 
@@ -267,6 +267,8 @@ ids.delete();
 
 Notice the `Integers` object that is used to return an id back to the app to refer to the grammar. This id is then used to switch the recognizer to using that specific grammar. You will note that `new Module.Integers()` actually returns a vector object that is then passed as a reference to `addGrammar`. If the call is successful, the first element of the array is the id assigned to the grammar.
 
+`id`s usually start with `1`, `0` being kept for the default search, which is a language model, grammar file or key phrases file added at init time.
+
 ### c. Adding key phrases
 
 PocketSphinx also includes a keyword spotting search. Give the decoder a keyword or key phrase to catch and you can get, at any time, the number of times it was spotted. The key phrase is just a string with the phrase to spot. All words from the phrase must have been previously added with `addWord`.
@@ -287,6 +289,8 @@ Note that there is a threshold that can be set to define how sensitive the searc
 {command: 'initialize', data: [["-kws_threshold", "1e-35"]]}
 ```
 
+Note that you can also add key phrases via a file, using the `"-kws"` argument as shown in the `live.html` example.
+
 ### d. Switching between grammars or keyword searches
 
 A recognizer object can have any number of grammars and keyword searches but only one can be active at a time. The active search is the one used when there is a call to `start()`, described later in this document. To switch to a specific search, you must use the id that was given during the call to `addGrammar` or `addKeyword`.
@@ -296,6 +300,8 @@ A recognizer object can have any number of grammars and keyword searches but onl
 if (recognizer.switchSearch(id) != Module.ReturnType.SUCCESS)
      alert("Error while switching search"); // The id is probably wrong
 ```
+
+If you added a language model, grammar file, or key phrases file, the recognizer can switch back to it using `id=0`.
 
 ## 3.4 Recognizing audio
 
@@ -569,7 +575,7 @@ recognizer.postMessage({command: 'lazyLoad',
 * `folders` is an array of pairs where the second element is the name of the folder to create and the first element is where this folder should be created in.
 * `files` is an array of triplets. The first element is the folder on the virtual file system where the virtual file will be created, the second element is the name of the virtual file and the third element is the actual raw file to add, with a path relative the the location of `recognizer.js`.
 
-The example given above adds the Chinese acoustic model provided by CMU Sphinx. If the URL of `recognizer.js` is `https://example.com/pocketsphinx/js/recognizer.js`, URLs of the models' binary files are `https://example.com/pocketsphinx/zh_broadcastnews_ptm256_8000/means`, etc. Then the model can be loaded with parameters `["-hmm", "zh_broadcastnews_ptm256_8000"]`.
+The example given above adds the Chinese acoustic model provided by CMU Sphinx. If the URL of `recognizer.js` is `https://example.com/pocketsphinx/js/recognizer.js`, URLs of the models' binary files are `https://example.com/pocketsphinx/zh_broadcastnews_ptm256_8000/means`, etc. Then the model can be loaded with parameters `["-hmm", "zh_broadcastnews_ptm256_8000"]`. You can see an example of that in the attached live web app, with `kws.txt` and `kws.dict`.
 
 ## 4.4 Using `CallbackManager`
 
@@ -780,7 +786,7 @@ The files `webapp/js/audioRecorder.js` and `webapp/js/audioRecorderWorker.js` ar
 
 The remaining of this software is licensed under the MIT license:
 
-Copyright © 2013-2016 Sylvain Chevalier
+Copyright © 2013-2017 Sylvain Chevalier
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 

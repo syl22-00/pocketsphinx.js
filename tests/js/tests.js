@@ -589,6 +589,8 @@ QUnit.test( "Switching grammars", function(assert) {
     transitionB.delete();
     transitionC.delete();
     transitionD.delete();
+    assert.equal(recognizer.switchGrammar(-1), Module.ReturnType.BAD_ARGUMENT, "Recognizer should gracefully reject bad grammar ids");
+    assert.equal(recognizer.switchGrammar(100), Module.ReturnType.BAD_ARGUMENT, "Recognizer should gracefully reject bad grammar ids");
 });
 
 QUnit.test( "Recognizing audio", function(assert) {

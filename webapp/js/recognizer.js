@@ -244,12 +244,10 @@ function addKeyword(data, clbId) {
 function start(id) {
     if (recognizer) {
 	var output;
-	if (id) {
-	    output = recognizer.switchSearch(parseInt(id));
-	    if (output != Module.ReturnType.SUCCESS) {
-		post({status: "error", command: "switchgrammar", code: output});
-		return;
-	    }
+	output = recognizer.switchSearch(parseInt(id));
+	if (output != Module.ReturnType.SUCCESS) {
+	    post({status: "error", command: "switchgrammar", code: output});
+	    return;
 	}
 	output = recognizer.start();
 	if (output != Module.ReturnType.SUCCESS)

@@ -2,8 +2,6 @@
 #include "pocketsphinx.h"
 #include "pocketsphinxjs-config.h"
 
-#define MAX_NUM_GRAMMARS 1000
-
 namespace pocketsphinxjs {
   typedef std::map<std::string, std::string> StringsMapType;
   typedef std::map<std::string, std::string>::iterator StringsMapIterator;
@@ -11,12 +9,12 @@ namespace pocketsphinxjs {
   // Implemented later in this file
   ReturnType parseStringList(const std::string &, StringsSetType*, std::string*);
 
-  Recognizer::Recognizer(): grammar_names(MAX_NUM_GRAMMARS), is_fsg(true), is_recording(false), current_hyp(""), grammar_index(0) {
+  Recognizer::Recognizer(): is_fsg(true), is_recording(false), current_hyp(""), grammar_index(0) {
     Config c;
     if (init(c) != SUCCESS) cleanup();
   }
 
-  Recognizer::Recognizer(const Config& config) : grammar_names(MAX_NUM_GRAMMARS), is_fsg(true), is_recording(false), current_hyp(""), grammar_index(0) {
+  Recognizer::Recognizer(const Config& config) : is_fsg(true), is_recording(false), current_hyp(""), grammar_index(0) {
     if (init(config) != SUCCESS) cleanup();
   }
 
@@ -93,9 +91,8 @@ namespace pocketsphinxjs {
 
   ReturnType Recognizer::switchSearch(int id) {
     if (decoder == NULL) return BAD_STATE;
-    std::ostringstream search_name;
-    search_name << id;
-    if(ps_set_search(decoder, search_name.str().c_str())) {
+    if ((id < 0) || (id >= grammar_names.size())) return BAD_ARGUMENT;
+    if(ps_set_search(decoder, grammar_names.at(id).c_str())) {
       return RUNTIME_ERROR;
     }
     return SUCCESS;
@@ -210,7 +207,8 @@ namespace pocketsphinxjs {
 	"Print word times in file transcription." },
       CMDLN_EMPTY_OPTION
     };
-
+    grammar_names.push_back("_default");
+    grammar_index++;
     std::map<std::string, std::string> parameters;
     for (int i=0 ; i< config.size() ; ++i)
       parameters[config[i].key] = config[i].value;

@@ -126,6 +126,7 @@ function initialize(data, clbId) {
     if(recognizer) {
 	output = recognizer.reInit(config);
 	if (output != Module.ReturnType.SUCCESS) post({status: "error", command: "initialize", code: output});
+	else post({status: "done", command: "initialize", id: clbId});
     } else {
 	recognizer = new Module.Recognizer(config);
 	segmentation = new Module.Segmentation();

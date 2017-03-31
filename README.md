@@ -153,7 +153,7 @@ Most calls return a ResultType object, which can be one of the following:
 
 In JavaScript these values can be referred as `Module.ReturnType.SUCCESS`, `Module.ReturnType.BAD_STATE`, etc. For instance:
 
-````javascript
+```javascript
 var recognizer = new Module.Recognizer();
 /* ... */
 if (recognizer.reInit(config) != Module.ReturnType.SUCCESS)
@@ -622,7 +622,7 @@ Check `live.html` in `webapp` for more examples.
 
 When a new worker is instantiated, it immediately returns a worker object, but the actual download of the JavaScript files might take some time, especially in our case where `pocketsphinx.js` is fairly large. One way of detecting whether the files are fully downloaded and loaded is to post a first message right after it is instantiated and wait for a message back from the worker.
 
-````javascript
+```javascript
 var recognizer;
 function spawnWorker(workerurl, onReady) {
     recognizer = new Worker(workerurl);
@@ -637,7 +637,7 @@ function spawnWorker(workerurl, onReady) {
 
 The first message posted to the recognizer can include the name of the PocketSphinx JavaScript file to load. This is handy if you want to build an application with several different models, you can keep the same `recognizer.js` file for different parts of your application and load any PocketSphinx JavaScript file that you want. By default, it will load `pocketsphinx.js`, but if you want your application to load a file called `pocketsphinx_chinese.js`, you can just add it as parameter to the first posted message:
 
-````javascript
+```javascript
 var recognizer;
 function spawnWorker(workerurl, onReady) {
     recognizer = new Worker(workerurl);

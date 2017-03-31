@@ -13,19 +13,24 @@
     <select id="grammars"></select>
     <button id="startBtn">Start</button>
     <button id="stopBtn">Stop</button>
+    <button id="debugBtn">Record 10s Clip</button>
     <span id="recording-indicator" style="border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; width: 20px; height: 20px; background: red;"></span>
     <h2>Recognition Output</h2>
     <div id="output" style="height:150px;overflow:auto;" >
     </div>
+    <h2>Recorded Clips</h2>
+    <div id="clips"></div>
     <h2>Status</h2>
     <div id="current-status">Loading page</div>
-
+    <h2>Wave Form</h2>
+    <canvas id="waveCanvas" width="300" height="250" style="display: block;"></canvas>
     <script>
       // These will be initialized later
-      var recognizer, recorder, callbackManager, audioContext, outputContainer;
+      var recognizer, recorder, callbackManager, audioContext, outputContainer, audioDebugger;
       // Only when both recorder and recognizer do we have a ready application
       var isRecorderReady = isRecognizerReady = false;
-
+      var debugBtn = null;
+      
       // A convenience function to post a message to the recognizer and associate
       // a callback to its response
       function postRecognizerJob(message, callback) {
@@ -49,11 +54,48 @@
       function updateHyp(hyp) {
         if (outputContainer) outputContainer.innerHTML = hyp;
       };
-
+      
+      function debugWavReady(data) {
+        //Remove the consumer
+        var idx = recorder.consumers.indexOf(audioDebugger);
+        if(idx > -1) {
+          recorder.consumers.splice(idx, 1);
+        }
+        
+        audioDebugger = null;
+        debugBtn.innerHTML = 'Record 10s Clip';
+        debugBtn.disabled = false;
+        
+        var b = new Blob([data], { type: 'audio/wav' });
+        var url = URL.createObjectURL(b);
+        
+        var markup = ['<a href="', url, '">download clip</a> ', '<audio controls>',
+        '<source src="', url, '" type="audio/wav" /></audio><br />',
+        ];
+        
+        var clips = document.getElementById('clips');
+        clips.innerHTML += markup.join('');
+      }
+      
+      var enableDebug = function() {
+        audioDebugger = new WavExportConsumer({
+  		    sampleRate: recorder.getSampleRate().output,
+  		    durationSeconds: 10,
+  		    onFinish: debugWavReady,
+  		    loop: false
+  		  });
+  		  recorder.consumers.push(audioDebugger);
+        debugBtn.innerHTML = 'Recording Clip...';
+        debugBtn.disabled = true;
+      };
+      
       // This updates the UI when the app might get ready
       // Only when both recorder and recognizer are ready do we enable the buttons
       function updateUI() {
-        if (isRecorderReady && isRecognizerReady) startBtn.disabled = stopBtn.disabled = false;
+        if (isRecorderReady && isRecognizerReady) {
+          startBtn.disabled = stopBtn.disabled = debugBtn.disabled = false;
+          recorder.consumers.push(new VisualizerConsumer(document.getElementById('waveCanvas')));
+        }
       };
 
       // This is just a logging window where we display the status
@@ -200,10 +242,14 @@
       // Wiring JavaScript to the UI
       var startBtn = document.getElementById('startBtn');
       var stopBtn = document.getElementById('stopBtn');
+      debugBtn = document.getElementById('debugBtn');
+      
       startBtn.disabled = true;
       stopBtn.disabled = true;
+      debugBtn.disabled = true;
       startBtn.onclick = startRecording;
       stopBtn.onclick = stopRecording;
+      debugBtn.onclick = enableDebug;
       };
 
        // This is the list of words that need to be added to the recognizer
@@ -220,6 +266,7 @@
     </script>
     <!-- These are the two JavaScript files you must load in the HTML,
     The recognizer is loaded through a Web Worker -->
+    <script src="js/audioDebug.js"></script>
     <script src="js/audioRecorder.js"></script>
     <script src="js/callbackManager.js"></script>
   </body>

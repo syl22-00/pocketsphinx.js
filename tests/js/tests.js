@@ -1,3 +1,4 @@
+QUnit.config.autostart = false;
 QUnit.module("Data structures");
 
 QUnit.test( "ReturnType type", function(assert) {

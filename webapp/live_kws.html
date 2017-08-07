@@ -42,7 +42,9 @@
           recognizer.onmessage = function(event) {
             onReady(recognizer);
           };
-          recognizer.postMessage('');
+          // As arguments, you can pass non-default path to pocketsphinx.js and pocketsphinx.wasm:
+          // recognizer.postMessage({'pocketsphinx.wasm': '/path/to/pocketsphinx.wasm', 'pocketsphinx.js': '/path/to/pocketsphinx.js'});
+          recognizer.postMessage({});
       };
 
       // To display the hypothesis sent by the recognizer

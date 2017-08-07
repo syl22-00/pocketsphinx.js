@@ -11,7 +11,15 @@
     <script src="js/qunit-2.3.3.js"></script>
     <script src="js/fixtures/audio.js"></script>
     <script src="js/fixtures/grammars.js"></script>
-    <script src="../webapp/js/pocketsphinx.js"></script>
     <script src="js/tests.js"></script>
+    <script type="text/javascript">
+      var Module = {
+          wasmBinaryFile: "../webapp/js/pocketsphinx.wasm",
+          onRuntimeInitialized: function() {
+          QUnit.start();
+          }
+        };
+    </script>
+    <script src="../webapp/js/pocketsphinx.js"></script>
   </body>
 </html>

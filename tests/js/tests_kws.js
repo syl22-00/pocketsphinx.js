@@ -1,3 +1,4 @@
+QUnit.config.autostart = false;
 QUnit.module("Keyword spotting")
 
 QUnit.test( "Key phrase and dictionary", function(assert) {

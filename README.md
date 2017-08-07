@@ -1,6 +1,6 @@
 PocketSphinx.js
 ---------------
-### Speech Recognition in JavaScript
+### Speech Recognition in JavaScript and WebAssembly
 
 PocketSphinx.js is a speech recognizer that runs entirely in the web browser. It is built on:
 

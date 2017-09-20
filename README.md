@@ -140,7 +140,7 @@ You can interact with `pocketsphinx.js` directly if you need to, but it is proba
 
 The file `pocketsphinx.js` can be directly included into an HTML file but as it is fairly large (a few MB, depending on the optimization level used during compilation and packaged files), downloading and loading it will take time and affect the UI thread. So, as explained later, you should use it inside a Web worker, for instance using `recognizer.js`.
 
-This API is based on `embind`, you should probably have a look at that [section in emscripten's docs](https://github.com/kripken/emscripten/wiki/embind) to understand how to interact with emscripten-generated JavaScript. Earlier versions of Pocketsphinx.js used a C-style API which is now deprecated, but it is still available in the `OBSOLETE_API` branch.
+This API is based on `embind`, you should probably have a look at that [section in emscripten's docs](http://kripken.github.io/emscripten-site/docs/porting/connecting_cpp_and_javascript/embind.html) to understand how to interact with emscripten-generated JavaScript. Earlier versions of Pocketsphinx.js used a C-style API which is now deprecated, but it is still available in the `OBSOLETE_API` branch.
 
 Note that if you use the WebAssembly version, you need both `pocketsphinx.js` and `pocketsphinx.wasm`. Once `pocketsphinx.js` is loaded in the page, it will start loading and compiling `pocketsphinx.wasm` by looking at the file in the root folder. You can set an alternative URL before loading `pocketsphinx.js`:
 

@@ -7,7 +7,7 @@ PocketSphinx.js is a speech recognizer that runs entirely in the web browser. It
 * a speech recognizer written in C ([PocketSphinx](http://cmusphinx.sourceforge.net/)) converted into JavaScript or [WebAssembly](http://webassembly.org/) using [Emscripten](https://github.com/kripken/emscripten),
 * an audio recorder using the web audio API. The audio recorder can be used independently to build other kinds of audio-related web applications. There is a more detailed documentation in `doc/AudioRecorder/README.md`.
 
-You can try it on the project page: <https://syl22-00.github.io/pocketsphinx.js> and have a look at our [FAQ](https://github.com/syl22-00/pocketsphinx.js/wiki/FAQ).
+You can try it on the project page: <https://syl22-00.github.io/pocketsphinx.js> and have a look at the [FAQ](https://github.com/syl22-00/pocketsphinx.js/wiki/FAQ).
 
 Table of contents:
 
@@ -33,7 +33,7 @@ This project includes several components that can be used independently:
 
 The file `webapp/live.html` illustrates how these work together in a real application, that is a good starting point. Make sure you load it through a web server or start Chrome with `--disable-web-security`. For instance, you can start a small web server with `python -m SimpleHTTPServer` in the base directory and open `http://localhost:8000/webapp/live.html` in your browser.
 
-Also Note that on very recent versions of Chrome, the app must be served through https (or localhost, or with `--disable-web-security`) to allow audio recording.
+Note that the app must be served through https (or localhost, or with `--disable-web-security`) to allow audio recording.
 
 There is also a live demo for Chinese. To try it, open `http://localhost:8000/webapp/live_zh.html` in your browser.
 

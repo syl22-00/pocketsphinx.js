@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 2.6)
 project(pocketsphinx.js)
 
 option(HMM_EMBED "Embed the HMM files inside generated JavaScript" ON)
-option(BINARYEN "Build to WebAssembly" OFF)
+option(WASM "Build to WebAssembly" OFF)
 
 # CMakeLists.txt should be alongside pocketsphinx and
 # sphinxbase folders
@@ -118,11 +118,11 @@ if(LM_BASE AND LM_FILES)
 endif()
 
 # Compile to WebAssembly?
-if(BINARYEN)
-  separate_arguments(binaryen UNIX_COMMAND "-s BINARYEN=1")
-else(BINARYEN)
+if(WASM)
+  separate_arguments(binaryen UNIX_COMMAND "-s WASM=1")
+else(WASM)
   set(binaryen "")
-endif(BINARYEN)
+endif(WASM)
 
 # Adding custom target for the JavaScript library.
 add_custom_target(${ps_lib_js} ALL

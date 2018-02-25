@@ -48,7 +48,7 @@ function startup(onMessage) {
         var pocketsphinxJS = (event.data && 'pocketsphinx.js' in event.data) ? event.data['pocketsphinx.js'] : 'pocketsphinx.js';
         var pocketsphinxWASM = (event.data && 'pocketsphinx.wasm' in event.data) ? event.data['pocketsphinx.wasm'] : '/webapp/js/pocketsphinx.wasm';
         // Case of compilation to WebAssembly, this is an absolute path
-        Module['wasmBinaryFile'] = pocketsphinxWASM;
+        Module['locateFile'] = function() {return pocketsphinxWASM;}
         Module['onRuntimeInitialized'] = function() {
             self.onmessage = onMessage;
             self.postMessage({});

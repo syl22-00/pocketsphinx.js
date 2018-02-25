@@ -14,7 +14,7 @@
     <script src="js/tests.js"></script>
     <script type="text/javascript">
       var Module = {
-          wasmBinaryFile: "../webapp/js/pocketsphinx.wasm",
+          locateFile: function() {return "../webapp/js/pocketsphinx.wasm";},
           onRuntimeInitialized: function() {
           QUnit.start();
           }

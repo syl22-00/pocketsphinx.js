@@ -71,7 +71,7 @@ This generates `pocketsphinx.js`. At this point, optimization level and other co
 
 By default, `pocketsphinx.js` compiles into JavaScript only (`asm.js`) but you can also build a WebAssembly binary with a `CMake` flag:
 
-    $ cmake -DEMSCRIPTEN=1 -DBINARYEN=ON -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Modules/Platform/Emscripten.cmake ..
+    $ cmake -DEMSCRIPTEN=1 -DWASM=ON -DCMAKE_TOOLCHAIN_FILE=path_to_emscripten/cmake/Modules/Platform/Emscripten.cmake ..
 
 The build will then generate a `pocketsphinx.wasm` file plus a JavaScript interface `pocketsphinx.js`.
 
@@ -146,7 +146,7 @@ Note that if you use the WebAssembly version, you need both `pocketsphinx.js` an
 
 ```javascript
 var Module = {
-    wasmBinaryFile: "/path/to/pocketsphinx.wasm"
+    locateFile: function() {return "/path/to/pocketsphinx.wasm";}
     }
 ```
 
@@ -155,7 +155,7 @@ Also, as `pocketsphinx.wasm` is loaded asynchronously, you need to wait until it
 ```html
     <script type="text/javascript">
       var Module = {
-          wasmBinaryFile: "/path/to/pocketsphinx.wasm",
+          locateFile: function() {return "/path/to/pocketsphinx.wasm";},
           onRuntimeInitialized: function() {
           // Now I can start using it
 	  ...

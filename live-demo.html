@@ -109,7 +109,6 @@
 
       function startUserMedia(stream) {
         var input = audio_context.createMediaStreamSource(stream);
-        window.firefox_audio_hack = input;
         var audioRecorderConfig = {errorCallback: function(x) {updateStatus("Error from recorder: " + x);}};
         recorder = new AudioRecorder(input, audioRecorderConfig);
         // If a recognizer is ready, we pass it to the recorder
@@ -197,13 +196,12 @@
         });
         try {
           window.AudioContext = window.AudioContext || window.webkitAudioContext;
-          navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
           window.URL = window.URL || window.webkitURL;
           audio_context = new AudioContext();
         } catch (e) {
           updateStatus("Error initializing Web Audio browser");
         }
-        if (navigator.getUserMedia) navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
+        if (navigator.mediaDevices.getUserMedia) navigator.mediaDevices.getUserMedia({audio: true}).then(startUserMedia,).catch(function(e) {
                                         updateStatus("No live audio input in this browser");
                                     });
         else updateStatus("No web audio support in this browser");

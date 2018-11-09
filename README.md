@@ -31,7 +31,7 @@ This project includes several components that can be used independently:
 * `audioRecorder.js`, an audio recording library, based on [Recorderjs](https://github.com/mattdiamond/Recorderjs). It converts the recorded samples to the proper sample rate and passes them to the recognizer. There is a more detailed documentation in `doc/AudioRecorder/README.md`.
 * `callbackManager.js`, a small utility to interact with Web Workers with calls and callbacks rather than message passing.
 
-The file `webapp/live.html` illustrates how these work together in a real application, that is a good starting point. Make sure you load it through a web server or start Chrome with `--disable-web-security`. For instance, you can start a small web server with `python -m SimpleHTTPServer` in the base directory and open `http://localhost:8000/webapp/live.html` in your browser.
+The file `webapp/live.html` illustrates how these work together in a real application, that is a good starting point. Make sure you load it through a web server or start Chrome with `--disable-web-security`. It is also recommended to serve the `wasm` file with the correct MIME type (`application/wasm`). For instance, you can start a small web server with `./server.py` in the base directory and open `http://localhost:8000/webapp/live.html` in your browser.
 
 Note that the app must be served through https (or localhost, or with `--disable-web-security`) to allow audio recording.
 
@@ -737,9 +737,6 @@ Include `audioRecorder.js` in the HTML file and make sure `audioRecorderWorker.j
 ```javascript
 // Deal with prefixed APIs
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
-navigator.getUserMedia = navigator.getUserMedia ||
-                         navigator.webkitGetUserMedia ||
-                         navigator.mozGetUserMedia;
 
 // Instantiating AudioContext
 try {
@@ -757,11 +754,11 @@ function startUserMedia(stream) {
     if (recognizer) recorder.consumers.push(recognizer);
   };
 
-// Actually call getUserMedia
-if (navigator.getUserMedia)
-    navigator.getUserMedia({audio: true},
-                            startUserMedia,
-                            function(e) {
+// Call getUserMedia
+if (navigator.mediaDevices.getUserMedia)
+    navigator.mediaDevices.getUserMedia({audio: true})
+                            .then(startUserMedia)
+                            .catch(function(e) {
                                 console.log("No live audio input in this browser");
                             });
 else console.log("No web audio support in this browser");

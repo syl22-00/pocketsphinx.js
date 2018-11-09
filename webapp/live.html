@@ -188,13 +188,12 @@
         // The following is to initialize Web Audio
         try {
           window.AudioContext = window.AudioContext || window.webkitAudioContext;
-          navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
           window.URL = window.URL || window.webkitURL;
           audioContext = new AudioContext();
         } catch (e) {
           updateStatus("Error initializing Web Audio browser");
         }
-        if (navigator.getUserMedia) navigator.getUserMedia({audio: true}, startUserMedia, function(e) {
+        if (navigator.mediaDevices.getUserMedia) navigator.mediaDevices.getUserMedia({audio: true}).then(startUserMedia).catch(function(e) {
                                         updateStatus("No live audio input in this browser");
                                     });
         else updateStatus("No web audio support in this browser");

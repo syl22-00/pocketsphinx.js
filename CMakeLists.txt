@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 2.6)
 project(pocketsphinx.js)
 
 option(HMM_EMBED "Embed the HMM files inside generated JavaScript" ON)
-option(WASM "Build to WebAssembly" OFF)
+option(WASM "Build to WebAssembly" ON)
 
 # CMakeLists.txt should be alongside pocketsphinx and
 # sphinxbase folders
@@ -126,7 +126,7 @@ endif(WASM)
 
 # Adding custom target for the JavaScript library.
 add_custom_target(${ps_lib_js} ALL
-  COMMAND ${CMAKE_C_COMPILER} -Oz ${binaryen} -s TOTAL_MEMORY=100663296 --bind --memory-init-file 0 ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
+  COMMAND ${CMAKE_C_COMPILER} -Oz ${binaryen} -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s TOTAL_MEMORY=100663296 --bind --memory-init-file 0 ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}
   DEPENDS ${ps_lib}
   )
 

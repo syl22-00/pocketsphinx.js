@@ -11,6 +11,8 @@ project(pocketsphinx.js)
 option(HMM_EMBED "Embed the HMM files inside generated JavaScript" ON)
 option(WASM "Build to WebAssembly" ON)
 
+SET_PROPERTY(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
+
 # CMakeLists.txt should be alongside pocketsphinx and
 # sphinxbase folders
 set(sphinx_root ${CMAKE_CURRENT_SOURCE_DIR})

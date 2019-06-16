@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 #
 # Small web server that serves
 # pocketsphinx.wasm with the

@@ -123,7 +123,7 @@ endif()
 if(WASM)
   separate_arguments(binaryen UNIX_COMMAND "-s WASM=1")
 else(WASM)
-  set(binaryen "")
+  separate_arguments(binaryen UNIX_COMMAND "-s WASM=0")
 endif(WASM)
 
 # Adding custom target for the JavaScript library.

@@ -255,11 +255,14 @@ words.delete()
 Note that PocketSphinx allows you to input several pronunciation alternatives for a word, by adding suffixes to it (`(2)`, `(3)`, etc.). However, adding a word with a suffix before the word without suffix will fail when calling `addWords`:
 
 ```javascript
-words.push_back(["HELLO", "HH AH L OW"], ["HELLO(2)", "HH EH L OW"]); // OK
+words.push_back(["HELLO", "HH AH L OW"]);
+words.push_back(["HELLO(2)", "HH EH L OW"]); // OK
 /* ... */
-words.push_back(["HELLO", "HH AH L OW"], ["HELLO", "HH EH L OW"]); // Invalid
+words.push_back(["HELLO", "HH AH L OW"]);
+words.push_back(["HELLO", "HH EH L OW"]); // Invalid
 /* ... */
-words.push_back(["HELLO(2)", "HH AH L OW"], ["HELLO", "HH EH L OW"]); // Invalid
+words.push_back(["HELLO(2)", "HH AH L OW"]);
+words.push_back(["HELLO", "HH EH L OW"]); // Invalid
 ```
 
 There is also a call to check whether a word is in the dictionary. It returns its pronunciation if it is, or an empty string if it is not:

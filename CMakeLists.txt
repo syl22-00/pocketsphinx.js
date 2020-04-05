@@ -126,6 +126,10 @@ else(WASM)
   separate_arguments(binaryen UNIX_COMMAND "-s WASM=0")
 endif(WASM)
 
+# related to https://github.com/emscripten-core/emscripten/issues/6061
+separate_arguments(binaryen UNIX_COMMAND "-s \"EXTRA_EXPORTED_RUNTIME_METHODS=['FS']\"")
+separate_arguments(binaryen UNIX_COMMAND "-s FORCE_FILESYSTEM=1")
+
 # Adding custom target for the JavaScript library.
 add_custom_target(${ps_lib_js} ALL
   COMMAND ${CMAKE_C_COMPILER} -Oz ${binaryen} -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s TOTAL_MEMORY=100663296 --bind --memory-init-file 0 ${CMAKE_SHARED_LIBRARY_PREFIX}${ps_lib}${CMAKE_SHARED_LIBRARY_SUFFIX} -o ${ps_lib_js} ${EMBED}

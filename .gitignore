@@ -1,3 +1,6 @@
 *~
 *.o
 /build
+
+#Macos
+*.DS_Store

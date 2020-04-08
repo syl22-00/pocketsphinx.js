@@ -86,8 +86,11 @@
 
       // This starts recording. We first need to get the id of the grammar to use
       var startRecording = function() {
-        var id = document.getElementById('grammars').value;
-        if (recorder && recorder.start(id)) displayRecording(true);
+        // Resume audio context. Chrome can prevent it from starting without a click. 
+        audioContext.resume().then(() => {
+          var id = document.getElementById('grammars').value;
+          if (recorder && recorder.start(id)) displayRecording(true);
+        });
       };
 
       // Stops recording

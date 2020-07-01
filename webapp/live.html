@@ -13,7 +13,7 @@
     <select id="grammars"></select>
     <button id="startBtn">Start</button>
     <button id="stopBtn">Stop</button>
-    <span id="recording-indicator" style="border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; width: 20px; height: 20px; background: red;"></span>
+    <span id="recording-indicator" style="border-radius: 10px; -moz-border-radius: 10px; -webkit-border-radius: 10px; width: 20px; height: 20px; background: red; color: red;"></span>
     <h2>Recognition Output</h2>
     <div id="output" style="height:150px;overflow:auto;" >
     </div>
@@ -63,9 +63,9 @@
         document.getElementById('current-status').innerHTML += "<br/>" + newStatus;
       };
 
-      // A not-so-great recording indicator
+      // A great recording indicator
       function displayRecording(display) {
-        if (display) document.getElementById('recording-indicator').innerHTML = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+        if (display) document.getElementById('recording-indicator').innerHTML = "00";
         else document.getElementById('recording-indicator').innerHTML = "";
       };
 
